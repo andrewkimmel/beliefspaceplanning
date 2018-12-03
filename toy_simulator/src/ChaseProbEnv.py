@@ -10,6 +10,9 @@ class ChaseEnv():
     visited_states = np.array([[0.,0.]])
     reached_goals = np.array([[0.,0.]])
     failed_goals = np.array([[0.,0.]])
+    
+
+    noise_std = 0.02
 
     def __init__(self, size=1, reward_type='sparse', yfactor=10, thr = .4, add_noise = True):
         self.size = size
@@ -27,9 +30,18 @@ class ChaseEnv():
         self.state[0] += action[0]/scale
         self.state[1] += action[1]/scale/self.yfactor
         if self.add_noise: 
-            self.state += np.random.normal(0., 0.02, 2) # Add noise
+            self.state += np.random.normal(0., self.noise_std, 2) # Add noise
 
         return np.copy(self.state)
+
+    def step(self, state, action, scale=10): # Action is -1 to 1 in each dimension
+        next_state = np.array([0.,0.])
+        next_state[0] = state[0] + action[0]/scale
+        next_state[1] = state[1] + action[1]/scale/self.yfactor
+        if self.add_noise: 
+            next_state += np.random.normal(0., self.noise_std, 2) # Add noise
+
+        return np.copy(next_state), np.array([self.noise_std, self.noise_std])
 
     def render(self):
         print("state :" + np.array_str(self.state) + ", goal :" + np.array_str(self.goal) + ", distance to goal: " + str(np.linalg.norm(self.state-self.goal)))

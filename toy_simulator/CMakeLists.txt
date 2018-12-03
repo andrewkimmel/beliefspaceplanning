@@ -59,6 +59,7 @@ add_service_files(
   TargetAngles.srv
   IsDropped.srv
   observation.srv
+  transition.srv
 )
 
 ## Generate actions in the 'action' folder

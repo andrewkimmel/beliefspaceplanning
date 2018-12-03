@@ -7,7 +7,7 @@ import time
 from std_msgs.msg import Float64MultiArray, Float32MultiArray, Int16
 from std_srvs.srv import SetBool, Empty, EmptyResponse
 from ChaseProbEnv import ChaseEnv, ProbEnv
-from toy_simulator.srv import TargetAngles, IsDropped, observation
+from toy_simulator.srv import TargetAngles, IsDropped, observation, transition
 
 SIZE = 1
 
@@ -30,6 +30,7 @@ class toy_sim():
         rospy.Service('/toy/MoveGripper', TargetAngles, self.MoveGripper)
         rospy.Service('/toy/IsObjDropped', IsDropped, self.CheckDropped)
         rospy.Service('/toy/observation', observation, self.GetObservation)
+        rospy.Service('/toy/transition', transition, self.Transition)
 
         print('[toy_node] Ready...')
 
@@ -78,6 +79,16 @@ class toy_sim():
     def CheckDropped(self, req):
 
         return {'dropped': self.dropped}
+
+    def Transition(self, req):
+
+        state = np.array(req.state)
+        action = np.array(req.action)
+
+        next_state_mean, next_state_std = self.env.step(state, action)
+        p, _ = self.prob.probability(next_state_mean)
+
+        return {'next_state_mean': next_state_mean, 'next_state_std': next_state_std, 'probability': p}
 
         
 
