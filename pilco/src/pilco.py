@@ -1,3 +1,8 @@
+'''
+Taken from: https://github.com/nrontsis/PILCO.git
+'''
+
+
 import numpy as np
 import tensorflow as tf
 import gpflow

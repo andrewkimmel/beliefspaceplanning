@@ -8,11 +8,8 @@ import matplotlib.pyplot as plt
 
 class ChaseEnv():
     visited_states = np.array([[0.,0.]])
-    reached_goals = np.array([[0.,0.]])
-    failed_goals = np.array([[0.,0.]])
     
-
-    noise_std = 0.02
+    noise_std = 0.01
 
     def __init__(self, size=1, reward_type='sparse', yfactor=10, thr = .4, add_noise = True):
         self.size = size
@@ -23,40 +20,47 @@ class ChaseEnv():
         self.state = np.array([0.,0.])
 
     def reset(self):
-        self.state = np.random.uniform(-self.size, self.size, 2)
+        # self.state = np.random.uniform(-self.size, self.size, 2) # Start from a random position
+        self.state = np.array([0.,0.]) + np.random.normal(0, 0.05) # Always start from [0,0] with some uncertainty
         return np.copy(self.state)
 
     def step(self, action, scale=10): # Action is -1 to 1 in each dimension
         self.state[0] += action[0]/scale
         self.state[1] += action[1]/scale/self.yfactor
         if self.add_noise: 
-            self.state += np.random.normal(0., self.noise_std, 2) # Add noise
+            self.state += np.random.normal(0., self.noise(state), 2) # Add noise
 
         return np.copy(self.state)
 
-    def step(self, state, action, scale=10): # Action is -1 to 1 in each dimension
+    def Step(self, state, action, scale=10): # Action is -1 to 1 in each dimension
         next_state = np.array([0.,0.])
         next_state[0] = state[0] + action[0]/scale
         next_state[1] = state[1] + action[1]/scale/self.yfactor
-        if self.add_noise: 
-            next_state += np.random.normal(0., self.noise_std, 2) # Add noise
 
-        return np.copy(next_state), np.array([self.noise_std, self.noise_std])
+        noise = self.noise(state)
+        if self.add_noise: 
+            next_state += np.random.normal(0., noise, 2) # Add noise
+
+        return np.copy(next_state), np.array([noise, noise])
+
+    def noise(self, state):
+        if state[0] >= 0. and state[1] >= 0.:
+            return 0.01
+        if state[0] >= 0. and state[1] < 0.:
+            return 0.03
+        if state[0] < 0. and state[1] < 0.:
+            return 0.02
+        if state[0] < 0. and state[1] >= 0.:
+            return 0.005
 
     def render(self):
         print("state :" + np.array_str(self.state) + ", goal :" + np.array_str(self.goal) + ", distance to goal: " + str(np.linalg.norm(self.state-self.goal)))
 
     def log(self, reward, done):
         self.visited_states = np.append(self.visited_states, [self.state], axis=0)
-        if done and reward == 0:
-            self.reached_goals = np.append(self.reached_goals, [self.goal], axis=0)
-        elif done:
-            self.failed_goals = np.append(self.failed_goals, [self.goal], axis=0)
 
     def plot(self):
         plt.figure(9)
-        plt.plot(self.failed_goals[1:,0], self.failed_goals[1:,1],'.r', label='failed goals')
-        plt.plot(self.reached_goals[1:,0], self.reached_goals[1:,1],'.g', label='reached goals')
         plt.plot(self.visited_states[1:,0], self.visited_states[1:,1],'.b', label='visited states')
         plt.legend(loc='best')
         plt.xlabel('x')

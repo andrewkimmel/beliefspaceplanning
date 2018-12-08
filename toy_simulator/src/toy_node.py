@@ -15,12 +15,11 @@ class toy_sim():
 
     state = np.array([0.0,0.0])
     state_dim = 2
-    svm_fail_probability_lower_bound = 0.75
+    svm_fail_probability_lower_bound = 1#0.75
 
 
     def __init__(self):
-
-        self.env = ChaseEnv(size = SIZE, add_noise = True)
+        self.env = ChaseEnv(size = SIZE, add_noise = True, yfactor=10)
         self.prob = ProbEnv(size = SIZE)
 
         pub_obj_pos = rospy.Publisher('/toy/obj_pos', Float32MultiArray, queue_size=10)
@@ -47,26 +46,27 @@ class toy_sim():
         self.state = self.env.reset()
         self.dropped = False
 
-        print('[gp_hand_sim] Gripper reset.')
+        print('[toy_node] Gripper reset.')
 
         return EmptyResponse()
 
     # Predicts the next step by calling the GP class - gets external state (for planner)
     def MoveGripper(self, req):
-
-        sp = self.env.step(req.angles)
-        print('[gp_hand_sim] Current state s: ' + str(self.state) + ", action: " + str(req.angles))
-        print('[gp_hand_sim] Predicted next state sp: ' + str(sp))
+        sp = self.env.step(req.angles, scale=20)
+        print('[toy_node] Current state s: ' + str(self.state) + ", action: " + str(req.angles))
+        print('[toy_node] Predicted next state sp: ' + str(sp))
         self.state = sp
         
         p, _ = self.prob.probability(self.state)
         if p > self.svm_fail_probability_lower_bound:  # or- res.fail <= The bound is not known
-            print('[gp_hand_sim] Gripper fail. End of episode.')
+            print('[toy_node] Gripper fail. End of episode.')
             self.dropped = True
             return {'success': False}
 
         for i in range(self.state_dim):
             if self.state[i] < -SIZE or self.state[i] > SIZE:
+                print('[toy_node] Object out of bounds. End of episode.')
+                self.dropped = True
                 return {'success': False}
 
         return {'success': True}
@@ -85,7 +85,7 @@ class toy_sim():
         state = np.array(req.state)
         action = np.array(req.action)
 
-        next_state_mean, next_state_std = self.env.step(state, action)
+        next_state_mean, next_state_std = self.env.Step(state, action)
         p, _ = self.prob.probability(next_state_mean)
 
         return {'next_state_mean': next_state_mean, 'next_state_std': next_state_std, 'probability': p}
