@@ -107,6 +107,7 @@ class pilco_node():
             # env.render()
             
             u = policy(x)
+            print('u: ', u)
 
             # Act
             suc = self.move_srv(u)

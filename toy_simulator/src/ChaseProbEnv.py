@@ -28,7 +28,7 @@ class ChaseEnv():
         self.state[0] += action[0]/scale
         self.state[1] += action[1]/scale/self.yfactor
         if self.add_noise: 
-            self.state += np.random.normal(0., self.noise(state), 2) # Add noise
+            self.state += np.random.normal(0., self.noise(self.state), 2) # Add noise
 
         return np.copy(self.state)
 
