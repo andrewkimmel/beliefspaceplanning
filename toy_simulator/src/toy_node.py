@@ -7,6 +7,7 @@ import time
 from std_msgs.msg import Float64MultiArray, Float32MultiArray, Int16
 from std_srvs.srv import SetBool, Empty, EmptyResponse
 from ChaseProbEnv import ChaseEnv, ProbEnv
+from SquareEnv import SquareEnv, ProbEnv
 from toy_simulator.srv import TargetAngles, IsDropped, observation, transition
 
 SIZE = 1
@@ -15,11 +16,12 @@ class toy_sim():
 
     state = np.array([0.0,0.0])
     state_dim = 2
-    svm_fail_probability_lower_bound = 1#0.75
+    svm_fail_probability_lower_bound = 0.65
 
 
     def __init__(self):
-        self.env = ChaseEnv(size = SIZE, add_noise = True, yfactor=10)
+        # self.env = ChaseEnv(size = SIZE, add_noise = True, yfactor=10)
+        self.env = SquareEnv(size = SIZE, add_noise = True)
         self.prob = ProbEnv(size = SIZE)
 
         pub_obj_pos = rospy.Publisher('/toy/obj_pos', Float32MultiArray, queue_size=10)
@@ -57,9 +59,11 @@ class toy_sim():
         print('[toy_node] Predicted next state sp: ' + str(sp))
         self.state = sp
         
-        p, _ = self.prob.probability(self.state)
-        if p > self.svm_fail_probability_lower_bound:  # or- res.fail <= The bound is not known
-            print('[toy_node] Gripper fail. End of episode.')
+        p, _ = self.prob.probability(self.state) 
+        p_draw = np.random.uniform()
+        print(p_draw, p)
+        if p_draw < p: 
+            print('[toy_node] Gripper fail with probability %f. End of episode.'%p)
             self.dropped = True
             return {'success': False}
 
