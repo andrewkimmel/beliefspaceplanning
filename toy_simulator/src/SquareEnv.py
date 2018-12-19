@@ -40,7 +40,7 @@ class SquareEnv():
         if self.add_noise: 
             next_state += np.random.normal(0., self.noise(self.state), 2) # Add noise
 
-        return np.copy(next_state), np.array([self.noise(self.state),self. noise(self.state)])
+        return np.copy(next_state), np.array([self.noise(self.state),self.noise(self.state)])
 
     def noise(self, state):
             return 0.005

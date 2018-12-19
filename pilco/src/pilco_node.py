@@ -23,7 +23,8 @@ controller = RbfController(state_dim=state_dim, control_dim=control_dim, num_bas
 
 
 class pilco_node():
-    goal = np.array([0.25,0.4])
+    # goal = np.array([0.25,0.4]) # Chase
+    goal = np.array([0.95,0.95]) # Square
     max_steps = 120
     horizon = 40
 
@@ -43,9 +44,11 @@ class pilco_node():
 
         msg.data = self.goal
         # Initial random rollouts to generate a dataset
-        X,Y = self.rollout(policy=self.random_policy, steps=self.horizon)
-        for i in range(1,3):
-            X_, Y_ = self.rollout(policy=self.random_policy, steps=self.horizon)
+        X,Y,_ = self.rollout(policy=self.random_policy, steps=self.horizon)
+        for i in range(1,10):
+            X_, Y_, suc = self.rollout(policy=self.random_policy, steps=self.horizon)
+            if not suc:
+                continue
             X = np.vstack((X, X_))
             Y = np.vstack((Y, Y_))
 
@@ -80,7 +83,11 @@ class pilco_node():
             self.pilco.optimize()
             # import pdb; pdb.set_trace()
             clear_srv()
-            X_new, Y_new = self.rollout(policy=self.pilco_policy, steps=self.max_steps, add_action_noise=add_action_noise)
+            X_new, Y_new, suc = self.rollout(policy=self.pilco_policy, steps=self.max_steps, add_action_noise=add_action_noise)
+            if not suc:
+                self.rate.sleep()
+                continue
+
             add_action_noise = False
             # Update dataset
             X = np.vstack((X, X_new)); Y = np.vstack((Y, Y_new))
@@ -97,13 +104,13 @@ class pilco_node():
                 success_count = 0
                 fail_count += 1
                 print('[pilco_node] Missed goal, %d/3 trial.!'%(fail_count))
-                if fail_count >=3 and np.linalg.norm(last_convg-cur_pos) < 2*thr:
-                    add_action_noise = True
+                # if fail_count >=3 and np.linalg.norm(last_convg-cur_pos) < 2*thr:
+                #     add_action_noise = True
             last_convg = cur_pos
 
 
-            if Iter >= 30:
-                break
+            # if Iter >= 30:
+            #     break
             
             self.rate.sleep()
 
@@ -156,7 +163,14 @@ class pilco_node():
 
         print('[pilco_node] Episode ended')
         self.plot_srv()
-        return np.stack(X), np.stack(Y)
+
+        suc = True
+        if len(X)==0:
+            suc = False 
+            X = np.array([0.,0.,0.,0.])
+            Y = np.array([0.,0.])
+
+        return np.stack(X), np.stack(Y), suc
 
     def random_policy(self, x):
         return np.random.uniform(-1.,1.,2)
