@@ -10,7 +10,7 @@ from ChaseProbEnv import ChaseEnv, ProbEnv
 from SquareEnv import SquareEnv, ProbEnv
 from toy_simulator.srv import TargetAngles, IsDropped, observation, transition
 
-SIZE = 1
+SIZE = 1.
 
 class toy_sim():
 
