@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 class SquareEnv():
     visited_states = np.array([[0.,0.]])
     
-    noise_std = 0.01
+    # noise_std = 0.00001
+    noise_std = 0.06
 
     def __init__(self, size=1, reward_type='sparse', thr = .4, add_noise = True):
         self.size = size
@@ -40,7 +41,7 @@ class SquareEnv():
         if self.add_noise: 
             next_state += np.random.normal(0., self.noise(self.state), 2) # Add noise
 
-        return np.copy(next_state), np.array([self.noise(self.state),self.noise(self.state)])
+        return np.copy(next_state), np.array([self.noise(self.state),self. noise(self.state)])
 
     def noise(self, state):
             return 0.005
@@ -72,7 +73,7 @@ class ProbEnv():
         x = state[0]
         y = state[1]
 
-        if x < -0.75 or x > 0.75 or y < -0.75:
+        if x <= -0.75 or x >= 0.75 or y <= -0.75:
             p = 0.02
         else:
             p = 0.2

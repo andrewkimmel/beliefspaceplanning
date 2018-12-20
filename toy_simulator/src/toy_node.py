@@ -10,7 +10,7 @@ from ChaseProbEnv import ChaseEnv, ProbEnv
 from SquareEnv import SquareEnv, ProbEnv
 from toy_simulator.srv import TargetAngles, IsDropped, observation, transition
 
-SIZE = 1
+SIZE = 1.3
 
 class toy_sim():
 
@@ -21,7 +21,7 @@ class toy_sim():
 
     def __init__(self):
         # self.env = ChaseEnv(size = SIZE, add_noise = True, yfactor=10)
-        self.env = SquareEnv(size = SIZE, add_noise = True)
+        self.env = SquareEnv(size = SIZE, add_noise = False)
         self.prob = ProbEnv(size = SIZE)
 
         pub_obj_pos = rospy.Publisher('/toy/obj_pos', Float32MultiArray, queue_size=10)
@@ -54,7 +54,7 @@ class toy_sim():
 
     # Predicts the next step by calling the GP class - gets external state (for planner)
     def MoveGripper(self, req):
-        sp = self.env.step(req.angles, scale=20)
+        sp = self.env.step(req.angles, scale=5)
         print('[toy_node] Current state s: ' + str(self.state) + ", action: " + str(req.angles))
         print('[toy_node] Predicted next state sp: ' + str(sp))
         self.state = sp
@@ -90,7 +90,12 @@ class toy_sim():
         action = np.array(req.action)
 
         next_state_mean, next_state_std = self.env.Step(state, action)
+
         p, _ = self.prob.probability(next_state_mean)
+
+        for i in range(self.state_dim):
+            if next_state_mean[i] < -SIZE or next_state_mean[i] > SIZE:
+                p = 1.0
 
         return {'next_state_mean': next_state_mean, 'next_state_std': next_state_std, 'probability': p}
 
