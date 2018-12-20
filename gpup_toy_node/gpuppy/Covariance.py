@@ -177,7 +177,7 @@ class Covariance(object):
 			m=len(K)
 			try:
 				return inv(K)
-			except ValueError:
+			except:# ValueError: # Avishai - Removed the ValueError
 				#Inversion done right
 				L = cholesky(K+np.eye(m)*1e-5)
 				L_inv = solve_triangular(L,np.eye(m),lower=True)
@@ -320,7 +320,7 @@ class Covariance(object):
 		"""
 		d = len(x[0])
 		theta_start = self.get_theta(x,t)
-		print(theta_start)
+		# print(theta_start)
 		func = self._nll_function(x, t)
 		fprime = self._gradient_function(x,t)
 
@@ -451,11 +451,12 @@ class GaussianCovariance(Covariance):
 		return v * np.exp(-0.5 * (dot(diff.T, w* diff))) + (vt if (xi == xj).all() else 0)
 
 	def get_theta(self,x,t):
+
 		n,d = np.shape(x)
 		theta = np.ones(2+d)
 		theta[0] = np.log(np.var(t)) if t is not None else 1 #size
 		theta[1] = np.log(np.var(t)/4) if t is not None else 1 #noise
-		theta[2:] = -2*np.log((np.max(x,0)-np.min(x,0))/2.0)#w
+		theta[2:] = -2*np.log((np.max(x,0)-np.min(x,0)+1e-3)/2.0)#w # Avishai: Added small number to avoid Inf
 		return theta
 
 	def cov_matrix(self,x,theta):

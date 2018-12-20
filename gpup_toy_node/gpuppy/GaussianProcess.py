@@ -104,6 +104,7 @@ class GaussianProcess(object):
 		Kinv = self.Kinv
 
 		x_star = np.array(x_star)
+
 		k = self.cov(x_star, x_star, self.theta_min) #+ vt  #code variance + aleatory variance
 		kv = self.cov.cov_matrix_ij(np.atleast_2d(x_star),self.x,self.theta_min) #np.array([self.covariance(x_star, self.x[i], v, w) for i in range(len(self.x))])
 		mean = np.dot(kv, np.dot(Kinv, self.t))

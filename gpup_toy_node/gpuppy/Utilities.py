@@ -293,9 +293,9 @@ def minimize(func,theta_start,bounds=None,constr=[],method="all",fprime=None):
 			func_val = funcvals[i]
 			theta_min = thetas[i]
 
-		print(name, "\t", times[i], "\t", funcvals[i], "\t", thetas[i])
+		# print(name, "\t", times[i], "\t", funcvals[i], "\t", thetas[i])
 
-	print(theta_min)
+	# print(theta_min)
 
 	return theta_min
 

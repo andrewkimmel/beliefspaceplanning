@@ -10,6 +10,7 @@ from UncertaintyPropagation import UncertaintyPropagationApprox, UncertaintyProp
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 import pickle
+from sklearn.neighbors import KDTree #pip install -U scikit-learn
 
 file_name = '/home/pracsys/catkin_ws/src/beliefspaceplanning/toy_simulator/data/transition_data_discrete.obj'
 
@@ -22,56 +23,61 @@ ax1 = plt.subplot2grid((3, 5), (0, 2), colspan=3, rowspan=2)
 
 x_data = np.array([np.concatenate((item[0],item[1]), axis=0) for item in data])
 y_data = np.array([item[2] for item in data])
-
 plt.plot(y_data[:,0], y_data[:,1], '+k')
-plt.ylabel('f(x)')
-plt.show()
 
-x_real = np.linspace(0, 4, 100).reshape(-1,1)
-y_real = np.array([func(i) for i in x_real]) 
-# plt.plot(x_real, y_real, '-g')
+x_test = x_data[:10,:]
+y_test = y_data[:10,:]
+x_data = x_data[10:,:]
+y_data = y_data[10:,:]
 
-gp_est = GaussianProcess(x_data, y_data, GaussianCovariance())
+kdt = KDTree(x_data, leaf_size=10, metric='euclidean')
+K = 100
+K_up = 100
 
-x_n = np.array([1.26])
-m, s = gp_est.estimate(x_n)
-plt.plot(x_n, m, '*r')
+def predict(sa, X, Y):
+    idx = kdt.query(sa, k=K, return_distance=False)
+    X_nn = X[idx,:].reshape(K, 4)
+    Y_nn = Y[idx,:].reshape(K, 2)
 
-# print(m,s)
+    d = Y_nn.shape[1]
+    m = np.empty(d)
+    s = np.empty(d)
+    for i in range(d):
+        gp_est = GaussianProcess(X_nn, Y_nn[:,i], GaussianCovariance())
+        m[i], s[i] = gp_est.estimate(sa[0])
+    return m, s
 
-x_new = np.linspace(0, 6, 100).reshape(-1,1)
-means, variances = gp_est.estimate_many(x_new)
-# print(means)
+def UP(sa_mean, sa_Sigma, X, Y):
+    idx = kdt.query(sa, k=K_up, return_distance=False)
+    X_nn = X[idx,:].reshape(K_up, 4)
+    Y_nn = Y[idx,:].reshape(K_up, 2)
 
-# GPy
-# kernel = GPy.kern.RBF(input_dim=1, variance=10.9, lengthscale=0.5)
-# gpy = GPy.models.GPRegression(x_data, y_data, kernel)
-# my = np.zeros(len(x_new))
-# sy = np.zeros(len(x_new))
-# for i in range(len(x_new)):
-#     my[i], sy[i] = gpy.predict(x_new[i].reshape(-1,1))
-# my_n, sy_n = gpy.predict(x_n.reshape(-1,1))
-# plt.plot(x_n, my_n, '*c')
-# plt.plot(x_new, my, '-c')
-
-msl = (means.reshape(1,-1)[0]-variances)#.reshape(-1,1)
-msu = (means.reshape(1,-1)[0]+variances)#.reshape(-1,1)[0]
-plt.plot(x_new, means,'-r')
-plt.fill_between(x_new.reshape(1,-1)[0], msl, msu)
-
-# print msu
-
-print "----------------------------------------------"
+    d = Y_nn.shape[1]
+    m = np.empty(d)
+    s = np.empty(d)
+    for i in range(d):
+        gp_est = GaussianProcess(X_nn, Y_nn[:,i], GaussianCovariance())
+        up = UncertaintyPropagationApprox(gp_est)
+        print up.propagate_GA(sa_mean, sa_Sigma)
+    # return m, s
 
 
-mean = np.array([3.0]) # The mean of a normal distribution
-Sigma = np.diag([0.4**2]) # The covariance matrix (must be diagonal because of lazy programming)
+print "---------- GP validation ------------"
 
-up = UncertaintyPropagationExact(gp_est)
+sa = x_test[9,:].reshape(1,-1)
 
-out_mean, out_variance = up.propagate_GA(mean, Sigma)
-print(out_mean, out_variance)
-# plt.errorbar(mean, out_mean, yerr=np.sqrt(out_variance))
+print predict(sa, x_data, y_data)
+print sa, y_test[9,:]
+
+
+print "---------- UP ------------"
+
+mean = sa.reshape(-1,1) # The mean of a normal distribution
+Sigma = np.diag([0.05**2, 0.05**2, 0.01**2, 0.01**2]) # The covariance matrix (must be diagonal because of lazy programming)
+
+UP(mean, Sigma, x_data, y_data)
+
+exit(1)
 
 print "----------------------------------------------"
 

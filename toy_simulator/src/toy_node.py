@@ -59,13 +59,13 @@ class toy_sim():
         print('[toy_node] Predicted next state sp: ' + str(sp))
         self.state = sp
         
-        p, _ = self.prob.probability(self.state) 
-        p_draw = np.random.uniform()
-        print(p_draw, p)
-        if p_draw < p: 
-            print('[toy_node] Gripper fail with probability %f. End of episode.'%p)
-            self.dropped = True
-            return {'success': False}
+        # p, _ = self.prob.probability(self.state) 
+        # p_draw = np.random.uniform()
+        # print(p_draw, p)
+        # if p_draw < p: 
+        #     print('[toy_node] Gripper fail with probability %f. End of episode.'%p)
+        #     self.dropped = True
+        #     return {'success': False}
 
         for i in range(self.state_dim):
             if self.state[i] < -SIZE or self.state[i] > SIZE:
