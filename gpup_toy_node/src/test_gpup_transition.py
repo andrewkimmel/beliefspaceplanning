@@ -6,38 +6,41 @@ sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_toy_nod
 import numpy as np
 from GaussianProcess import GaussianProcess
 from Covariance import GaussianCovariance
-from UncertaintyPropagation import UncertaintyPropagationApprox, UncertaintyPropagationExact
+from UncertaintyPropagation import UncertaintyPropagationApprox, UncertaintyPropagationExact, UncertaintyPropagationMC
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 import pickle
 from sklearn.neighbors import KDTree #pip install -U scikit-learn
 
-file_name = '/home/pracsys/catkin_ws/src/beliefspaceplanning/toy_simulator/data/transition_data_discrete.obj'
+file_name = '/home/pracsys/catkin_ws/src/beliefspaceplanning/toy_simulator/data/transition_data_cont.obj'
 
 print('Loading data from ' + file_name)
 with open(file_name, 'rb') as filehandler:
     data = pickle.load(filehandler)
 print('Loaded transition data of size %d.'%len(data))
 
-ax1 = plt.subplot2grid((3, 5), (0, 2), colspan=3, rowspan=2)
-
 x_data = np.array([np.concatenate((item[0],item[1]), axis=0) for item in data])
 y_data = np.array([item[2] for item in data])
-plt.plot(y_data[:,0], y_data[:,1], '+k')
+# plt.plot(x_data[:,0], x_data[:,1], '+y')
+# plt.show()
 
 x_test = x_data[:10,:]
 y_test = y_data[:10,:]
 x_data = x_data[10:,:]
 y_data = y_data[10:,:]
 
+Dx = x_data.shape[1]
+Dy = y_data.shape[1]
+
 kdt = KDTree(x_data, leaf_size=10, metric='euclidean')
-K = 100
+K = 500
 K_up = 100
+K_many = 500
 
 def predict(sa, X, Y):
     idx = kdt.query(sa, k=K, return_distance=False)
-    X_nn = X[idx,:].reshape(K, 4)
-    Y_nn = Y[idx,:].reshape(K, 2)
+    X_nn = X[idx,:].reshape(K, Dx)
+    Y_nn = Y[idx,:].reshape(K, Dy)
 
     d = Y_nn.shape[1]
     m = np.empty(d)
@@ -47,67 +50,126 @@ def predict(sa, X, Y):
         m[i], s[i] = gp_est.estimate(sa[0])
     return m, s
 
+def predict_many(SA, X, Y): # Assume that the test points are near each other (Gaussian distributed...)
+    sa = np.mean(SA, 0).reshape(1,-1)
+    idx = kdt.query(sa, k=K_many, return_distance=False)
+    X_nn = X[idx,:].reshape(K_many, Dx)
+    Y_nn = Y[idx,:].reshape(K_many, Dy)
+
+    m = np.empty([SA.shape[0], Dy])
+    s = np.empty([SA.shape[0], Dy])
+    for i in range(Dy):
+        gp_est = GaussianProcess(X_nn, Y_nn[:,i], GaussianCovariance())
+        m[:,i], s[:,i] = gp_est.estimate_many(SA)
+    return m, s
+
 def UP(sa_mean, sa_Sigma, X, Y):
     idx = kdt.query(sa, k=K_up, return_distance=False)
-    X_nn = X[idx,:].reshape(K_up, 4)
-    Y_nn = Y[idx,:].reshape(K_up, 2)
+    X_nn = X[idx,:].reshape(K_up, Dx)
+    Y_nn = Y[idx,:].reshape(K_up, Dy)
 
     d = Y_nn.shape[1]
     m = np.empty(d)
     s = np.empty(d)
     for i in range(d):
         gp_est = GaussianProcess(X_nn, Y_nn[:,i], GaussianCovariance())
-        up = UncertaintyPropagationApprox(gp_est)
-        print up.propagate_GA(sa_mean, sa_Sigma)
-    # return m, s
+        up = UncertaintyPropagationExact(gp_est)
+        m[i], s[i] = up.propagate_GA(sa_mean, sa_Sigma)
+    return m, s
 
 
-print "---------- GP validation ------------"
 
-sa = x_test[9,:].reshape(1,-1)
-
-print predict(sa, x_data, y_data)
-print sa, y_test[9,:]
-
-
-print "---------- UP ------------"
-
-mean = sa.reshape(-1,1) # The mean of a normal distribution
-Sigma = np.diag([0.05**2, 0.05**2, 0.01**2, 0.01**2]) # The covariance matrix (must be diagonal because of lazy programming)
-
-UP(mean, Sigma, x_data, y_data)
-
-exit(1)
-
-print "----------------------------------------------"
+# x = np.array([-0.8087172,  -0.9937619,   0.78795573, -0.06984595])
+# x = np.array([-0.81546312, -0.99093441,  0.78594897, -0.07094581])
+# x = np.array([-0.80829176, -1.00330781,  0.78488902, -0.07254308]) # Good point
+# m, s = predict(x.reshape(1,-1), x_data, y_data)
+# print m, s
+# exit(1)
 
 
-N = int(1e4)
-X_belief = np.array([np.random.normal(mean, np.sqrt(Sigma)) for _ in range(N)]).reshape(N,1) #
-ax4 = plt.subplot2grid((3, 5), (2, 2), colspan=3, rowspan=1)
-plt.plot(X_belief, np.tile(0., N), '.k')
-x = np.linspace(0, 6, 1000).reshape(-1,1)
-plt.plot(x,mlab.normpdf(x, mean, np.sqrt(Sigma)))
-plt.xlabel('x')
+ijx = 6
+
+# for ijx in range(1):
+
+sa = x_test[ijx,:].reshape(1,-1)
+
+m_gp, s_gp = predict(sa, x_data, y_data)
+s_gp = np.sqrt(s_gp)
+
+print "----------- GP validation -----------"
+print "test point: ", sa
+print "m_gp: ", m_gp
+print "s_gp: ", s_gp
+print "m_real: ", y_test[ijx,:]
+print "Error: ", np.linalg.norm(m_gp-y_test[ijx,:])
+
+print "---------------- UP ----------------"
+
+mean = sa.reshape((-1,)) # The mean of a normal distribution
+Sigma = np.diag([0.005**2, 0.005**2, 0.001**2, 0.001**2]) # The covariance matrix (must be diagonal because of lazy programming)
+
+m, s = UP(mean, Sigma, x_data, y_data)
+s = np.sqrt(s)
+
+print "m_gpup: ", m
+print "s_gpup: ", s
+
+print "-------- Particles --------------------------"
+
+N = int(1e2)
+X_belief = np.array([np.diag(np.random.normal(mean, np.sqrt(Sigma))) for _ in range(N)]).reshape(N,Dx) #
+
+Y_belief_m = []
+for i in range(N):
+    mean_b, variance_b = predict(X_belief[i,:].reshape(1,-1), x_data, y_data)
+
+    variance_b[0] = 0 if np.absolute(variance_b[0]) <= 1e-3 else variance_b[0]
+    variance_b[1] = 0 if np.absolute(variance_b[1]) <= 1e-3 else variance_b[1]
+    if variance_b[0] < 0 or variance_b[1] < 0:
+        continue
+
+    Y_belief_m.append([np.random.normal(mean_b[0], np.sqrt(variance_b[0])), np.random.normal(mean_b[1], np.sqrt(variance_b[1]))])
+
+Y_belief_m = np.array(Y_belief_m)
+
+Y_belief_mean_m = np.mean(Y_belief_m,0)
+print "Particle mean m: ", Y_belief_mean_m
+print "Particle std m: ", np.std(Y_belief_m,0)
 
 
-ax2 = plt.subplot2grid((3, 5), (0, 0), colspan=1, rowspan=2)
-means_b, variances_b = gp_est.estimate_many(X_belief)
-Y_belief = np.array([np.random.normal(means_b[i], np.sqrt(variances_b[i])) for i in range(N)]).reshape(N,1) #
-plt.plot(np.tile(0., N), Y_belief, '.k')
-plt.ylabel('p(y)')
+means_b, variances_b = predict_many(X_belief, x_data, y_data)
+print np.concatenate((means_b, variances_b), axis=1)
+Y_belief = []
+for i in range(N):
+    variances_b[i,0] = 0 if np.absolute(variances_b[i,0]) <= 1e-3 else variances_b[i,0]
+    variances_b[i,1] = 0 if np.absolute(variances_b[i,1]) <= 1e-3 else variances_b[i,1]
+    if variances_b[i,0] < 0 or variances_b[i,1] < 0:
+        continue
+    Y_belief.append([np.random.normal(means_b[i,0], np.sqrt(variances_b[i,0])), np.random.normal(means_b[i,1], np.sqrt(variances_b[i,1]))])
 
-ylim = ax1.get_ylim()
-mu_Y = np.mean(Y_belief)
-sigma2_Y = np.std(Y_belief)
-y = np.linspace(ylim[0], ylim[1], 1000).reshape(-1,1)
-plt.plot(mlab.normpdf(y, mu_Y, sigma2_Y), y, '-b')
-plt.plot(mlab.normpdf(y, out_mean, np.sqrt(out_variance)), y, ':r')
+Y_belief = np.array(Y_belief)
 
-ax3 = plt.subplot2grid((3, 5), (0, 1), rowspan=2)
-plt.hist(means_b, bins=20, orientation='horizontal')
+Y_belief_mean = np.mean(Y_belief,0)
+print "Particle mean: ", Y_belief_mean
+print "Particle std: ", np.std(Y_belief,0)
 
-ax2.set_ylim(ylim)
-ax3.set_ylim(ylim)
+#####
+plt.plot(X_belief[:,0], X_belief[:,1], '.c')
+plt.plot(Y_belief[:,0], Y_belief[:,1], '.k', label='propagated particles')
+
+plt.plot(sa[0][0], sa[0][1], 'sr', label='test point')
+plt.plot(m_gp[0], m_gp[1], 'ob', label='GP prediction')
+plt.plot(y_test[ijx,0], y_test[ijx,1], '*y', label='real next point')
+
+plt.errorbar(m[0], m[1], xerr=s[0], yerr=s[1], ecolor='m', label='GPUP std.')
+plt.errorbar(m_gp[0], m_gp[1], xerr=s_gp[0], yerr=s_gp[1], ecolor='b', label='GP std.')
+
+plt.plot(m[0], m[1], 'pm', label='GPUP mean prediction')
+
+# plt.plot(Y_belief_mean_m[0], Y_belief_mean_m[1], '+c', label='particles mean')
+plt.plot(Y_belief_mean[0], Y_belief_mean[1], '+c', label='particles mean')
+
+
+plt.legend()
 
 plt.show()

@@ -36,7 +36,7 @@ class GaussianProcess(object):
 		if theta_min is not None:
 			self.theta_min = theta_min
 		else:
-			self.theta_min = self.cov.ml_estimate(self.x,self.t)
+			self.theta_min = self.cov.ml_estimate(self.x, self.t)
 
 		self.Kinv = self.cov.inv_cov_matrix(self.x,self.theta_min)
 

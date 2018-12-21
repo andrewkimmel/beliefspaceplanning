@@ -173,8 +173,12 @@ class Covariance(object):
 		:return: inverse of the covariance matrix
 		"""
 		if cov_matrix is None:
-			K = np.array(self.cov_matrix(x,theta))
+
+			K = np.array(self.cov_matrix(x, theta))
 			m=len(K)
+
+			# print(K)
+
 			try:
 				return inv(K)
 			except:# ValueError: # Avishai - Removed the ValueError
@@ -318,11 +322,12 @@ class Covariance(object):
 		:param t: list of responses
 		:return: maximum likelihood estimate for theta
 		"""
+
 		d = len(x[0])
-		theta_start = self.get_theta(x,t)
+		theta_start = self.get_theta(x, t)
 		# print(theta_start)
 		func = self._nll_function(x, t)
-		fprime = self._gradient_function(x,t)
+		fprime = self._gradient_function(x, t)
 
 		#for tnc, l_bfgs_b and slsqp
 		#bounds = [(1.0e-15,1e20) for i in range(len(theta_start)) ]
@@ -332,7 +337,10 @@ class Covariance(object):
 		constr = None
 
 		from Utilities import minimize
-		theta_min = minimize(func,theta_start,bounds,constr,fprime = fprime, method=["l_bfgs_b"])#["slsqp","l_bfgs_b","simplex"]
+		try: # Avishai - Added due to errors with the toy example data
+			theta_min = minimize(func,theta_start,bounds,constr,fprime = fprime, method=["l_bfgs_b"])#all, tnc, l_bfgs_b, cobyla, slsqp, bfgs, powell, cg, simplex or list of some of them
+		except:
+			theta_min = theta_start
 
 		return np.array(theta_min)
 
@@ -659,11 +667,10 @@ class GaussianCovariance(Covariance):
 			return -0.5*K*d*w[j-2]
 
 
-	def get_Hessian(self,u,xi, theta):
+	def get_Hessian(self,u, xi, theta):
 		v = np.exp(theta[0])
 		vt = np.exp(theta[1])
 		w = np.exp(theta[2:])
-
 
 		Winv = np.diag(w)
 		diff = xi - u

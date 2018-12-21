@@ -105,7 +105,7 @@ class transition_experience():
 
 class collect_data():
     stCollecting = True # Enable collection
-    discrete_actions = True # Discrete or continuous actions
+    discrete_actions = False # Discrete or continuous actions
 
     num_episodes = 20000
     episode_length = 10000
