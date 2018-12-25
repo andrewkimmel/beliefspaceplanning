@@ -12,6 +12,8 @@ import matplotlib.mlab as mlab
 import pickle
 from sklearn.neighbors import KDTree #pip install -U scikit-learn
 
+import GPy
+
 file_name = '/home/pracsys/catkin_ws/src/beliefspaceplanning/toy_simulator/data/transition_data_cont.obj'
 
 print('Loading data from ' + file_name)
@@ -33,7 +35,7 @@ Dx = x_data.shape[1]
 Dy = y_data.shape[1]
 
 kdt = KDTree(x_data, leaf_size=10, metric='euclidean')
-K = 500
+K = 200
 K_up = 100
 K_many = 500
 
@@ -77,17 +79,24 @@ def UP(sa_mean, sa_Sigma, X, Y):
         m[i], s[i] = up.propagate_GA(sa_mean, sa_Sigma)
     return m, s
 
+def GPy_predict(sa, X, Y):
+    idx = kdt.query(sa, k=K, return_distance=False)
+    X_nn = X[idx,:].reshape(K, Dx)
+    Y_nn = Y[idx,:].reshape(K, Dy)
+
+    kernel = GPy.kern.RBF(input_dim=4, variance=1., lengthscale=0.5)
+
+    d = Y_nn.shape[1]
+    m = np.empty(d)
+    s = np.empty(d)
+    for i in range(d):
+        gpy = GPy.models.GPRegression(X_nn, Y_nn[:,i].reshape(-1,1), kernel)
+        gpy.optimize(messages=False)
+        m[i], s[i] = gpy.predict(sa[0].reshape(1,-1))
+    return m, s
 
 
-# x = np.array([-0.8087172,  -0.9937619,   0.78795573, -0.06984595])
-# x = np.array([-0.81546312, -0.99093441,  0.78594897, -0.07094581])
-# x = np.array([-0.80829176, -1.00330781,  0.78488902, -0.07254308]) # Good point
-# m, s = predict(x.reshape(1,-1), x_data, y_data)
-# print m, s
-# exit(1)
-
-
-ijx = 6
+ijx = 2
 
 # for ijx in range(1):
 
@@ -106,7 +115,7 @@ print "Error: ", np.linalg.norm(m_gp-y_test[ijx,:])
 print "---------------- UP ----------------"
 
 mean = sa.reshape((-1,)) # The mean of a normal distribution
-Sigma = np.diag([0.005**2, 0.005**2, 0.001**2, 0.001**2]) # The covariance matrix (must be diagonal because of lazy programming)
+Sigma = np.diag([0.2**2, 0.2**2, 0.2**2, 0.2**2]) # The covariance matrix (must be diagonal because of lazy programming)
 
 m, s = UP(mean, Sigma, x_data, y_data)
 s = np.sqrt(s)
@@ -116,46 +125,64 @@ print "s_gpup: ", s
 
 print "-------- Particles --------------------------"
 
-N = int(1e2)
+N = int(2.5e1)
 X_belief = np.array([np.diag(np.random.normal(mean, np.sqrt(Sigma))) for _ in range(N)]).reshape(N,Dx) #
+# X_belief = np.tile(sa, (N,1))
 
-Y_belief_m = []
+# Y_belief_m = []
+# for i in range(N):
+#     print i
+#     mean_b, variance_b = predict(X_belief[i,:].reshape(1,-1), x_data, y_data)
+#     variance_b[0] = 0 if np.absolute(variance_b[0]) <= 1e-3 else variance_b[0]
+#     variance_b[1] = 0 if np.absolute(variance_b[1]) <= 1e-3 else variance_b[1]
+#     if variance_b[0] < 0 or variance_b[1] < 0:
+#         continue
+#     Y_belief_m.append([np.random.normal(mean_b[0], np.sqrt(variance_b[0])), np.random.normal(mean_b[1], np.sqrt(variance_b[1]))])
+# Y_belief_m = np.array(Y_belief_m)
+# Y_belief_mean_m = np.mean(Y_belief_m,0)
+# print "Particle mean m: ", Y_belief_mean_m
+# print "Particle std m: ", np.std(Y_belief_m,0)
+
+
+# means_b, variances_b = predict_many(X_belief, x_data, y_data)
+# # print np.concatenate((means_b, variances_b), axis=1)
+# Y_belief = []
+# for i in range(N):
+#     variances_b[i,0] = 0 if np.absolute(variances_b[i,0]) <= 1e-3 else variances_b[i,0]
+#     variances_b[i,1] = 0 if np.absolute(variances_b[i,1]) <= 1e-3 else variances_b[i,1]
+#     if variances_b[i,0] < 0 or variances_b[i,1] < 0:
+#         continue
+#     Y_belief.append([np.random.normal(means_b[i,0], np.sqrt(variances_b[i,0])), np.random.normal(means_b[i,1], np.sqrt(variances_b[i,1]))])
+# Y_belief = np.array(Y_belief)
+# Y_belief_mean = np.mean(Y_belief,0)
+# print "Particle mean: ", Y_belief_mean
+# print "Particle std: ", np.std(Y_belief,0)
+
+print "-------- GPy --------------------------"
+
+Y_belief_g = []
 for i in range(N):
-    mean_b, variance_b = predict(X_belief[i,:].reshape(1,-1), x_data, y_data)
-
-    variance_b[0] = 0 if np.absolute(variance_b[0]) <= 1e-3 else variance_b[0]
-    variance_b[1] = 0 if np.absolute(variance_b[1]) <= 1e-3 else variance_b[1]
-    if variance_b[0] < 0 or variance_b[1] < 0:
+    # print i
+    mean_g, variance_g = GPy_predict(X_belief[i,:].reshape(1,-1), x_data, y_data)
+    variance_g[0] = 0 if np.absolute(variance_g[0]) <= 1e-3 else variance_g[0]
+    variance_g[1] = 0 if np.absolute(variance_g[1]) <= 1e-3 else variance_g[1]
+    if variance_g[0] < 0 or variance_g[1] < 0:
         continue
+    Y_belief_g.append([np.random.normal(mean_g[0], np.sqrt(variance_g[0])), np.random.normal(mean_g[1], np.sqrt(variance_g[1]))])
+Y_belief_g = np.array(Y_belief_g)
+Y_belief_mean_g = np.mean(Y_belief_g,0)
+print "Particle mean g: ", Y_belief_mean_g
+print "Particle std g: ", np.std(Y_belief_g,0)
 
-    Y_belief_m.append([np.random.normal(mean_b[0], np.sqrt(variance_b[0])), np.random.normal(mean_b[1], np.sqrt(variance_b[1]))])
+print "-------------------------------------"
 
-Y_belief_m = np.array(Y_belief_m)
-
-Y_belief_mean_m = np.mean(Y_belief_m,0)
-print "Particle mean m: ", Y_belief_mean_m
-print "Particle std m: ", np.std(Y_belief_m,0)
-
-
-means_b, variances_b = predict_many(X_belief, x_data, y_data)
-print np.concatenate((means_b, variances_b), axis=1)
-Y_belief = []
-for i in range(N):
-    variances_b[i,0] = 0 if np.absolute(variances_b[i,0]) <= 1e-3 else variances_b[i,0]
-    variances_b[i,1] = 0 if np.absolute(variances_b[i,1]) <= 1e-3 else variances_b[i,1]
-    if variances_b[i,0] < 0 or variances_b[i,1] < 0:
-        continue
-    Y_belief.append([np.random.normal(means_b[i,0], np.sqrt(variances_b[i,0])), np.random.normal(means_b[i,1], np.sqrt(variances_b[i,1]))])
-
-Y_belief = np.array(Y_belief)
-
-Y_belief_mean = np.mean(Y_belief,0)
-print "Particle mean: ", Y_belief_mean
-print "Particle std: ", np.std(Y_belief,0)
 
 #####
 plt.plot(X_belief[:,0], X_belief[:,1], '.c')
-plt.plot(Y_belief[:,0], Y_belief[:,1], '.k', label='propagated particles')
+# plt.plot(Y_belief[:,0], Y_belief[:,1], '.k', label='propagated particles')
+# plt.plot(Y_belief_m[:,0], Y_belief_m[:,1], 'pk', label='propagated particles')
+plt.plot(Y_belief_g[:,0], Y_belief_g[:,1], 'pc', label='propagated particles GPy')
+
 
 plt.plot(sa[0][0], sa[0][1], 'sr', label='test point')
 plt.plot(m_gp[0], m_gp[1], 'ob', label='GP prediction')
@@ -166,8 +193,9 @@ plt.errorbar(m_gp[0], m_gp[1], xerr=s_gp[0], yerr=s_gp[1], ecolor='b', label='GP
 
 plt.plot(m[0], m[1], 'pm', label='GPUP mean prediction')
 
-# plt.plot(Y_belief_mean_m[0], Y_belief_mean_m[1], '+c', label='particles mean')
-plt.plot(Y_belief_mean[0], Y_belief_mean[1], '+c', label='particles mean')
+plt.plot(Y_belief_mean_g[0], Y_belief_mean_g[1], '*m', label='particles mean_g')
+# plt.plot(Y_belief_mean_m[0], Y_belief_mean_m[1], '*c', label='particles mean_m')
+# plt.plot(Y_belief_mean[0], Y_belief_mean[1], '+c', label='particles mean')
 
 
 plt.legend()
