@@ -177,10 +177,9 @@ class Covariance(object):
 			K = np.array(self.cov_matrix(x, theta))
 			m=len(K)
 
-			# print(K)
-
 			try:
-				return inv(K)
+				# return inv(K)
+				return np.linalg.pinv(K) # Avishai
 			except:# ValueError: # Avishai - Removed the ValueError
 				#Inversion done right
 				L = cholesky(K+np.eye(m)*1e-5)
@@ -207,8 +206,8 @@ class Covariance(object):
 		"""
 
 		N = len(x)
-		logdetK = self._log_det_cov_matrix(x,theta)
-		invK = self.inv_cov_matrix(x,theta)
+		logdetK = self._log_det_cov_matrix(x, theta)
+		invK = self.inv_cov_matrix(x, theta)
 
 		try:
 				#print "t'*inv(K)*t ", dot(t.T, dot(invK, t))
@@ -337,10 +336,10 @@ class Covariance(object):
 		constr = None
 
 		from Utilities import minimize
-		try: # Avishai - Added due to errors with the toy example data
-			theta_min = minimize(func,theta_start,bounds,constr,fprime = fprime, method=["l_bfgs_b"])#all, tnc, l_bfgs_b, cobyla, slsqp, bfgs, powell, cg, simplex or list of some of them
-		except:
-			theta_min = theta_start
+		# try: # Avishai - Added due to errors with the toy example data
+		# theta_min = minimize(func,theta_start,bounds,constr,fprime = fprime, method=["l_bfgs_b"])#all, tnc, l_bfgs_b, cobyla, slsqp, bfgs, powell, cg, simplex or list of some of them
+		# except:
+		theta_min = theta_start
 
 		return np.array(theta_min)
 
@@ -366,80 +365,6 @@ class Covariance(object):
 		"""
 		pass
 
-class PeriodicCovariance(Covariance):
-	"""
-	A class to represent a mixed Gaussian and periodic covariance.
-
-	.. warning::
-		No derivatives for uncertainty propagation and faster hyperparameter optimization implemented yet.
-	"""
-
-	def __call__(self,xi,xj,theta):
-
-		d, = np.shape(xi)
-
-		v = np.exp(theta[0])
-		vt = np.exp(theta[1])
-
-		w = np.exp(theta[2:2+d])
-		p = np.exp(theta[2+d:2+2*d])
-		w2 = np.exp(theta[2+2*d:])
-
-		#Winv = np.diag(w)
-
-		diff = xi - xj
-
-		#slighly dirty hack to determine whether i==j
-		return v * np.exp(-0.5 * ((np.sin(np.pi/p* diff)**2 *w2).sum() + dot(diff.T, w* diff))) + (vt if (xi == xj).all() else 0)
-		#v * np.exp(-0.5 * (dot(diff.T, w* diff))) + (vt if (xi == xj).all() else 0)
-
-	def get_theta(self,x,t):
-		n,d = np.shape(x)
-		theta = np.ones(2+3*d)
-		theta[0] = np.log(np.var(t)) if t is not None else 1 #size
-		theta[1] = np.log(np.var(t)/100) if t is not None else 1 #noise
-		theta[2:2+d] = -2*np.log((np.max(x,0)-np.min(x,0))/2.0)#w
-		theta[2+d:2+2*d] = np.ones(d)#p
-		theta[2+2*d:] = -2*np.log((np.max(x,0)-np.min(x,0))/2.0) +np.log(100)#w2
-		return theta
-
-
-	def _d_cov_d_theta(self,xi,xj,theta,j):
-		d, = np.shape(xi)
-
-		v = np.exp(theta[0])
-		vt = np.exp(theta[1])
-
-		w = np.exp(theta[2:2+d])
-		p = np.exp(theta[2+d:2+2*d])
-		w2 = np.exp(theta[2+2*d:])
-
-		#Winv = np.diag(w)
-
-		diff = xi - xj
-
-		#slighly dirty hack to determine whether i==j
-		#return v * np.exp(-0.5 * ((np.sin(np.pi/p* diff)**2 *w2).sum() + dot(diff.T, w* diff))) + (vt if (xi == xj).all() else 0)
-
-
-		if j == 0:
-			#nach log(v) abgeleitet
-			return v * np.exp(-0.5 * ((np.sin(np.pi/p* diff)**2 *w2).sum() + dot(diff.T, w* diff)))
-		elif j == 1:
-			#nach log(vt) abgeleitet
-			return vt if (xi == xj).all() else 0
-		elif j >= 2 and j < 2+d:
-			# nach log(w) abgeleitet
-			return -0.5 * ( diff[j-2]**2 * w[j-2]) * v * np.exp(-0.5 * ((np.sin(np.pi/p* diff)**2 *w2).sum() + dot(diff.T, w* diff)))
-		elif j >= 2+d and j < 2+2*d:
-			# nach log(p) abgeleitet
-			i = j-(2+d)
-			return  np.pi * diff[i] * w2[i] / p[i]*np.sin(np.pi/p[i]*diff[i])*np.cos(np.pi/p[i]*diff[i])  * v * np.exp(-0.5 * ((np.sin(np.pi/p* diff)**2 *w2).sum() + dot(diff.T, w* diff)))
-		elif j >= 2+2*d and j < 2+3*d:
-			# nach log(w2) abgeleitet
-			i = j-(2+2*d)
-			return -0.5 * (np.sin(np.pi/p[i]* diff[i])**2 *w2[i]) * v * np.exp(-0.5 * ((np.sin(np.pi/p* diff)**2 *w2).sum() + dot(diff.T, w* diff)))
-
 class GaussianCovariance(Covariance):
 	"""
 	The classic Gaussian squared exponential covariance function. Suitable to approximate smooth functions.
@@ -464,32 +389,22 @@ class GaussianCovariance(Covariance):
 		theta = np.ones(2+d)
 		theta[0] = np.log(np.var(t)) if t is not None else 1 #size
 		theta[1] = np.log(np.var(t)/4) if t is not None else 1 #noise
-		theta[2:] = -2*np.log((np.max(x,0)-np.min(x,0)+1e-3)/2.0)#w # Avishai: Added small number to avoid Inf
+		theta[2:] = -2*np.log((np.max(x,0)-np.min(x,0))/2.0)#w # Avishai: Added small number to avoid Inf
 		return theta
 
 	def cov_matrix(self,x,theta):
-		vt = np.exp(theta[1])
-		n = len(x)
-		# print(self.cov_matrix_ij(x,x,theta))
-		return self.cov_matrix_ij(x,x,theta) +  vt*np.eye(n)
+		n, dim = np.shape(x)
+
+		return self.cov_matrix_ij(x,x,theta)
 
 	def cov_matrix_ij(self,xi,xj,theta):
-		v = np.exp(theta[0])
-		vt = np.exp(theta[1])
+		ni = len(xi)
+		nj = len(xj)
+		K = np.zeros((ni, nj))
 
-		w = np.exp(theta[2:])
-
-		x1 = np.copy(xi)
-		x2 = np.copy(xj)
-		n1,dim = np.shape(x1)
-		n2 = np.shape(x2)[0]
-		x1 = x1 * np.tile(np.sqrt(w),(n1,1))
-		x2 = x2 * np.tile(np.sqrt(w),(n2,1))
-
-		K = -2*dot(x1,x2.T)
-		K += np.tile(np.atleast_2d(np.sum(x2*x2,1)),(n1,1))
-		K += np.tile(np.atleast_2d(np.sum(x1*x1,1)).T,(1,n2))
-		K = v*np.exp(-0.5*K)
+		for i in range(ni):
+			for j in range(nj):
+				K[i, j] = self(xi[i], xj[j], theta)
 		return K
 
 	def _d_cov_d_theta(self,xi,xj,theta,j):
@@ -697,364 +612,3 @@ class GaussianCovariance(Covariance):
 
 		return jacobian
 
-
-class SPGPCovariance(Covariance):
-	"""
-	A covariance function for fast matrix inversion on large datasets based on Snelsons thesis.
-
-	Snelson, E. L. Flexible and efficient Gaussian process models for machine learning, Gatsby Computational Neuroscience Unit, University College London, 2007
-
-	.. warning::
-		No derivatives for uncertainty propagation implemented yet.
-
-	.. warning::
-		Not as efficient as it should be.
-	"""
-
-	def __init__(self,m):
-		self.m = m
-		self.cov = GaussianCovariance()
-
-	def __call__(self,xi,xj,theta):
-		vt = np.exp(theta[1])
-		d = np.shape(xi)[0]
-		#TODO: ecapsulate the theta part of the use cov function
-		theta_gc = theta[0:2+d]
-		x_m = np.reshape(theta[2+d:],(self.m,d))
-
-		K_M =  self.cov.cov_matrix_ij(x_m,x_m,theta_gc)
-		k_xi_u = self.cov.cov_matrix_ij(np.atleast_2d(xi),x_m,theta_gc)
-		k_u_xj = self.cov.cov_matrix_ij(x_m,np.atleast_2d(xj),theta_gc)
-
-		L_M = cholesky(K_M+1e-5*np.eye(self.m))
-		#KMinvR = solve(L_M.T,solve(L_M,k_u_xj))
-		KMinvR = cho_solve((L_M,True),k_u_xj)
-
-		k_SOR = dot(k_xi_u,KMinvR)
-		#k_SOR = dot(k_xi_u,dot( inv(K_M),k_u_xj))
-
-		return self.cov(xi,xj,theta_gc) if (xi == xj).all() else k_SOR
-
-	def get_theta(self,x,t):
-		n,d = np.shape(x)
-
-		theta = np.ones(2+d+self.m*d)
-		theta_gc = self.cov.get_theta(x,t)
-		theta[0:2+d] = theta_gc
-		theta[2+d:] = np.reshape(x[np.random.randint(n,size=self.m),:],self.m*d)
-		return theta
-
-	def cov_matrix_ij(self,xi,xj,theta):
-		vt = np.exp(theta[1])
-		n,d = np.shape(xi)
-		m = self.m
-		theta_gc = theta[0:2+d]
-		x_m = np.reshape(theta[2+d:],(self.m,d))
-
-		K_NM = self.cov.cov_matrix_ij(xi,x_m,theta_gc)
-		K_MN = self.cov.cov_matrix_ij(x_m,xj,theta_gc)
-		K_M =  self.cov.cov_matrix_ij(x_m,x_m,theta_gc)
-
-		L_M = cholesky(K_M+1e-5*np.eye(m))
-		K_Minv_K_MN = cho_solve((L_M,True),K_MN)
-		Q_N =  dot(K_NM,  K_Minv_K_MN) #Q_N = dot(K_NM,dot(inv(K_M),K_NM.T))
-
-
-		#K_N = self.cov.cov_matrix_ij(x,x,theta_gc)
-
-		#LI = np.diag(np.diag(K_N - Q_N)+vt*np.ones(n))
-
-		return Q_N #+ LI
-	#
-	# def estimate(self,x,t,theta,x_star):
-	# 	vt = np.exp(theta[1])
-	# 	n,d = np.shape(x)
-	# 	theta_gc = theta[0:2+d]
-	# 	m = self.m
-	# 	x_m = np.reshape(theta[2+d:],(self.m,d))
-	#
-	# 	K_NM = self.cov.cov_matrix_ij(x,x_m,theta_gc)
-	# 	K_M =  self.cov.cov_matrix_ij(x_m,x_m,theta_gc)
-	# 	L_M = cholesky(K_M+1e-5*np.eye(m))
-	# 	L_Minv_K_NM = solve_triangular(L_M,K_NM.T,lower=True)
-	# 	Q_N =  dot(L_Minv_K_NM.T,  L_Minv_K_NM) #dot(K_NM,dot(inv(K_M),K_NM.T))
-	#
-	# 	K_N = self.cov.cov_matrix_ij(x,x,theta_gc)
-	#
-	# 	#LIinv = np.diag(np.diag(1/(np.diag(K_N - Q_N)+vt*np.eye(n))))
-	# 	LIinvD = 1/(np.diag(K_N - Q_N)+vt*np.ones(n))
-	# 	LIinv = np.diag(LIinvD)
-	#
-	# 	K_starM = self.cov.cov_matrix_ij(x_star,x_m,theta_gc)
-	# 	B = K_M + dot(K_NM.T,dldot(LIinvD,K_NM))
-	#
-	# 	R = dot(K_NM.T,LIinvD*t)
-	# 	L_B = cholesky(B+1e-5*np.eye(m))
-	# 	BinvRt = cho_solve((L_B,True),R)
-	# 	mean = dot(K_starM,BinvRt)
-	#
-	# 	#K_star = self.cov.cov_matrix_ij(x_star,x_star,theta_gc)
-	#
-	# 	#variances = np.diag(K_star )
-	#
-	# 	return mean
-
-	def cov_matrix(self,x,theta):
-		vt = np.exp(theta[1])
-		n,d = np.shape(x)
-		m = self.m
-		theta_gc = theta[0:2+d]
-		x_m = np.reshape(theta[2+d:],(self.m,d))
-
-		K_NM = self.cov.cov_matrix_ij(x,x_m,theta_gc)
-		K_M =  self.cov.cov_matrix_ij(x_m,x_m,theta_gc)
-
-		L_M = cholesky(K_M+1e-5*np.eye(m))
-		L_Minv_K_NM = solve_triangular(L_M,K_NM.T,lower=True)
-		Q_N =  dot(L_Minv_K_NM.T,  L_Minv_K_NM) #Q_N = dot(K_NM,dot(inv(K_M),K_NM.T))
-
-
-		K_N = self.cov.cov_matrix_ij(x,x,theta_gc)
-
-		LI = np.diag(np.diag(K_N - Q_N)+vt*np.ones(n))
-
-		return Q_N + LI
-
-	def inv_cov_matrix(self,x,theta,cov_matrix=None):
-		vt = np.exp(theta[1])
-		n,d = np.shape(x)
-		theta_gc = theta[0:2+d]
-		m = self.m
-		x_m = np.reshape(theta[2+d:],(self.m,d))
-
-		K_NM = self.cov.cov_matrix_ij(x,x_m,theta_gc)
-		K_M =  self.cov.cov_matrix_ij(x_m,x_m,theta_gc)
-		L_M = cholesky(K_M+1e-5*np.eye(m))
-		L_Minv_K_NM = solve_triangular(L_M,K_NM.T,lower=True)
-		Q_N =  dot(L_Minv_K_NM.T,  L_Minv_K_NM) #Q_N = dot(K_NM,dot(inv(K_M),K_NM.T))
-
-		K_N = self.cov.cov_matrix_ij(x,x,theta_gc)
-
-		#LIinv = np.diag(1/(np.diag(K_N - Q_N)+vt*np.ones(n)))
-		LIinvD = 1/(np.diag(K_N - Q_N)+vt*np.ones(n))
-		LIinv = np.diag(LIinvD)
-
-		B = K_M + dot(K_NM.T,dldot(LIinvD,K_NM))
-
-		L_B = cholesky(B+1e-5*np.eye(m))
-		L_Binv_K_NM = solve_triangular(L_B,K_NM.T,lower=True) #O(m**2 n)?
-		Middle =  dot(L_Binv_K_NM.T,  L_Binv_K_NM) #nm dot mn => O(n**2 m) dominates here
-
-
-		result =   LIinv - dldot(LIinvD,drdot(Middle,LIinvD))
-
-
-		return result
-
-	def _log_det_cov_matrix(self,x,theta):
-		return np.linalg.slogdet(self.cov_matrix(x,theta))[1]
-
-	# def d_cov_d_theta(self,xi,xj,theta,j):
-	# 	pass
-	#
-	# def d_cov_matrix_d_theta_ij(self,xi,xj,theta,j):
-	# 	pass
-
-
-	def _d_nll_d_theta(self,x,t,theta):
-
-		vt = np.exp(theta[1])
-		n,d = np.shape(x)
-		m = self.m
-		theta_gc = theta[0:2+d]
-		x_m = np.reshape(theta[2+d:],(self.m,d))
-
-		K_NM = self.cov.cov_matrix_ij(x,x_m,theta_gc)
-
-		K_M =  self.cov.cov_matrix_ij(x_m,x_m,theta_gc)
-
-		#L_M = cholesky(K_M+1e-5*np.eye(m))
-		#L_Minv_K_NM = solve(L_M,K_NM.T)
-		#Q_N =  dot(L_Minv_K_NM.T,  L_Minv_K_NM) #Q_N = dot(K_NM,dot(inv(K_M),K_NM.T))
-
-
-		#K_N = self.cov.cov_matrix_ij(x,x,theta_gc)
-		L_M = cholesky(K_M+np.eye(m)*1e-5)
-
-		#Inversion done right
-		#TODO: cho_solve?
-		L_M_inv = solve_triangular(L_M,np.eye(m),lower=True)
-		K_M_inv = dot(L_M_inv.T,L_M_inv)
-		#LI = np.diag(np.diag(K_N - Q_N)+vt*np.ones(n))
-
-
-
-		n_theta = len(theta)
-		gradient = []
-		Kinv = self.inv_cov_matrix(x,theta) #TODO: N^2 M
-
-		dot_K_NM_K_M_inv = dot(K_NM,K_M_inv)
-		dot_K_M_inv_K_NM_T = dot_K_NM_K_M_inv.T
-		dot_Kinv_t = dot(Kinv,t)
-
-		Cov_xm_xm = self.cov.cov_matrix_ij(x_m,x_m,theta_gc)
-		Cov_x_xm = self.cov.cov_matrix_ij(x,x_m,theta_gc)
-		Cov_x_x = self.cov.cov_matrix_ij(x,x,theta_gc)
-
-		for j in range(0,n_theta):
-			if j < 2+d:
-				if j ==1 :
-					dKdj = vt*np.eye(n)
-				else:
-					K_NM_d = self.cov._d_cov_matrix_d_theta_ij(x,x_m,theta_gc,j,Cov=Cov_x_xm)
-					K_M_d = self.cov._d_cov_matrix_d_theta_ij(x_m,x_m,theta_gc,j,Cov=Cov_xm_xm)
-					K_N_d = self.cov._d_cov_matrix_d_theta_ij(x,x,theta_gc,j,Cov=Cov_x_x)
-					#Derivation by the hyperparameters:
-
-					#print K_M_inv -inv(K_M)#
-					#print "difference: ", np.sum(np.abs(K_M_inv -inv(K_M)))
-
-					#dKdj = Q_N_dt + LI_dt
-			else:
-				i = (j-(2+d))/d
-				dim = (j-(2+d))%d
-				K_NM_d = self.cov._d_cov_matrix_d_xi_ij(x_m,x,theta_gc,i,dim,Cov=Cov_x_xm.T).T#)
-				K_M_d = self.cov._d_cov_matrix_d_x(x_m,theta_gc,i,dim,Cov=Cov_xm_xm).T#,Cov=Cov_xm_xm).T
-				K_N_d = np.zeros((n,n))
-				#Q_N_dt = 2*dot(K_NM_d[i],dot_K_M_inv_K_NM_T) - dot(dot_K_NM_K_M_inv,dot( K_M_d,dot_K_M_inv_K_NM_T))
-
-				#basically the same as above:
-				#LI_dt = -np.diag(np.diag(Q_N_dt))		#K_N_d == Zeros
-
-			if j != 1:
-				Q_N_dt = 2*dot(K_NM_d,dot_K_M_inv_K_NM_T)  - dot(dot_K_NM_K_M_inv,dot( K_M_d,dot_K_M_inv_K_NM_T)) #TODO: N^2 M
-				LI_dt = np.diag(np.diag(K_N_d - Q_N_dt))
-				dKdj = Q_N_dt + LI_dt
-
-			#dKdj = self.d_cov_matrix_d_theta(x,theta,j)
-			gradient.append(0.5*tracedot(Kinv,dKdj) - 0.5* dot(dot_Kinv_t.T,dot(dKdj,dot_Kinv_t))) #TODO: N^2 M
-
-		return np.array(gradient)
-
-
-
-
-	def _d_cov_matrix_d_theta(self,x,theta,j):
-		vt = np.exp(theta[1])
-		n,d = np.shape(x)
-		m = self.m
-		theta_gc = theta[0:2+d]
-		x_m = np.reshape(theta[2+d:],(self.m,d))
-
-		K_NM = self.cov.cov_matrix_ij(x,x_m,theta_gc)
-
-		K_M =  self.cov.cov_matrix_ij(x_m,x_m,theta_gc)
-
-		#L_M = cholesky(K_M+1e-5*np.eye(m))
-		#L_Minv_K_NM = solve(L_M,K_NM.T)
-		#Q_N =  dot(L_Minv_K_NM.T,  L_Minv_K_NM) #Q_N = dot(K_NM,dot(inv(K_M),K_NM.T))
-
-
-		#K_N = self.cov.cov_matrix_ij(x,x,theta_gc)
-		L_M = cholesky(K_M+np.eye(m)*1e-5)
-		#TODO: cho_solve?
-		L_M_inv = solve_triangular(L_M,np.eye(m),lower=True)
-		K_M_inv = dot(L_M_inv.T,L_M_inv)
-		#LI = np.diag(np.diag(K_N - Q_N)+vt*np.ones(n))
-		if j < 2+d:
-			if j ==1 :
-				return vt*np.eye(n)
-			else:
-				K_NM_d = self.cov._d_cov_matrix_d_theta_ij(x,x_m,theta_gc,j)
-				K_M_d = self.cov._d_cov_matrix_d_theta_ij(x_m,x_m,theta_gc,j)
-				K_N_d = self.cov._d_cov_matrix_d_theta_ij(x,x,theta_gc,j)
-				#Derivation by the hyperparameters:
-
-				#print K_M_inv -inv(K_M)#
-				#print "difference: ", np.sum(np.abs(K_M_inv -inv(K_M)))
-				Q_N_dt = dot(K_NM_d,dot(K_M_inv, K_NM.T)) + dot(K_NM,dot(K_M_inv, K_NM_d.T)) - dot(K_NM ,dot(K_M_inv,dot( K_M_d,dot(K_M_inv, K_NM.T))))
-				LI_dt = np.diag(np.diag(K_N_d - Q_N_dt))
-				return Q_N_dt + LI_dt
-		else:
-			i = (j-(2+d))/d
-			dim = (j-(2+d))%d
-			K_NM_d = self.cov._d_cov_matrix_d_xi_ij(x_m,x,theta_gc,i,dim).T #self.cov.d_cov_matrix_d_theta_ij(x,x_m,theta_gc,j)
-			K_M_d = self.cov._d_cov_matrix_d_x(x_m,theta_gc,i,dim).T#self.cov.d_cov_matrix_d_theta_ij(x_m,x_m,theta_gc,j)
-
-
-			#basically the same as above:
-			Q_N_dt = dot(K_NM_d,dot(K_M_inv, K_NM.T)) + dot(K_NM,dot(K_M_inv, K_NM_d.T)) - dot(K_NM ,dot(K_M_inv,dot( K_M_d,dot(K_M_inv, K_NM.T))))
-			LI_dt = -np.diag(np.diag(Q_N_dt))		#K_N_d == Zeros
-			return Q_N_dt + LI_dt
-
-	def _negativeloglikelihood(self,x,t,theta):
-		# Code rewritten from Snelson 2006
-		delta = 1e-6
-		n = self.m
-		y = np.atleast_2d(t).T
-		N,dim = np.shape(x)
-		xb = np.reshape(theta[2+dim:],(n,dim))
-		b = np.exp(theta[2:2+dim]) #w
-		c = np.exp(theta[0]) #v
-		sig = np.exp(theta[1]) #vt
-		x = x*1.0
-
-		xb = xb * np.tile(np.sqrt(b),(n,1))
-		x = x * np.tile(np.sqrt(b),(N,1))
-
-		Q = dot(xb,xb.T)
-		Q = np.tile(np.atleast_2d(np.diag(Q)).T,(1,n)) + np.tile(np.diag(Q),(n,1)) - 2*Q
-		Q = c*np.exp(-0.5*Q) + delta*np.eye(n)
-
-
-		K = -2*dot(xb,x.T)
-		K += np.tile(np.atleast_2d(np.sum(x*x,1)),(n,1))
-		K += np.tile(np.atleast_2d(np.sum(xb*xb,1)).T,(1,N))
-		K = c*np.exp(-0.5*K)
-
-
-		L = np.linalg.cholesky(Q)
-		V = solve_triangular(L,K,lower=True)
-		ep = np.atleast_2d(1 + (c-np.sum(V**2,0))/sig).T
-		K = K/np.tile(np.sqrt(ep).T,(n,1))
-		V = V/np.tile(np.sqrt(ep).T,(n,1))
-		y = y/np.sqrt(ep)
-		Lm = np.linalg.cholesky(sig*np.eye(n) + dot(V,V.T))
-
-		invLmV = solve_triangular(Lm,V,lower=True)
-		bet = dot(invLmV,y)
-
-		fw = np.sum(np.log(np.diag(Lm))) + (N-n)/2*np.log(sig) +  (dot(y.T,y) - dot(bet.T,bet))/2/sig + np.sum(np.log(ep))/2 + 0.5*N*np.log(2*np.pi)
-		return fw[0,0]
-
-
-
-#TODO!!!: Hessian+ Jacobian
-
-#TODO!!!: SPGP_DR
-
-# class SPGP_DR(Covariance):
-# 	def __call__(self,xi,xj,theta):
-# 		pass
-#
-# 	def get_theta(self,d,n):
-# 		pass
-#
-# 	def cov_matrix_ij(self,xi,xj,theta):
-# 		pass
-#
-#
-# 	def cov_matrix(self,x,theta):
-# 		vt = theta[1]
-# 		n = len(x)
-# 		return self.cov_matrix_ij(x,x,theta) +  vt*np.eye(n)	#
-#
-# 	def inv_cov_matrix(self,x,theta,cov_matrix=None):
-# 		pass
-#
-#
-# 	def d_cov_d_theta(self,xi,xj,theta,j):
-# 		pass
-#
-# 	def d_cov_matrix_d_theta_ij(self,xi,xj,theta,j):
-# 		pass

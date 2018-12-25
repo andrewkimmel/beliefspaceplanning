@@ -31,7 +31,6 @@ class GaussianProcess(object):
 		self.meant= np.mean(t)
 		self.t = t - self.meant
 
-
 		self.cov = cov
 		if theta_min is not None:
 			self.theta_min = theta_min

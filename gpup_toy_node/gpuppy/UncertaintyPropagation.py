@@ -337,8 +337,7 @@ if not cython:
 			for i in range(N):
 				C_ux.append(self.gp._covariance(u,x[i]))
 			C_ux = np.array(C_ux)
-			mu = self.propagate_mean(u, Sigma_x,C_ux)
-
+			mu = self.propagate_mean(u, Sigma_x, C_ux)
 
 			if weaving:
 
@@ -509,11 +508,8 @@ if not cython:
 				self.J_ux = np.array(self.J_ux)
 				self.H_ux = np.array(self.H_ux)
 
-
 			mean = self.propagate_mean(u,Sigma_x)
 			sigma2, variance_rest = self._get_sigma2_and_variance_rest(u,Sigma_x,Kinv,x,beta)
-
-
 
 			#TODO!!!: Only if C''(u,u) == 0
 			variance = sigma2 + variance_rest
