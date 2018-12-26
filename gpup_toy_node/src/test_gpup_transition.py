@@ -111,7 +111,7 @@ print "m_gp: ", m_gp
 print "s_gp: ", s_gp
 print "m_real: ", y_test[ijx,:]
 print "Error: ", np.linalg.norm(m_gp-y_test[ijx,:])
-
+# exit(1)
 print "---------------- UP ----------------"
 
 mean = sa.reshape((-1,)) # The mean of a normal distribution
@@ -125,7 +125,7 @@ print "s_gpup: ", s
 
 print "-------- Particles --------------------------"
 
-N = int(1e2)
+N = int(1e1)
 X_belief = np.array([np.diag(np.random.normal(mean, np.sqrt(Sigma))) for _ in range(N)]).reshape(N,Dx) #
 # X_belief = np.tile(sa, (N,1))
 

@@ -7,7 +7,7 @@
 
 import numpy as np
 from numpy.linalg import det, cholesky
-from scipy.linalg import cho_solve,inv, solve_triangular
+from scipy.linalg import cho_solve, inv, solve_triangular
 #from numpy import dot
 import traceback
 
@@ -329,17 +329,27 @@ class Covariance(object):
 		fprime = self._gradient_function(x, t)
 
 		#for tnc, l_bfgs_b and slsqp
-		#bounds = [(1.0e-15,1e20) for i in range(len(theta_start)) ]
+		# bounds = [(1.0e-15,1e2) for i in range(len(theta_start)) ]
 		#for cobyla
-		#constr = [(lambda theta : theta[i]) for i in range(len(theta_start)) ]
+		# constr = [(lambda theta : theta[i]) for i in range(len(theta_start)) ]
 		bounds = None
-		constr = None
+		# constr = None
 
-		from Utilities import minimize
+		# from Utilities import minimize
 		# try: # Avishai - Added due to errors with the toy example data
-		# theta_min = minimize(func,theta_start,bounds,constr,fprime = fprime, method=["l_bfgs_b"])#all, tnc, l_bfgs_b, cobyla, slsqp, bfgs, powell, cg, simplex or list of some of them
+		# theta_min = minimize(func,theta_start,bounds,constr,fprime = fprime, method=["simplex"])#all, tnc, l_bfgs_b, cobyla, slsqp, bfgs, powell, cg, simplex or list of some of them
 		# except:
-		theta_min = theta_start
+		# theta_min = theta_start
+
+		from scipy.optimize import minimize
+		best_f=1e6
+		for j in range(0, 1):	
+			theta0 = theta_start + 20*np.random.random(size=len(theta_start))-10	
+			res=minimize(func, theta0, method='l-bfgs-b', bounds=bounds, tol=1e-12, options={'disp':False, 'eps':0.001})
+			if res['fun'] < best_f:
+				theta_min = res['x']
+				best_f = res['fun']
+			print "iter: "+str(j) +". Value: " + str(best_f) + ", params: " + str(theta_min)
 
 		return np.array(theta_min)
 
@@ -480,7 +490,6 @@ class GaussianCovariance(Covariance):
 		return Res
 
 
-
 	def _d_cov_matrix_d_xi_ij(self,xi,xj,theta,i,dim, Cov=None):
 		"""
 		Derive by one dimension of one xi
@@ -523,8 +532,6 @@ class GaussianCovariance(Covariance):
 		#Only the ith row contains interactions between the xi_i and the xj
 		Res[i,:] = K[i,:]
 		return Res
-
-
 
 
 	def _d_cov_matrix_d_theta_ij(self,xi,xj,theta,j,Cov=None):

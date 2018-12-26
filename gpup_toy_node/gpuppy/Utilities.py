@@ -220,8 +220,8 @@ def minimize(func,theta_start,bounds=None,constr=[],method="all",fprime=None):
 		names.append("l_bfgs_b")
 		thetas.append(theta_min[0])
 		funcvals.append(func(theta_min[0]))
-		end = time.time()
 		times.append(end-start)
+		end = time.time()
 
 	if method == "cobyla" or method == "all" or (isinstance(method, list) and "cobyla" in method):
 		start = time.time()

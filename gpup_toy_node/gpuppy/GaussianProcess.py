@@ -7,6 +7,9 @@
 
 import numpy as np
 
+from Covariance import Dot
+dot = Dot()
+
 
 class GaussianProcess(object):
 	"""
@@ -36,6 +39,8 @@ class GaussianProcess(object):
 			self.theta_min = theta_min
 		else:
 			self.theta_min = self.cov.ml_estimate(self.x, self.t)
+
+		print "Optimized theta: ", self.theta_min
 
 		self.Kinv = self.cov.inv_cov_matrix(self.x,self.theta_min)
 
@@ -108,6 +113,7 @@ class GaussianProcess(object):
 		kv = self.cov.cov_matrix_ij(np.atleast_2d(x_star),self.x,self.theta_min) #np.array([self.covariance(x_star, self.x[i], v, w) for i in range(len(self.x))])
 		mean = np.dot(kv, np.dot(Kinv, self.t))
 		variance = k - np.dot(kv, np.dot(Kinv, kv.T))
+		
 		return mean[0]+self.meant, variance[0,0]
 
 
