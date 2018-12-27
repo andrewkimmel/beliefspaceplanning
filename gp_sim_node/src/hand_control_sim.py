@@ -5,7 +5,7 @@ import numpy as np
 from std_msgs.msg import Float64MultiArray, Float32MultiArray, String
 from std_srvs.srv import Empty, EmptyResponse
 from toy_simulator.srv import TargetAngles, IsDropped, observation
-from openhand.srv import MoveServos
+from hand_control_sim.srv import MoveServos
 import math
 
 class hand_control():
