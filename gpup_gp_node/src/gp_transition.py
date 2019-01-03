@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+import rospy
+from std_msgs.msg import Float64MultiArray, Float32MultiArray, Int16
+from std_srvs.srv import SetBool, Empty, EmptyResponse
+from gpup_gp_node.srv import batch_transition
+import math
+import numpy as np
+from data_load import data_load
+from diffusionMaps import DiffusionMap
+
+simORreal = 'sim'
+discreteORcont = 'discrete'
+useDiffusionMaps = False
+
+class Spin_gp(data_load):
+
+    def __init__(self):
+        data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont)
+
+        # Number of NN
+        if useDiffusionMaps:
+            self.K = 1000
+            self.K_manifold = 100
+            self.df = DiffusionMap(sigma=1, embedding_dim=3, k = self.K)
+        else:
+            self.K = 100
+
+        rospy.Service('/gp/transition', batch_transition, self.GetTransition)
+
+        rospy.init_node('gp_transition', anonymous=True)
+
+        rate = rospy.Rate(15) # 15hz
+        while not rospy.is_shutdown():
+            rospy.spin()
+            # rate.sleep()  
+
+    # Particles prediction
+    def batch_predict(self, S, a):
+        sa = np.concatenate((np.mean(S, 0), a), axis=1)
+        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
+        X_nn = self.Xtrain[idx,:].reshape(K, state_action_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(K, state_dim)
+
+        if useDiffusionMaps:
+            X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
+
+        dS_next = np.zeros((SA.shape[0], self.state_dim))
+        std_next = np.zeros((SA.shape[0], self.state_dim))
+        for i in range(self.state_dim):
+            if i == 0:
+                gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = True, theta=None)
+                theta = gp_est.cov.theta
+            else:
+                gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta=theta)
+            mm, ss = gp_est.batch_predict(S[:,:self.state_dim])
+            dS_next[:,i] = mm
+            std_next[:,i] = np.diag(ss)
+
+        S_next = S + np.random.normal(dS_next, std_next)
+
+        return S_next    
+
+    def reduction(self, sa, X, Y):
+        inx = self.df.ReducedClosestSetIndices(sa, X, k_manifold = self.K_manifold)
+
+        return X[inx,:][0], Y[inx,:][0]
+
+    # Predicts the next step by calling the GP class
+    def GetTransition(self, req):
+
+        S = self.normz_batch( np.array(req.states).reshape(-1, self.state_dim) )
+        a = np.array(req.action)
+
+        S_next = self.denormz_batch( self.batch_predict(S, a) )
+        
+        return {'next_states': S_next.reshape((-1,))}
+
+        
+if __name__ == '__main__':
+    try:
+        SP = Spin_gp()
+    except rospy.ROSInterruptException:
+        pass
