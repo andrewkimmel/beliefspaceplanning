@@ -11,16 +11,17 @@ Candela, Girartd, ...: Propagation of uncertainty in Bayesian kernel models - ap
                         https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=1202463
 '''
 
-# Currently only the Candela version works. For the first two, the output variance is wrong.
+# Currently only the Candela version (3) works. For the first two, the output variance is wrong.
 
 import numpy as np
 from cov import Covariance
 import scipy
 
+method = 3
 
 class UncertaintyPropagation(object):
 
-    def __init__(self, X, Y, optimize = True, theta = None, method = 3):
+    def __init__(self, X, Y, optimize = True, theta = None):
         
         self.X = X
         self.Y_mean = np.mean(Y)

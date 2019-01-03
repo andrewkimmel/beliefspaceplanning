@@ -57,6 +57,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   batch_transition.srv
+  gpup_transition.srv
 )
 
 ## Generate actions in the 'action' folder

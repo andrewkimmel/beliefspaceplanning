@@ -1,0 +1,6 @@
+float32[] mean
+float32[] std
+float32[] action
+---
+float32[] next_mean
+float32[] next_std

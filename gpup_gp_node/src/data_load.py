@@ -53,12 +53,12 @@ class data_load(object):
         print('[data_load] kd-tree ready.')
 
     def normz(self, x):
-
-        return (x-self.x_min_X)/(self.x_max_X-self.x_min_X)
+        d = len(x)
+        return (x-self.x_min_X[:d])/(self.x_max_X[:d]-self.x_min_X[:d])
 
     def denormz(self, x):
-
-        return  x*(self.x_max_X-self.x_min_X)+self.x_min_X
+        d = len(x)
+        return  x*(self.x_max_X[:d]-self.x_min_X[:d])+self.x_min_X[:d]
 
     def normz_batch(self, X):
 

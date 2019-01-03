@@ -5,6 +5,7 @@ from std_srvs.srv import SetBool, Empty, EmptyResponse
 from gpup_gp_node.srv import batch_transition
 import math
 import numpy as np
+from gp import GaussianProcess
 from data_load import data_load
 from diffusionMaps import DiffusionMap
 
@@ -35,11 +36,11 @@ class Spin_gp(data_load):
             # rate.sleep()  
 
     # Particles prediction
-    def batch_predict(self, S, a):
-        sa = np.concatenate((np.mean(S, 0), a), axis=1)
+    def batch_predict(self, SA):
+        sa = np.mean(SA, 0)
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
-        X_nn = self.Xtrain[idx,:].reshape(K, state_action_dim)
-        Y_nn = self.Ytrain[idx,:].reshape(K, state_dim)
+        X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
@@ -52,7 +53,7 @@ class Spin_gp(data_load):
                 theta = gp_est.cov.theta
             else:
                 gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta=theta)
-            mm, ss = gp_est.batch_predict(S[:,:self.state_dim])
+            mm, ss = gp_est.batch_predict(SA[:,:self.state_dim])
             dS_next[:,i] = mm
             std_next[:,i] = np.diag(ss)
 
@@ -68,10 +69,12 @@ class Spin_gp(data_load):
     # Predicts the next step by calling the GP class
     def GetTransition(self, req):
 
-        S = self.normz_batch( np.array(req.states).reshape(-1, self.state_dim) )
+        S = np.array(req.states).reshape(-1, self.state_dim)
         a = np.array(req.action)
+        SA = np.concatenate((S, np.tile(a, (S.shape[0],1))), axis=1)
 
-        S_next = self.denormz_batch( self.batch_predict(S, a) )
+        S = self.normz_batch( SA )       
+        S_next = self.denormz_batch( self.batch_predict(SA) )
         
         return {'next_states': S_next.reshape((-1,))}
 
