@@ -9,7 +9,9 @@ from gp import GaussianProcess
 from data_load import data_load
 from diffusionMaps import DiffusionMap
 
-simORreal = 'sim'
+np.random.seed(10)
+
+simORreal = 'real'#sim'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 
@@ -27,8 +29,8 @@ class Spin_gp(data_load):
             self.K = 100
 
         rospy.Service('/gp/transition', batch_transition, self.GetTransition)
-
         rospy.init_node('gp_transition', anonymous=True)
+        print('[gp_transition] Ready.')
 
         rate = rospy.Rate(15) # 15hz
         while not rospy.is_shutdown():
@@ -53,11 +55,11 @@ class Spin_gp(data_load):
                 theta = gp_est.cov.theta
             else:
                 gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta=theta)
-            mm, ss = gp_est.batch_predict(SA[:,:self.state_dim])
+            mm, vv = gp_est.batch_predict(SA[:,:self.state_dim])
             dS_next[:,i] = mm
-            std_next[:,i] = np.diag(ss)
+            std_next[:,i] = np.sqrt(np.diag(vv))
 
-        S_next = S + np.random.normal(dS_next, std_next)
+        S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
 
         return S_next    
 
@@ -73,8 +75,9 @@ class Spin_gp(data_load):
         a = np.array(req.action)
         SA = np.concatenate((S, np.tile(a, (S.shape[0],1))), axis=1)
 
-        S = self.normz_batch( SA )       
-        S_next = self.denormz_batch( self.batch_predict(SA) )
+        SA = self.normz_batch( SA )    
+        SA_normz = self.batch_predict(SA)
+        S_next = self.denormz_batch( SA_normz )
         
         return {'next_states': S_next.reshape((-1,))}
 

@@ -6,7 +6,7 @@ import time
 
 class GaussianProcess(object):
 
-    def __init__(self, X, Y optimize = True, theta = None):
+    def __init__(self, X, Y, optimize = True, theta = None):
 
         self.X = X
         self.Y_mean = np.mean(Y)
@@ -39,7 +39,7 @@ class GaussianProcess(object):
         # var = k - s
         # mean += self.Y_mean
 
-        return mean, np.sqrt(var)
+        return mean, var
 
     def batch_predict(self, Xs):
 
@@ -49,7 +49,7 @@ class GaussianProcess(object):
         mean = np.dot(kv, np.dot(self.cov.Kinv, self.Y)) + self.Y_mean
         variance = np.diag(np.diag(k)) - np.dot(kv, np.dot(self.cov.Kinv, kv.T))# + self.cov._get_vt() #code variance + aleatory variance
 
-        return mean, np.sqrt(variance)
+        return mean, variance
 
 
 

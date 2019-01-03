@@ -3,7 +3,7 @@ import numpy as np
 from scipy.io import loadmat
 from sklearn.neighbors import KDTree #pip install -U scikit-learn
 
-N_dillute = 10000 # Number of points to randomly select from data
+N_dillute = 300000 # Number of points to randomly select from data
 
 class data_load(object):
 
@@ -18,7 +18,7 @@ class data_load(object):
         Q = loadmat('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/' + self.file)
         Qtrain = Q['D']
 
-        Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
+        # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
         self.state_action_dim = 6 
@@ -60,18 +60,24 @@ class data_load(object):
         d = len(x)
         return  x*(self.x_max_X[:d]-self.x_min_X[:d])+self.x_min_X[:d]
 
+    def normz_change(self, dx):
+        d = len(dx)
+        return dx/(self.x_max_X[:d]-self.x_min_X[:d])
+
+    def denormz_change(self, dx):
+        d = len(dx)
+        return  dx*(self.x_max_X[:d]-self.x_min_X[:d])
+
     def normz_batch(self, X):
-
-        for i in range(self.state_action_dim):
+        d = X.shape[1]
+        for i in range(d):
             X[:,i] = (X[:,i]-self.x_min_X[i])/(self.x_max_X[i] - self.x_min_X[i])
-
         return X
 
     def denormz_batch(self, X):
-
-        for i in range(self.state_action_dim):
+        d = X.shape[1]
+        for i in range(d):
             X[:,i] = X[:,i]*(self.x_max_X[i]-self.x_min_X[i]) + self.x_min_X[i]
-
         return X
 
 

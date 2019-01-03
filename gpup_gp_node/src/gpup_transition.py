@@ -10,7 +10,9 @@ from gpup import UncertaintyPropagation
 from data_load import data_load
 from diffusionMaps import DiffusionMap
 
-simORreal = 'sim'
+np.random.seed(10)
+
+simORreal = 'real'#sim'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 
@@ -28,8 +30,8 @@ class Spin_gpup(data_load):
             self.K = 100
 
         rospy.Service('/gpup/transition', gpup_transition, self.GetTransition)
-
         rospy.init_node('gpup_transition', anonymous=True)
+        print('[gpup_transition] Ready.')
 
         rate = rospy.Rate(15) # 15hz
         while not rospy.is_shutdown():
@@ -70,12 +72,12 @@ class Spin_gpup(data_load):
         a = np.array(req.action)
 
         s_mean_normz = self.normz( np.concatenate((s_mean, a), axis=0) )
-        s_std_normz = self.normz( s_mean + s_std ) - s_mean_normz[:self.state_dim]
+        s_std_normz = self.normz_change(s_std) # self.normz( s_mean + s_std ) - s_mean_normz[:self.state_dim]
 
-        s_mean_next_normz, s_std_next_normz = self.predict(s_mean_normz, s_std_normz**2)
+        ds_mean_next_normz, ds_std_next_normz = self.predict(s_mean_normz, s_std_normz**2)
 
-        s_mean_next = self.denormz(s_mean_next_normz)
-        s_std_next = self.denormz(s_mean_next_normz + s_std_next_normz) - s_mean_next
+        s_mean_next = self.denormz(s_mean_normz[:self.state_dim] + ds_mean_next_normz)
+        s_std_next = np.sqrt(self.denormz_change(ds_std_next_normz)**2 + s_std**2) # self.denormz(s_mean_normz[:self.state_dim] + ds_mean_next_normz + s_std_normz + ds_std_next_normz) - s_mean_next
         
         return {'next_mean': s_mean_next, 'next_std': s_std_next}
 
