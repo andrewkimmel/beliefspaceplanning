@@ -96,7 +96,7 @@ ax.add_patch(patch)
 patch_mean, = ax.plot([], [], '--m')
 
 plt.xlim(np.min(Ypred_mean_gp, 0)[0]*0.8, np.max(Ypred_mean_gp, 0)[0]*1.2)
-plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.99, np.max(Ypred_mean_gp, 0)[1]*1.01)
+plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.95, np.max(Ypred_mean_gp, 0)[1]*1.05)
 
 def init():
     prtc.set_data([], [])
@@ -112,6 +112,7 @@ def animate(i):
     prtc.set_data(S[:,0], S[:,1])
     prtc_mean.set_data(Ypred_mean_gp[i,0], Ypred_mean_gp[i,1])
     prtc_mean_line.set_data(Ypred_mean_gp[:i,0], Ypred_mean_gp[:i,1])
+    patch_mean.set_data(Ypred_mean_gpup[:i,0], Ypred_mean_gpup[:i,1])
 
     patch_prtc.center = (Ypred_mean_gp[i,0], Ypred_mean_gp[i,1])
     patch_prtc.width = Ypred_std_gp[i,0]*2
@@ -120,16 +121,18 @@ def animate(i):
     patch.center = (Ypred_mean_gpup[i,0], Ypred_mean_gpup[i,1])
     patch.width = Ypred_std_gpup[i,0]*2
     patch.height = Ypred_std_gpup[i,1]*2
-    patch_mean.set_data(Ypred_mean_gpup[:i,0], Ypred_mean_gpup[:i,1])
 
     return prtc, prtc_mean, prtc_mean_line, patch_prtc, patch, patch_mean,
 
-ani = animation.FuncAnimation(fig, animate, frames=len(Pgp), init_func=init, interval=500, repeat_delay=1000, blit=True)
+ani = animation.FuncAnimation(fig, animate, frames=len(Pgp), init_func=init, interval=10, repeat_delay=100, blit=True)
 # ani.save('belief2.mp4', metadata={'artist':'Avishai Sintov','year':'2019'})
 
 plt.figure(1)
 plt.plot(Ypred_std_gp[:,0], Ypred_std_gp[:,1],'.-y')
 plt.plot(Ypred_std_gpup[:,0], Ypred_std_gpup[:,1],'.-m')
+
+# plt.plot(Ypred_mean_gp[:,0], Ypred_mean_gp[:,1],'.-y')
+# plt.plot(Ypred_mean_gpup[:,0], Ypred_mean_gpup[:,1],'.-m')
 
 plt.show()
 

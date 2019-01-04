@@ -57,7 +57,7 @@ class SVM_failure():
         else:
             with open(path + 'svm_data_' + self.mode + '.obj', 'rb') as f: 
                 self.SA, self.done = pickle.load(f)
-            print('Loaded svm data.')   
+            print('Loaded svm data from ' + 'svm_data_' + self.mode + '.obj')   
 
         # Normalize
         scaler = StandardScaler()
@@ -99,7 +99,9 @@ class SVM_failure():
         sa = np.array(req.StateAction)
 
         p, fail = self.probability(sa)
-        # print p, fail
+        print("[svm_sim] SVM query, probability of failure: " + str(p[1])) # p, fail
+        print("State: ", sa)
+
         return {'fail': fail, 'probability': p[1]} # returns whether failed and the probability
 
 

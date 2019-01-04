@@ -12,7 +12,7 @@ from diffusionMaps import DiffusionMap
 
 np.random.seed(10)
 
-simORreal = 'real'#sim'
+simORreal = 'sim'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 
