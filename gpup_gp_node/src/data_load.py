@@ -9,7 +9,7 @@ class data_load(object):
 
     def __init__(self, simORreal = 'sim', discreteORcont = 'discrete'):
         
-        self.file = simORreal + '_data_' + discreteORcont + '.mat'
+        self.file = simORreal + '_data_' + discreteORcont + '_v3.mat'
         self.load()
 
     def load(self):
@@ -18,7 +18,7 @@ class data_load(object):
         Q = loadmat('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/' + self.file)
         Qtrain = Q['D']
 
-        Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
+        # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
         self.state_action_dim = 6 

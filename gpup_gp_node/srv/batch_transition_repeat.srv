@@ -1,0 +1,5 @@
+float32[] states
+float32[] action
+int32 num_repeat
+---
+float32[] next_states

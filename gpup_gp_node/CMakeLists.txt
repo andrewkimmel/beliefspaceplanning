@@ -58,6 +58,8 @@ add_service_files(
   FILES
   batch_transition.srv
   gpup_transition.srv
+  batch_transition_repeat.srv
+  gpup_transition_repeat.srv
 )
 
 ## Generate actions in the 'action' folder

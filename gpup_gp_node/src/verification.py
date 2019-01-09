@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from gpup_gp_node.srv import gpup_transition, batch_transition
+from gpup_gp_node.srv import gpup_transition, batch_transition, gpup_transition_repeat, batch_transition_repeat
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -12,8 +12,11 @@ np.random.seed(10)
 
 state_dim = 4
 
-gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
-gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
+gp_srv = rospy.ServiceProxy('/gp/transitionRepeat', batch_transition_repeat)
+gpup_srv = rospy.ServiceProxy('/gpup/transitionRepeat', gpup_transition_repeat)
+msg_gp = batch_transition_repeat()
+msg_gpup = gpup_transition_repeat()
+
 
 ##########################################################################################################
 
@@ -34,12 +37,12 @@ if 1:
 
     Pgp = []; 
     print("Running (open loop) path...")
-    for i in range(0, actions.shape[0]):
+    for i in range(0, 5+0*actions.shape[0]):
         print("Step " + str(i) + " of " + str(actions.shape[0]))
         Pgp.append(S)
         a = actions[i,:]
 
-        res = gp_srv(S.reshape(-1,1), a)
+        res = gp_srv(S.reshape(-1,1), a, 10)
         S_next = np.array(res.next_states).reshape(-1,state_dim)
         s_mean_next = np.mean(S_next, 0)
         s_std_next = np.std(S_next, 0)
@@ -58,11 +61,11 @@ if 1:
     Ypred_std_gpup = sigma_x.reshape(1,state_dim)
 
     print("Running (open loop) path...")
-    for i in range(0, actions.shape[0]):
+    for i in range(0, 5+0*actions.shape[0]):
         print("Step " + str(i) + " of " + str(actions.shape[0]))
         a = actions[i,:]
 
-        res = gpup_srv(s, sigma_x, a)
+        res = gpup_srv(s, sigma_x, a, 10)
         s_next = np.array(res.next_mean)
         sigma_next = np.array(res.next_std)
         s = s_next
@@ -73,8 +76,8 @@ if 1:
 
     ######################################## Save ###########################################################
 
-    with open('belief_ros.pkl', 'w') as f:  # Python 3: open(..., 'wb')
-        pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp], f)
+    # with open('belief_ros.pkl', 'w') as f:  # Python 3: open(..., 'wb')
+    #     pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp], f)
 
 ######################################## Plot ###########################################################
 
