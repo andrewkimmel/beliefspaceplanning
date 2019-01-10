@@ -9,7 +9,7 @@ class data_load(object):
 
     def __init__(self, simORreal = 'sim', discreteORcont = 'discrete'):
         
-        self.file = simORreal + '_data_' + discreteORcont + '_v3.mat'
+        self.file = simORreal + '_data_' + discreteORcont + '_v4_vel.mat'
         self.load()
 
     def load(self):

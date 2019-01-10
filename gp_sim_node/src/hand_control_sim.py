@@ -5,8 +5,10 @@ import numpy as np
 from std_msgs.msg import Float64MultiArray, Float32MultiArray, String
 from std_srvs.srv import Empty, EmptyResponse
 from toy_simulator.srv import TargetAngles, IsDropped, observation
-from hand_control_sim.srv import MoveServos
+from gp_sim_node.srv import MoveServos
 import math
+
+state_form = 'pos_vel' # 'pos_load' or 'pos_vel'
 
 class hand_control():
 
@@ -22,6 +24,7 @@ class hand_control():
     base_pos = [0.,0.]
     base_theta = 0
     obj_pos = [0.,0.]
+    obj_vel = [0.,0.]
     R = []
     count = 1
 
@@ -36,6 +39,7 @@ class hand_control():
         rospy.Subscriber('/gripper/load', Float32MultiArray, self.callbackGripperLoad)
         rospy.Subscriber('/gripper/lift_status', String, self.callbackLiftStatus)
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
+        rospy.Subscriber('/hand/obj_vel', Float32MultiArray, self.callbackObjVel)
         pub_gripper_status = rospy.Publisher('/RL/gripper_status', String, queue_size=10)
 
         rospy.Service('/RL/ResetGripper', Empty, self.ResetGripper)
@@ -72,6 +76,11 @@ class hand_control():
         self.object_grasped = True if abs(Obj_pos[2]) < 1e-2 else False
 
         self.obj_pos = Obj_pos[:2]*1000 # m to mm
+
+    def callbackObjVel(self, msg):
+        Obj_vel = np.array(msg.data)
+
+        self.obj_vel = Obj_vel[:2]*1000 # m/s to mm/s
 
     def ResetGripper(self, msg):
         ratein = rospy.Rate(15)
@@ -153,7 +162,10 @@ class hand_control():
         return {'dropped': not self.object_grasped}
 
     def GetObservation(self, msg):
-        obs = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
+        if state_form == 'pos_load':
+            obs = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
+        if state_form == 'pos_vel':   
+            obs = np.concatenate((self.obj_pos, self.obj_vel), axis=0)
 
         return {'state': obs}
 

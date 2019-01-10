@@ -8,6 +8,7 @@ import numpy as np
 from gp import GaussianProcess
 from data_load import data_load
 from diffusionMaps import DiffusionMap
+from mean_shift import mean_shift
 
 np.random.seed(10)
 
@@ -15,10 +16,11 @@ simORreal = 'sim'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 
-class Spin_gp(data_load):
+class Spin_gp(data_load, mean_shift):
 
     def __init__(self):
         data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont)
+        mean_shift.__init__(self)
 
         # Number of NN
         if useDiffusionMaps:
@@ -92,8 +94,10 @@ class Spin_gp(data_load):
         SA = self.normz_batch( SA )    
         SA_normz = self.batch_predict(SA)
         S_next = self.denormz_batch( SA_normz )
+
+        mean = self.get_mean_shift(S_next)
         
-        return {'next_states': S_next.reshape((-1,))}
+        return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean}
 
     # Predicts the next step by calling the GP class - repeats the same action 'n' times
     def GetTransitionRepeat(self, req):
@@ -111,8 +115,9 @@ class Spin_gp(data_load):
 
             S = S_next
         
-        return {'next_states': S_next.reshape((-1,))}
-
+        mean = self.get_mean_shift(S_next)
+        
+        return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean}
         
 if __name__ == '__main__':
     try:

@@ -19,7 +19,6 @@ class SVM_failure():
 
         self.mode = 'discrete' if discrete else 'cont'
         self.load_data(gen_new_data)
-        print 'All set!'
 
         rospy.init_node('svm_sim', anonymous=True)
         rospy.Service('/svm_fail_check', sa_bool, self.classifierSrv)
@@ -55,9 +54,10 @@ class SVM_failure():
                 pickle.dump([self.SA, self.done], f)
             print('Saved svm data.')
         else:
-            with open(path + 'svm_data_' + self.mode + '.obj', 'rb') as f: 
+            File = 'svm_data_' + self.mode + '_v3.obj'
+            with open(path + File, 'rb') as f: 
                 self.SA, self.done = pickle.load(f)
-            print('Loaded svm data from ' + 'svm_data_' + self.mode + '.obj')   
+            print('Loaded svm data from ' + File)   
 
         # Normalize
         scaler = StandardScaler()

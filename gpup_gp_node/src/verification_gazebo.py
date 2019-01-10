@@ -14,7 +14,7 @@ from gp_sim_node.srv import sa_bool
 np.random.seed(10)
 
 state_dim = 4
-tr = '2'
+tr = '1'
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
@@ -26,33 +26,35 @@ move_srv = rospy.ServiceProxy('/RL/MoveGripper', TargetAngles)
 reset_srv = rospy.ServiceProxy('/RL/ResetGripper', Empty)
 
 ##########################################################################################################
-# Rollout 1
-# A = np.concatenate( (np.array([[-1., -1.] for _ in range(150)]), 
-#         np.array([[-1., 1.] for _ in range(100)]), 
-#         np.array([[1., 0.] for _ in range(100)]), 
-#         np.array([[1., -1.] for _ in range(70)]),
-#         np.array([[-1., 1.] for _ in range(70)]) ), axis=0 )
-
-# Rollout 2
-A = np.concatenate( (np.array([[-1., -1.] for _ in range(5)]), 
-        np.array([[1., -1.] for _ in range(100)]), 
-        np.array([[-1., -1.] for _ in range(40)]), 
-        np.array([[-1., 1.] for _ in range(80)]),
-        np.array([[1., 0.] for _ in range(70)]),
-        np.array([[1., -1.] for _ in range(70)]) ), axis=0 )
+if tr == '1':
+    # Rollout 1
+    A = np.concatenate( (np.array([[-1., -1.] for _ in range(150)]), 
+            np.array([[-1., 1.] for _ in range(100)]), 
+            np.array([[1., 0.] for _ in range(100)]), 
+            np.array([[1., -1.] for _ in range(70)]),
+            np.array([[-1., 1.] for _ in range(70)]) ), axis=0 )
+if tr == '2':
+    # Rollout 2
+    A = np.concatenate( (np.array([[-1., -1.] for _ in range(5)]), 
+            np.array([[1., -1.] for _ in range(100)]), 
+            np.array([[-1., -1.] for _ in range(40)]), 
+            np.array([[-1., 1.] for _ in range(80)]),
+            np.array([[1., 0.] for _ in range(70)]),
+            np.array([[1., -1.] for _ in range(70)]) ), axis=0 )
 
 ######################################## Roll-out ##################################################
 
 rospy.init_node('verification_gazebo', anonymous=True)
 rate = rospy.Rate(15) # 15hz
 
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/verf/'
+
 if 0:
     Pro = []
-    for j in range(100):
+    for j in range(40):
         print("Rollout number " + str(j) + ".")
         # Reset gripper
         reset_srv()
-        rospy.sleep(0.5)
 
         # Start episode
         Sro = []
@@ -65,7 +67,8 @@ if 0:
             Sro.append(state)
             
             suc = move_srv(action)
-            rospy.sleep(0.05)
+            # rospy.sleep(0.3) # For sim_data_discrete v2
+            rospy.sleep(0.1) # For all other
             rate.sleep()
 
             # Get observation
@@ -88,10 +91,10 @@ if 0:
 
         Pro.append(np.array(Sro))
 
-    with open('ver_rollout_' + tr + '.pkl', 'w') as f:  # Python 3: open(..., 'wb')
-        pickle.dump(Pro, f)
+        with open(path + 'ver_rollout_' + tr + '_v4v.pkl', 'w') as f:  # Python 3: open(..., 'wb')
+            pickle.dump(Pro, f)
 
-with open('ver_rollout_' + tr + '.pkl') as f:  
+with open(path + 'ver_rollout_' + tr + '_v4v.pkl') as f:  
     Pro = pickle.load(f) 
 fig = plt.figure(0)
 ax = fig.add_subplot(111)#, aspect='equal')
@@ -99,7 +102,7 @@ S = []
 c = 0
 for j in range(len(Pro)): 
     Sro = Pro[j]
-    ax.plot(Sro[:,0], Sro[:,1])
+    ax.plot(Sro[:,0], Sro[:,1], 'k')
     S.append(Sro[0,:4])
     if Sro.shape[0]==Pro[0].shape[0]:
         c+= 1
@@ -109,14 +112,14 @@ sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
 
-print("Roll-out succecss rate: " + str(float(c) / len(Pro)*100) + "%")
+print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 
 # plt.show()
 # exit(1)
 
 ######################################## GP propagation ##################################################
 Np = 500 # Number of particles
-if 0:
+if 1:
     print "Running GP."
 
     s = s_start
@@ -127,7 +130,7 @@ if 0:
     Pgp = []; 
     print("Running (open loop) path...")
     for i in range(0, A.shape[0]):
-        print("Step " + str(i) + " of " + str(A.shape[0]))
+        print("[GP] Step " + str(i) + " of " + str(A.shape[0]))
         Pgp.append(S)
         a = A[i,:]
 
@@ -151,7 +154,7 @@ if 0:
 
     print("Running (open loop) path...")
     for i in range(0, A.shape[0]):
-        print("Step " + str(i) + " of " + str(A.shape[0]))
+        print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
         res = gpup_srv(s, sigma_x, a)
@@ -165,12 +168,12 @@ if 0:
 
     ######################################## Save ###########################################################
 
-    with open('ver_pred_' + tr + '.pkl', 'w') as f:  
+    with open(path + 'ver_pred_' + tr + '_v4.pkl', 'w') as f:
         pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp], f)
 
 ######################################## Plot ###########################################################
 
-with open('ver_pred_' + tr + '.pkl') as f:  
+with open(path + 'ver_pred_' + tr + '_v4.pkl') as f:  
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp = pickle.load(f)  
 
 if 0:
@@ -198,10 +201,10 @@ if 0:
         If.append(idx_f)
         print len(idx_g), len(idx_f)
 
-    with open('ver_gf_' + tr + '.pkl', 'w') as f:  
+    with open(path + 'ver_gf_' + tr + '_v3.pkl', 'w') as f:  
         pickle.dump([Ig, If], f)
 
-with open('ver_gf_' + tr + '.pkl') as f:  
+with open(path + 'ver_gf_' + tr + '_v2.pkl') as f:  
     Ig, If = pickle.load(f)  
 
 prtc_mean_line, = ax.plot([], [], '-g')
@@ -216,8 +219,10 @@ patch = Ellipse(xy=(Ypred_mean_gpup[0,0], Ypred_mean_gpup[0,1]), width=Ypred_std
 ax.add_patch(patch)
 patch_mean, = ax.plot([], [], '--m')
 
-plt.xlim(np.min(Ypred_mean_gp, 0)[0]*1.1, np.max(Ypred_mean_gp, 0)[0]*1.3)
-plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.97, np.max(Ypred_mean_gp, 0)[1]*1.03)
+print np.min(Ypred_mean_gp, 0)
+
+# plt.xlim(np.min(Ypred_mean_gp, 0)[0]*0-5, np.max(Ypred_mean_gp, 0)[0]*1.0)
+# plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.99, np.max(Ypred_mean_gp, 0)[1]*1.01)
 
 def init():
     prtc_g.set_data([], [])
@@ -252,7 +257,7 @@ def animate(i):
     return prtc_g, prtc_f, prtc_mean, prtc_mean_line, patch_prtc, patch, patch_mean,
 
 ani = animation.FuncAnimation(fig, animate, frames=len(Pgp), init_func=init, interval=100, repeat_delay=1000, blit=True)
-# ani.save('belief_gazebo_' + str(tr) + '.mp4', metadata={'artist':'Avishai Sintov','year':'2019'}, bitrate=-1, codec="libx264")
+# ani.save(path + 'belief_gazebo_' + str(tr) + '_v3.mp4', metadata={'artist':'Avishai Sintov','year':'2019'}, bitrate=-1, codec="libx264")
 
 # plt.figure(1)
 # for k in range(4):
