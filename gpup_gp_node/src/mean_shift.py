@@ -39,8 +39,7 @@ class mean_shift():
 
         if self.plot:
             plt.plot(m[0], m[1], '*g')
-
-        plt.show()
+            plt.show()
 
         return m
         
