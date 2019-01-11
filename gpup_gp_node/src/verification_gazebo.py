@@ -103,7 +103,7 @@ c = 0
 for j in range(len(Pro)): 
     Sro = Pro[j]
     ax.plot(Sro[:,0], Sro[:,1], 'k')
-    S.append(Sro[0,:4])
+    S.append(Sro[0,:state_dim])
     if Sro.shape[0]==Pro[0].shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)

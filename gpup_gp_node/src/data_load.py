@@ -9,7 +9,7 @@ class data_load(object):
 
     def __init__(self, simORreal = 'sim', discreteORcont = 'discrete'):
         
-        self.file = simORreal + '_data_' + discreteORcont + '_v4_vel.mat'
+        self.file = simORreal + '_data_' + discreteORcont + '_v4.mat'
         self.load()
 
     def load(self):
@@ -21,7 +21,7 @@ class data_load(object):
         # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
-        self.state_action_dim = 6 
+        self.state_action_dim = 6
         self.state_dim = 4
 
         self.Xtrain = Qtrain[:,:self.state_action_dim]
