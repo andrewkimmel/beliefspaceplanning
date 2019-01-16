@@ -10,10 +10,11 @@ from matplotlib.patches import Ellipse
 import pickle
 from rl_pkg.srv import net_eval, observation, IsDropped, TargetAngles
 from gp_sim_node.srv import sa_bool
+import time
 
 np.random.seed(10)
 
-state_dim = 4
+state_dim = 4+2
 tr = '1'
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -51,7 +52,7 @@ path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/verf/'
 
 if 0:
     Pro = []
-    for j in range(40):
+    for j in range(20):
         print("Rollout number " + str(j) + ".")
         # Reset gripper
         reset_srv()
@@ -66,9 +67,9 @@ if 0:
 
             Sro.append(state)
             
-            suc = move_srv(action)
-            # rospy.sleep(0.3) # For sim_data_discrete v2
-            rospy.sleep(0.1) # For all other
+            suc = move_srv(action).success
+            rospy.sleep(0.2) # For sim_data_discrete v5
+            # rospy.sleep(0.05) # For all other
             rate.sleep()
 
             # Get observation
@@ -91,10 +92,10 @@ if 0:
 
         Pro.append(np.array(Sro))
 
-        with open(path + 'ver_rollout_' + tr + '_v4v.pkl', 'w') as f:  # Python 3: open(..., 'wb')
+        with open(path + 'ver_rollout_' + tr + '_v5.pkl', 'w') as f:  # Python 3: open(..., 'wb')
             pickle.dump(Pro, f)
 
-with open(path + 'ver_rollout_' + tr + '_v4v.pkl') as f:  
+with open(path + 'ver_rollout_' + tr + '_v5.pkl') as f:  
     Pro = pickle.load(f) 
 fig = plt.figure(0)
 ax = fig.add_subplot(111)#, aspect='equal')
@@ -102,15 +103,22 @@ S = []
 c = 0
 for j in range(len(Pro)): 
     Sro = Pro[j]
-    ax.plot(Sro[:,0], Sro[:,1], 'k')
+    ax.plot(Sro[:,0], Sro[:,1], 'b')
     S.append(Sro[0,:state_dim])
     if Sro.shape[0]==Pro[0].shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
+sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,0.,0.])
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
+
+Smean = []
+for i in range(Sro.shape[0]):
+    F = []
+    for j in range(len(Pro)): 
+        F.append(Pro[j][i])
+    Smean.append( np.mean(np.array(F), axis=0) )
 
 print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 
@@ -122,6 +130,8 @@ Np = 500 # Number of particles
 if 1:
     print "Running GP."
 
+    t_gp = time.time()
+
     s = s_start
     S = np.tile(s, (Np,1)) + np.random.normal(0, sigma_start, (Np, state_dim))
     Ypred_mean_gp = s.reshape(1,state_dim)
@@ -129,7 +139,7 @@ if 1:
 
     Pgp = []; 
     print("Running (open loop) path...")
-    for i in range(0, A.shape[0]):
+    for i in range(0, 40+0*A.shape[0]):
         print("[GP] Step " + str(i) + " of " + str(A.shape[0]))
         Pgp.append(S)
         a = A[i,:]
@@ -143,9 +153,12 @@ if 1:
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
 
+    t_gp = (time.time() - t_gp) / 40#A.shape[0]
+
     ######################################## GPUP propagation ###############################################
 
     print "Running GPUP."
+    t_gpup = time.time()
 
     s = s_start
     sigma_x = sigma_start
@@ -153,7 +166,7 @@ if 1:
     Ypred_std_gpup = sigma_x.reshape(1,state_dim)
 
     print("Running (open loop) path...")
-    for i in range(0, A.shape[0]):
+    for i in range(0, 40+0*A.shape[0]):
         print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
@@ -163,17 +176,19 @@ if 1:
         s = s_next
         sigma_x = sigma_next
 
-        Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0)
+        Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
         Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)
+
+    t_gpup = (time.time() - t_gpup) / 40#A.shape[0]
 
     ######################################## Save ###########################################################
 
-    with open(path + 'ver_pred_' + tr + '_v4.pkl', 'w') as f:
+    with open(path + 'ver_pred_' + tr + '_v5.pkl', 'w') as f:
         pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp], f)
 
 ######################################## Plot ###########################################################
 
-with open(path + 'ver_pred_' + tr + '_v4.pkl') as f:  
+with open(path + 'ver_pred_' + tr + '_v5.pkl') as f:  
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp = pickle.load(f)  
 
 if 0:
@@ -211,6 +226,8 @@ prtc_mean_line, = ax.plot([], [], '-g')
 prtc_g, = ax.plot([], [], '.k', markersize=1)
 prtc_f, = ax.plot([], [], '.r', markersize=1)
 
+sm, = ax.plot([], [], 'ok', markerfacecolor='r', markersize=8)
+
 prtc_mean, = ax.plot([], [], '*g')
 patch_prtc = Ellipse(xy=(Ypred_mean_gp[0,0], Ypred_mean_gp[0,1]), width=Ypred_std_gp[0,0]*2, height=Ypred_std_gp[0,1]*2, angle=0., animated=True, edgecolor='y', linewidth=2., fill=False)
 ax.add_patch(patch_prtc)
@@ -219,7 +236,7 @@ patch = Ellipse(xy=(Ypred_mean_gpup[0,0], Ypred_mean_gpup[0,1]), width=Ypred_std
 ax.add_patch(patch)
 patch_mean, = ax.plot([], [], '--m')
 
-print np.min(Ypred_mean_gp, 0)
+print "GP runtime: " + str(t_gp) + "sec, " + " GPUP time: " + str(t_gpup) + "sec."
 
 # plt.xlim(np.min(Ypred_mean_gp, 0)[0]*0-5, np.max(Ypred_mean_gp, 0)[0]*1.0)
 # plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.99, np.max(Ypred_mean_gp, 0)[1]*1.01)
@@ -230,8 +247,9 @@ def init():
     prtc_mean.set_data([], [])
     prtc_mean_line.set_data([], [])
     patch_mean.set_data([], [])
+    sm.set_data([], [])
 
-    return prtc_g, prtc_f, prtc_mean, prtc_mean_line, patch_prtc, patch, patch_mean,
+    return sm, prtc_g, prtc_f, prtc_mean, prtc_mean_line, patch_prtc, patch, patch_mean,
 
 def animate(i):
 
@@ -242,8 +260,10 @@ def animate(i):
     prtc_f.set_data(S[idx_f,0], S[idx_f,1])
     # print i, len(idx_g), len(idx_f)
 
+    sm.set_data(Smean[i][0], Smean[i][1])
+
     prtc_mean.set_data(Ypred_mean_gp[i,0], Ypred_mean_gp[i,1])
-    prtc_mean_line.set_data(Ypred_mean_gp[:i,0], Ypred_mean_gp[:i,1])
+    prtc_mean_line.set_data(Ypred_mean_gp[:i+1,0], Ypred_mean_gp[:i+1,1])
 
     patch_prtc.center = (Ypred_mean_gp[i,0], Ypred_mean_gp[i,1])
     patch_prtc.width = Ypred_std_gp[i,0]*2
@@ -254,10 +274,10 @@ def animate(i):
     patch.height = Ypred_std_gpup[i,1]*2
     patch_mean.set_data(Ypred_mean_gpup[:i,0], Ypred_mean_gpup[:i,1])
 
-    return prtc_g, prtc_f, prtc_mean, prtc_mean_line, patch_prtc, patch, patch_mean,
+    return sm, prtc_g, prtc_f, prtc_mean, prtc_mean_line, patch_prtc, patch, patch_mean,
 
 ani = animation.FuncAnimation(fig, animate, frames=len(Pgp), init_func=init, interval=100, repeat_delay=1000, blit=True)
-# ani.save(path + 'belief_gazebo_' + str(tr) + '_v3.mp4', metadata={'artist':'Avishai Sintov','year':'2019'}, bitrate=-1, codec="libx264")
+ani.save(path + 'belief_gazebo_' + str(tr) + '_v5.mp4', metadata={'artist':'Avishai Sintov','year':'2019'}, bitrate=-1, codec="libx264")
 
 # plt.figure(1)
 # for k in range(4):

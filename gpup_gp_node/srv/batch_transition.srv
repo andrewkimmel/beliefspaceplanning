@@ -3,3 +3,4 @@ float32[] action
 ---
 float32[] next_states
 float32[] mean_shift
+float32 node_probability

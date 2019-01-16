@@ -3,13 +3,13 @@ import numpy as np
 from scipy.io import loadmat
 from sklearn.neighbors import KDTree #pip install -U scikit-learn
 
-N_dillute = 300000 # Number of points to randomly select from data
+N_dillute = 30000 # Number of points to randomly select from data
 
 class data_load(object):
 
     def __init__(self, simORreal = 'sim', discreteORcont = 'discrete'):
         
-        self.file = simORreal + '_data_' + discreteORcont + '_v4.mat'
+        self.file = simORreal + '_data_' + discreteORcont + '_v5_d6_m10.mat'
         self.load()
 
     def load(self):
@@ -18,11 +18,14 @@ class data_load(object):
         Q = loadmat('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/' + self.file)
         Qtrain = Q['D']
 
+        if 'Dreduced' in Q:
+            self.Xreduced = Q['Dreduced']
+
         # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
-        self.state_action_dim = 6
-        self.state_dim = 4
+        self.state_action_dim = 6+2
+        self.state_dim = 4+2
 
         self.Xtrain = Qtrain[:,:self.state_action_dim]
         self.Ytrain = Qtrain[:,self.state_action_dim:]

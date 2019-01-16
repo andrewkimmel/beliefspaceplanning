@@ -1,5 +1,7 @@
 
 *.mat
+*.pkl
+*.mp4
 
 # Prerequisites
 *.d

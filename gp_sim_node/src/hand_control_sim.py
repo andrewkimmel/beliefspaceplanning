@@ -8,7 +8,7 @@ from toy_simulator.srv import TargetAngles, IsDropped, observation
 from gp_sim_node.srv import MoveServos
 import math
 
-state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel'
+state_form = 'pos_load_vel' # 'pos_load' or 'pos_vel' or 'pos_load_vel'
 
 class hand_control():
 
