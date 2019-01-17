@@ -11,6 +11,7 @@ from svm_class import svm_failure
 from diffusionMaps import DiffusionMap
 from mean_shift import mean_shift
 
+
 np.random.seed(10)
 
 simORreal = 'sim'
@@ -21,10 +22,6 @@ probability_threshold = 0.65
 class Spin_gp(data_load, mean_shift, svm_failure):
 
     def __init__(self):
-        svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
-        data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont)
-        mean_shift.__init__(self)
-
         # Number of NN
         if useDiffusionMaps:
             self.K = 1000
@@ -33,8 +30,9 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         else:
             self.K = 100
 
-        self.opt_count = 0
-        self.cur_theta = []
+        svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
+        data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K)
+        mean_shift.__init__(self)
 
         rospy.Service('/gp/transition', batch_transition, self.GetTransition)
         rospy.Service('/gp/transitionRepeat', batch_transition_repeat, self.GetTransitionRepeat)
@@ -56,27 +54,13 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
 
-        if  not (self.opt_count % 10): # Do not optimize for each prediction
-            optimize = True
-            theta = None
-        else:
-            optimize = False
-            theta = self.cur_theta
-
         dS_next = np.zeros((SA.shape[0], self.state_dim))
         std_next = np.zeros((SA.shape[0], self.state_dim))
         for i in range(self.state_dim):
-            if i == 0:
-                gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = optimize, theta=theta)
-                theta = gp_est.cov.theta
-            else:
-                gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta=theta)
+            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
             mm, vv = gp_est.batch_predict(SA[:,:self.state_dim])
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
-
-        self.cur_theta = theta
-        self.opt_count += 1
 
         S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
 

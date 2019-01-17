@@ -29,9 +29,6 @@ class Spin_gpup(data_load):
         else:
             self.K = 100
 
-        self.opt_count = 0
-        self.cur_theta = []
-
         rospy.Service('/gpup/transition', gpup_transition, self.GetTransition)
         rospy.Service('/gpup/transitionRepeat', gpup_transition_repeat, self.GetTransitionRepeat)
         rospy.init_node('gpup_transition', anonymous=True)
@@ -51,21 +48,10 @@ class Spin_gpup(data_load):
         if useDiffusionMaps:
             X_nn, Y_nn = reduction(sa, X_nn, Y_nn)
 
-        if  not (self.opt_count % 10): # Do not optimize for each prediction
-            optimize = True
-            theta = None
-        else:
-            optimize = False
-            theta = self.cur_theta
-
         m = np.zeros(self.state_dim)
         v = np.zeros(self.state_dim)
         for i in range(self.state_dim):
-            if i == 0:
-                gpup_est = UncertaintyPropagation(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = optimize, theta=theta)
-                theta = gpup_est.cov.theta
-            else:
-                gpup_est = UncertaintyPropagation(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta=theta)
+            gpup_est = UncertaintyPropagation(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
             m[i], v[i] = gpup_est.predict(sa[:self.state_dim].reshape(1,-1)[0], s_var[:self.state_dim])
 
         self.cur_theta = theta

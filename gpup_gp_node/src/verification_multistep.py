@@ -23,7 +23,7 @@ rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
 plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 
 
-tr = '1'
+tr = '2'
 stepSize = 10
 
 ##########################################################################################################
@@ -51,8 +51,7 @@ rate = rospy.Rate(15) # 15hz
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/verf/'
 
 
-if 1:
-    
+if 0:
     Af = A.reshape((-1,))
     Pro = []
     for j in range(1):
