@@ -154,21 +154,23 @@ class UncertaintyPropagation(object):
             var = sigma2_GP - np.trace( np.dot(self.cov.Kinv, Q) ) + np.dot( self.beta, np.dot(Q, self.beta)) - mean**2
 
         if self.method == 3:
+            k_vector = np.diag(self.cov.cov_matrix_ij(np.tile(mu_x.reshape(1,-1), (self.X.shape[0],1)), self.X, add_vt=False))
+
             # Candela Eq. 24
             L = np.empty((self.cov.N, self.cov.N))
             for i in range(self.cov.N):
                 for j in range(self.cov.N):
                     x_ = (self.X[i,:] + self.X[j,:]) / 2.
 
-                    ki = self.cov.Gcov(mu_x, self.X[i,:])
-                    kj = self.cov.Gcov(mu_x, self.X[j,:])
+                    ki = k_vector[i]#self.cov.Gcov(mu_x, self.X[i,:])
+                    kj = k_vector[j]#self.cov.Gcov(mu_x, self.X[j,:])
                     C_corr_2 = self._C_corr_2(mu_x, x_)
 
                     L[i,j] = ki * kj * C_corr_2
 
-            k_vector = np.empty((self.X.shape[0],1))
-            for i in range(self.X.shape[0]):
-                k_vector[i] = self.cov.Gcov(mu_x, self.X[i,:])
+            # k_vector = np.empty((self.X.shape[0],1))
+            # for i in range(self.X.shape[0]):
+            #     k_vector[i] = self.cov.Gcov(mu_x, self.X[i,:])
 
             kk = np.dot(k_vector.reshape(-1,1), k_vector.reshape(1,-1))
             L = L - kk
