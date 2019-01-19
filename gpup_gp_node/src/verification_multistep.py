@@ -51,7 +51,7 @@ rate = rospy.Rate(15) # 15hz
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/verf/'
 
 
-if 0:
+if 1:
     Af = A.reshape((-1,))
     Pro = []
     for j in range(1):
@@ -86,8 +86,8 @@ Smean = Pro[0]
 
 print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 
-# plt.show()
-# exit(1)
+plt.show()
+exit(1)
 
 ######################################## GP propagation ##################################################
 Np = 500 # Number of particles

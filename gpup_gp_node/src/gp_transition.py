@@ -11,7 +11,6 @@ from svm_class import svm_failure
 from diffusionMaps import DiffusionMap
 from mean_shift import mean_shift
 
-
 np.random.seed(10)
 
 simORreal = 'sim'

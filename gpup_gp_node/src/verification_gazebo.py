@@ -15,7 +15,7 @@ import time
 np.random.seed(10)
 
 state_dim = 4+2
-tr = '1'
+tr = '2'
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
@@ -139,7 +139,7 @@ if 1:
 
     Pgp = []; 
     print("Running (open loop) path...")
-    for i in range(0, 40+0*A.shape[0]):
+    for i in range(0, 20+0*A.shape[0]):
         print("[GP] Step " + str(i) + " of " + str(A.shape[0]))
         Pgp.append(S)
         a = A[i,:]
@@ -166,7 +166,7 @@ if 1:
     Ypred_std_gpup = sigma_x.reshape(1,state_dim)
 
     print("Running (open loop) path...")
-    for i in range(0, 40+0*A.shape[0]):
+    for i in range(0, A.shape[0]):
         print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
