@@ -41,7 +41,7 @@ class hand_control():
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
         rospy.Subscriber('/hand/obj_vel', Float32MultiArray, self.callbackObjVel)
         rospy.Subscriber('/hand/my_joint_states', Float32MultiArray, self.callbackJoints)
-        pub_gripper_status = rospy.Publisher('/RL/gripper_status', String, queue_size=10)
+        pub_gripper_status = rospy.Publisher('/hand_control/gripper_status', String, queue_size=10)
 
         rospy.Service('/hand_control/ResetGripper', Empty, self.ResetGripper)
         rospy.Service('/hand_control/MoveGripper', TargetAngles, self.MoveGripper)

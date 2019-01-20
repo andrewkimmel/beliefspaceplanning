@@ -1,0 +1,7 @@
+<launch>
+
+  <include file="$(find rollout_node)/launch/rollout.launch"></include>
+
+  <node pkg="collect_data" name="collect" type="collect_run.py" output="screen"/>
+
+</launch>
