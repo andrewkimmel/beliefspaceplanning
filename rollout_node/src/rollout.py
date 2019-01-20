@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 class rollout():
 
     states = []
+    plot_num = 0
 
     def __init__(self):
         rospy.init_node('rollout_node', anonymous=True)
@@ -37,6 +38,7 @@ class rollout():
         self.reset_srv()
 
         # Start episode
+        success = True
         S = []
         for i in range(A.shape[0]):
             # Get observation and choose action
@@ -47,6 +49,7 @@ class rollout():
             
             suc = True
             for _ in range(self.stepSize+1):
+            # for _ in range(self.stepSize):
                 suct = self.move_srv(action).success
                 rospy.sleep(0.2) # For sim_data_discrete v5
                 # rospy.sleep(0.05) # For all other
@@ -69,17 +72,18 @@ class rollout():
             if not suc or fail:
                 print("[rollout] Fail")
                 S.append(state)
+                success = False
                 break
 
-        return np.array(S)
+        return np.array(S), success
 
     def CallbackRollout(self, req):
         
         actions = np.array(req.actions).reshape(-1, self.action_dim)
+        success = True
+        self.states, success = self.run_rollout(actions)
 
-        self.states = self.run_rollout(actions)
-
-        return {'states': self.states.reshape((-1,))}
+        return {'states': self.states.reshape((-1,)), 'success' : success}
 
     def Plot(self, req):
         planned = np.array(req.states).reshape(-1, self.state_dim)
