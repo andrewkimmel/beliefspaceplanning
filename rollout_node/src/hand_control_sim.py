@@ -77,9 +77,8 @@ class hand_control():
     def callbackObj(self, msg):
         Obj_pos = np.array(msg.data)
 
-        b = 0.5e-3 # For screwdriver scenario
+        # b = 0.5e-3 # For screwdriver scenario
         b = -0.1 # For regular cylinder scenario
-
 
         if Obj_pos[2] < b or (self.joint_states[0] > 1.5 and self.joint_states[2] > 1.5) or self.joint_states[0] > 2.5 or self.joint_states[2] > 2.5: 
             self.object_grasped = False
