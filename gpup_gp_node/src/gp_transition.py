@@ -16,7 +16,8 @@ np.random.seed(10)
 simORreal = 'sim'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
-probability_threshold = 0.65
+# probability_threshold = 0.65
+probability_threshold = 0.8
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
@@ -117,7 +118,10 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         # Check which particles failed
         failed_inx = self.batch_svm_check(S, a)
-        node_probability = 1 - len(failed_inx)/S.shape[0]
+        # node_probability = 1 - len(failed_inx)/S.shape[0]
+        node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+
+        print node_probability
 
         # Remove failed particles by duplicating good ones
         if len(failed_inx):
