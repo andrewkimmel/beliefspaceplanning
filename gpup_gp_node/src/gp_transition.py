@@ -2,7 +2,7 @@
 import rospy
 from std_msgs.msg import Float64MultiArray, Float32MultiArray, Int16
 from std_srvs.srv import SetBool, Empty, EmptyResponse
-from gpup_gp_node.srv import batch_transition, batch_transition_repeat
+from gpup_gp_node.srv import batch_transition, batch_transition_repeat, one_transition
 import math
 import numpy as np
 from gp import GaussianProcess
@@ -34,6 +34,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         mean_shift.__init__(self)
 
         rospy.Service('/gp/transition', batch_transition, self.GetTransition)
+        rospy.Service('/gp/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
         rospy.Service('/gp/transitionRepeat', batch_transition_repeat, self.GetTransitionRepeat)
         rospy.init_node('gp_transition', anonymous=True)
         print('[gp_transition] Ready.')
@@ -63,7 +64,27 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
 
-        return S_next    
+        return S_next 
+
+    def one_predict(self, sa):
+        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
+        X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+
+        if useDiffusionMaps:
+            X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
+
+        ds_next = np.zeros((self.state_dim,))
+        std_next = np.zeros((self.state_dim,))
+        for i in range(self.state_dim):
+            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
+            mm, vv = gp_est.predict(sa[:self.state_dim])
+            ds_next[i] = mm
+            std_next[i] = np.sqrt(np.diag(vv))
+
+        s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
+
+        return s_next 
 
     def reduction(self, sa, X, Y):
         inx = self.df.ReducedClosestSetIndices(sa, X, k_manifold = self.K_manifold)
@@ -130,6 +151,24 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         mean = self.get_mean_shift(S_next)
         
         return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean}
+
+    # Predicts the next step by calling the GP class
+    def GetTransitionOneParticle(self, req):
+
+        s = np.array(req.state)
+        a = np.array(req.action)
+
+        # Check which particles failed
+        p, _ = self.probability(s, a)
+        node_probability = 1 - p
+
+        # Propagate
+        sa = np.concatenate((s, a), axis=0)
+        sa = self.normz( sa )    
+        sa_normz = self.one_predict(sa)
+        s_next = self.denormz( sa_normz )
+
+        return {'next_state': s_next, 'node_probability': node_probability}
 
 if __name__ == '__main__':
     try:
