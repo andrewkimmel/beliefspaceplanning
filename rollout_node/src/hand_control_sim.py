@@ -95,6 +95,7 @@ class hand_control():
 
     def ResetGripper(self, msg):
         ratein = rospy.Rate(15)
+        print('[hand_control_sim] Resetting gripper...')
         while 1:
             # Open gripper
             self.moveGripper(self.finger_opening_position)
@@ -125,7 +126,7 @@ class hand_control():
     def wait2initialGrasp(self):
         # This function waits for grasp to be stable (static) in its initial pose
 
-        print('[hand_control_sim] Waiting for hand to stablize...')
+        print('[hand_control_sim] Waiting for hand to stabilize...')
         ratein = rospy.Rate(15)
         while 1:
             # print('Load' + str(self.gripper_load))

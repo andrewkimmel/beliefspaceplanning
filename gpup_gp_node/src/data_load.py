@@ -5,7 +5,7 @@ from sklearn.neighbors import KDTree
 import os.path
 import pickle
 
-N_dillute = 300000 # Number of points to randomly select from data
+N_dillute = 500000 # Number of points to randomly select from data
 
 class data_load(object):
 

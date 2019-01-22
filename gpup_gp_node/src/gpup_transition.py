@@ -54,9 +54,6 @@ class Spin_gpup(data_load):
             gpup_est = UncertaintyPropagation(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
             m[i], v[i] = gpup_est.predict(sa[:self.state_dim].reshape(1,-1)[0], s_var[:self.state_dim])
 
-        self.cur_theta = theta
-        self.opt_count += 1
-
         return m, np.sqrt(v)
 
     def reduction(self, sa, X, Y):
