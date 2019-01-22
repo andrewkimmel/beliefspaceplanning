@@ -203,12 +203,16 @@ class collect_data():
             sample[0] = np.random.uniform(-100.,100.)
             sample[1] = np.random.uniform(40.,140.)
             rng = neigh.radius_neighbors([sample])
-            if len(rng[0][0]) <= 50:
+            if len(rng[0][0]) <= 500:
                 continue
             if len(rng[0][0]) < min_nn:
                 min_nn = len(rng[0][0])
                 goal = np.copy(sample)
-
+        # sample = np.array([0.,0.])
+        # sample[0] = np.random.uniform(-100.,100.)
+        # sample[1] = np.random.uniform(40.,140.)
+        # goal = np.copy(sample)
+        
         return {'goal': goal}
 
 
