@@ -87,11 +87,14 @@ class rollout():
 
     def Plot(self, req):
         planned = np.array(req.states).reshape(-1, self.state_dim)
-
+        plt.clf()
         plt.plot(self.states[:,0], self.states[:,1],'b', label='Rolled-out path')
         plt.plot(planned[:,0], planned[:,1],'r', label='Planned path')
-        plt.legend()
-        plt.show()
+        # plt.legend()
+        if (req.filename):
+            plt.savefig(req.filename, bbox_inches='tight')
+        else:
+            plt.show()
 
         return EmptyResponse()
 
