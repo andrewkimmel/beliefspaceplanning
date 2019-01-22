@@ -106,7 +106,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         for i in range(S.shape[0]):
             p, _ = self.probability(S[i,:], a) # Probability of failure
             prob_fail = np.random.uniform(0,1)
-            if p <= prob_fail:
+            if prob_fail <= p:
                 failed_inx.append(i)
 
         return failed_inx
