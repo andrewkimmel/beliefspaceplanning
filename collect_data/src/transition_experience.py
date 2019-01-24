@@ -9,8 +9,8 @@ from sklearn.neighbors import KDTree #pip install -U scikit-learn
 
 
 class transition_experience():
-    # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
-    path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
+    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
 
     def __init__(self, Load=True, discrete = False):
 
@@ -43,6 +43,14 @@ class transition_experience():
         else:
             self.clear()
 
+    def add_rollout_data(self):
+        # Include rollout data in transitions DB
+        with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'rb') as filehandler:
+            roll_memory = pickle.load(filehandler)
+
+        self.memory += roll_memory
+
+
     def getComponents(self):
 
         states = np.array([item[0] for item in self.memory])
@@ -70,10 +78,12 @@ class transition_experience():
 
         plt.figure(1)
         ax1 = plt.subplot(121)
-        ax1.plot(states[:,0],states[:,1],'-k')
+        #ax1.plot(states[:,0],states[:,1],'-k')
         ax1.plot(states[:,0],states[:,1],'.y')
-        ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
+        #ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
         ax1.set(title='Object position')
+        plt.xlim(-100., 100.)
+        plt.ylim(0., 150.)
         
         ax2 = plt.subplot(122)
         ax2.plot(states[:,2],states[:,3],'.k')
@@ -126,7 +136,7 @@ class transition_experience():
             i = 0
             inx = []
             while i < D.shape[0]:
-                if np.linalg.norm( D[i, 0:2] - D[i, jj] ) < 2:
+                if np.linalg.norm( D[i, 0:2] - D[i, jj] ) < 3:
                     inx.append(i)
                 i += 1
             return D[inx,:], done[inx]

@@ -49,14 +49,14 @@ class collect_data():
         self.gripper_closed = msg.data == "closed"
 
     def process_data(self, msg):
-        print('[collect_data] Proccessing data.')
+        print('[collect_data] Proccessing data...')
 
         self.texp.save()
         self.texp.process_transition_data(stepSize = 10, mode = 3, plot = False)
         self.texp.process_svm(stepSize = 10, mode = 3)
 
-        print('[collect_data] Data processed and saved. Plotting current data...')
-        self.texp.plot_data()
+        # print('[collect_data] Data processed and saved. Plotting current data...')
+        # self.texp.plot_data()
 
         return EmptyResponse()
 
@@ -86,7 +86,7 @@ class collect_data():
                 else:
                     num_steps = np.random.randint(80)
             else:
-                num_steps = np.random.randint(20)
+                num_steps = np.random.randint(11,30)
             
             for _ in range( num_steps ):
                 msg.data = action
@@ -121,8 +121,14 @@ class collect_data():
 
     def run_planned_episode(self, req):
 
-        print('[collect_data] Rolling-out planned actions...')
+        print('[collect_data] Rolling-out new planned actions...')
         state_seq = self.rollout_srv.call(req)
+
+        self.texp.add_rollout_data() # Add rollout data to database
+
+        if not state_seq.success:
+            print('[collect_data] Rollout failed.')
+            return state_seq
 
         msg = Float32MultiArray()
         Done = False
@@ -134,9 +140,9 @@ class collect_data():
 
             # Get observation and choose action
             state = np.array(self.obs_srv().state)
-            action = self.choose_action()
+            action = self.choose_action(p = 0.85)
 
-            num_steps = np.random.randint(40)
+            num_steps = np.random.randint(12,50)
             
             for _ in range( num_steps ):
                 msg.data = action
@@ -152,7 +158,7 @@ class collect_data():
                     fail = self.drop_srv().dropped # Check if dropped - end of episode
                 else:
                     # End episode if overload or angle limits reached
-                    rospy.logerr('[RL] Failed to move gripper. Episode declared failed.')
+                    rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
                     fail = True
 
                 self.texp.add(state, action, next_state, not suc or fail)
@@ -169,11 +175,11 @@ class collect_data():
 
         return state_seq
 
-    def choose_action(self):
+    def choose_action(self, p = 0.5):
         if self.discrete_actions:
             A = np.array([[1.,1.],[-1.,-1.],[-1.,1.],[1.,-1.],[1.,0.],[-1.,0.],[0.,-1.],[0.,1.]])
             a = A[np.random.randint(A.shape[0])]
-            if np.random.uniform(0,1,1) > 0.5:
+            if np.random.uniform(0,1,1) > p:
                 if np.random.uniform(0,1,1) > 0.5:
                     a = A[0]
                 else:

@@ -8,23 +8,23 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
 import pickle
-from rl_pkg.srv import net_eval, observation, IsDropped, TargetAngles
-from gp_sim_node.srv import sa_bool
+from rollout_node.srv import observation, IsDropped, TargetAngles
+# from gp_sim_node.srv import sa_bool
 import time
 
 np.random.seed(10)
 
 state_dim = 4+2
-tr = '3'
+tr = '1'
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
-svm_srv = rospy.ServiceProxy('/svm_fail_check', sa_bool)
+# svm_srv = rospy.ServiceProxy('/svm_fail_check', sa_bool)
 
-obs_srv = rospy.ServiceProxy('/RL/observation', observation)
-drop_srv = rospy.ServiceProxy('/RL/IsObjDropped', IsDropped)
-move_srv = rospy.ServiceProxy('/RL/MoveGripper', TargetAngles)
-reset_srv = rospy.ServiceProxy('/RL/ResetGripper', Empty)
+obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
+drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)
+move_srv = rospy.ServiceProxy('/hand_control/MoveGripper', TargetAngles)
+reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
 
 ##########################################################################################################
 if tr == '1':
@@ -52,7 +52,7 @@ path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/verf/'
 
 if 0:
     Pro = []
-    for j in range(20):
+    for j in range(2):
         print("Rollout number " + str(j) + ".")
         # Reset gripper
         reset_srv()
@@ -108,7 +108,6 @@ for j in range(len(Pro)):
     if Sro.shape[0]==Pro[0].shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,0.,0.])
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
@@ -129,6 +128,7 @@ print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 Np = 500 # Number of particles
 if 1:
     print "Running GP."
+    sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,0.,0.])
 
     t_gp = time.time()
 
@@ -139,7 +139,7 @@ if 1:
 
     Pgp = []; 
     print("Running (open loop) path...")
-    for i in range(0, 20+0*A.shape[0]):
+    for i in range(0, A.shape[0]):
         print("[GP] Step " + str(i) + " of " + str(A.shape[0]))
         Pgp.append(S)
         a = A[i,:]
@@ -153,12 +153,13 @@ if 1:
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
 
-    t_gp = (time.time() - t_gp) / 40#A.shape[0]
+    t_gp = (time.time() - t_gp) / A.shape[0]
 
     ######################################## GPUP propagation ###############################################
 
     print "Running GPUP."
     t_gpup = time.time()
+    sigma_start = np.std(np.array(S), 0) + np.array([1e-4,1e-4,1e-4,1e-4,1e-4,1e-4])
 
     s = s_start
     sigma_x = sigma_start
@@ -179,7 +180,7 @@ if 1:
         Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
         Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)
 
-    t_gpup = (time.time() - t_gpup) / 40#A.shape[0]
+    t_gpup = (time.time() - t_gpup) / A.shape[0]
 
     ######################################## Save ###########################################################
 

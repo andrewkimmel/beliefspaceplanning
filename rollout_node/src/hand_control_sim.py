@@ -115,9 +115,8 @@ class hand_control():
             rospy.sleep(1.0)
             ratein.sleep()
             if self.object_grasped:# and self.lift_status:
-                break
-
-        self.wait2initialGrasp()
+                if self.wait2initialGrasp():
+                    break
         
         self.gripper_status = 'closed'
 
@@ -128,7 +127,10 @@ class hand_control():
 
         print('[hand_control_sim] Waiting for hand to stabilize...')
         ratein = rospy.Rate(15)
-        while 1:
+        c = 0
+        suc = False
+        while c < 150:
+            c += 1
             # print('Load' + str(self.gripper_load))
             if self.gripper_load[0]!=self.gripper_load[1]: # equal when stable in the initial position
                 rospy.sleep(0.5)
@@ -140,9 +142,13 @@ class hand_control():
             ratein.sleep()
             # print(pos1, self.obj_pos, np.linalg.norm(pos1 - self.obj_pos))
             if np.linalg.norm(pos1 - self.obj_pos) < 2e-2:
+                suc = True
+                print('[hand_control_sim] Hand stable.')
                 break
 
-        print('[hand_control_sim] Hand stable.')
+        return suc
+
+        
         
     def MoveGripper(self, msg):
         # This function should accept a vector of normalized incraments to the current angles: msg.angles = [dq1, dq2], where dq1 and dq2 can be equal to 0 (no move), 1,-1 (increase or decrease angles by finger_move_step_size)

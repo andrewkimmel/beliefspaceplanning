@@ -57,6 +57,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   rolloutReq.srv
+  rolloutReqFile.srv
   plotReq.srv
   TargetAngles.srv
   IsDropped.srv
