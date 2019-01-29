@@ -11,7 +11,7 @@ from svm_class import svm_failure
 from diffusionMaps import DiffusionMap
 from mean_shift import mean_shift
 
-np.random.seed(10)
+# np.random.seed(10)
 
 simORreal = 'sim'
 discreteORcont = 'discrete'
@@ -24,9 +24,9 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     def __init__(self):
         # Number of NN
         if useDiffusionMaps:
-            self.K = 1000
+            self.K = 500
             self.K_manifold = 100
-            self.df = DiffusionMap(sigma=1, embedding_dim=3, k = self.K)
+            self.df = DiffusionMap(sigma=1, embedding_dim=4, k = self.K)
         else:
             self.K = 100
 

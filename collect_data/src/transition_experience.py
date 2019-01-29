@@ -198,7 +198,7 @@ class transition_experience():
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
             done_new = []
-            ia = range(4,6) if mode == 1 or mode == 2 else range(6,8)
+            ia = range(4,6) if mode == 1 or mode == 2 else range(6,8) #range(2,4)#
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize+1, ia]):
@@ -220,14 +220,21 @@ class transition_experience():
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
+        for i in range(len(done)):
+            if done[i]:
+                done[i-1] = True
+
+        # states = states[:,2:4] 
+        # mode = 1
+
         SA = np.concatenate((states, actions), axis=1)
         SA, done = multiStep(SA, done, stepSize, mode)
-        print('Transition data with steps size %d has now %d points'%(stepSize, SA.shape[0]))
+        print('Transition data with step size %d has now %d points'%(stepSize, SA.shape[0]))
 
         inx_fail = np.where(done)[0]
         print "Number of failed states " + str(inx_fail.shape[0])
         T = np.where(np.logical_not(done))[0]
-        inx_suc = T[np.random.choice(T.shape[0], 1000, replace=False)]
+        inx_suc = T[np.random.choice(T.shape[0], 10000, replace=False)]
         SA = np.concatenate((SA[inx_fail], SA[inx_suc]), axis=0)
         done = np.concatenate((done[inx_fail], done[inx_suc]), axis=0)
 
