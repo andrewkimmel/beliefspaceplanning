@@ -16,12 +16,12 @@ rospy.init_node('run_rollout_set', anonymous=True)
 rate = rospy.Rate(15) # 15hz
 state_dim = 6
 
-set_mode = 'mean_only'
+set_mode = 'robust_plus'
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
 ############################# Rollout ################################
-if 0:
+if 1:
 
     files = glob.glob(path + "*.txt")
 
@@ -49,7 +49,7 @@ if 0:
 
 ############################# Plot ################################
 
-if 1:
+if 0:
 
     files = glob.glob(path + "*.pkl")
 

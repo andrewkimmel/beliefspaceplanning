@@ -1,7 +1,9 @@
 
 *.mat
-*.pkl
 *.mp4
+gpup_gp_node/src/verf/
+gpup_gp_node/src/results/
+
 
 # Prerequisites
 *.d
