@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 class mean_shift():
 
-    def __init__(self, bandwith=1., eps_sqr = .1, plot=False):
+    def __init__(self, bandwith=0.01, eps_sqr = .1, plot=False):
         self.bandwith = bandwith
         self.eps_sqr = eps_sqr
         self.plot = plot
@@ -45,7 +45,6 @@ class mean_shift():
         
 
     def shift_point(self, m, X):
-
         m_next = np.zeros(len(m))
         total_weight = 0
         for i in range(X.shape[0]):
@@ -53,7 +52,7 @@ class mean_shift():
 
             m_next += X[i] * w
             total_weight += w
-        
+
         return m_next / total_weight
 
 

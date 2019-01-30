@@ -13,7 +13,7 @@ from mean_shift import mean_shift
 
 # np.random.seed(10)
 
-simORreal = 'sim'
+simORreal = 't42_35'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 probability_threshold = 0.65
@@ -24,11 +24,11 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     def __init__(self):
         # Number of NN
         if useDiffusionMaps:
-            self.K = 500
-            self.K_manifold = 100
-            self.df = DiffusionMap(sigma=1, embedding_dim=4, k = self.K)
-        else:
             self.K = 100
+            self.K_manifold = 10
+            self.df = DiffusionMap(sigma=1, embedding_dim=2, k = self.K)
+        else:
+            self.K = 15
 
         svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
         data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K)
@@ -138,7 +138,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         # Propagate
         S_next = self.batch_propa(S, a)
 
-        mean = self.get_mean_shift(S_next)
+        mean = np.mean(S_next, 0) #self.get_mean_shift(S_next)
         
         return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability}
 

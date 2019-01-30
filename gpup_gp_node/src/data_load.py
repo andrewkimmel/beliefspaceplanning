@@ -8,10 +8,11 @@ import pickle
 N_dillute = 700000 # Number of points to randomly select from data
 
 class data_load(object):
+    Qtest = []
 
-    def __init__(self, simORreal = 'sim', discreteORcont = 'discrete', K = 100):
+    def __init__(self, simORreal = 't42_35', discreteORcont = 'discrete', K = 100):
         
-        self.postfix = '_v5_d6_m10'
+        self.postfix = '_v0_d4_m10'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -30,15 +31,20 @@ class data_load(object):
         print('[data_load] Loading data from "' + self.file + '"...' )
         Q = loadmat(self.path + self.file)
         Qtrain = Q['D']
+        is_start = int(Q['is_start'])
+        is_end = int(Q['is_end'])
+
+        self.Qtest = Qtrain[is_start:is_end, :]
+        Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
 
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']
 
-        Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
+        # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
-        self.state_action_dim = 6+2
-        self.state_dim = 4+2
+        self.state_action_dim = 6
+        self.state_dim = 4
 
         self.Xtrain = Qtrain[:,:self.state_action_dim]
         self.Ytrain = Qtrain[:,self.state_action_dim:]

@@ -14,7 +14,7 @@ class svm_failure():
 
     def __init__(self, discrete = True):
 
-        self.mode = 'discrete' if discrete else 'cont'
+        self.mode = 'd' if 'discrete' else 'c'
 
         self.load_data()
 
@@ -24,7 +24,7 @@ class svm_failure():
 
         # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
-        File = 'svm_data_' + self.mode + '_v5_d6_m10.obj' # <= File name here!!!!!
+        File = 't42_35_svm_data_' + self.mode + '_v0_d4_m10.obj' # <= File name here!!!!!
 
         print('Loading data from ' + File)
         with open(path + File, 'rb') as f: 
