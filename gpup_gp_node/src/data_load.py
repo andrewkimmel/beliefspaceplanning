@@ -4,8 +4,10 @@ from scipy.io import loadmat
 from sklearn.neighbors import KDTree 
 import os.path
 import pickle
+import matplotlib.pyplot as plt
 
-N_dillute = 500000 # Number of points to randomly select from data
+
+N_dillute = 700000 # Number of points to randomly select from data
 
 class data_load(object):
 
@@ -30,6 +32,8 @@ class data_load(object):
         print('[data_load] Loading data from "' + self.file + '"...' )
         Q = loadmat(self.path + self.file)
         Qtrain = Q['D']
+        # plt.plot(Qtrain[:,0],Qtrain[:,1],'.')
+        # plt.show()
 
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']

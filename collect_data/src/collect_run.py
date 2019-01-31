@@ -78,7 +78,6 @@ class collect_data():
             # Get observation and choose action
             state = np.array(self.obs_srv().state)
             action = self.choose_action()
-            self.ACTIONS.append(action)
 
             if np.random.uniform() > 0.5:
                 if np.random.uniform() > 0.6:
@@ -140,7 +139,7 @@ class collect_data():
 
             # Get observation and choose action
             state = np.array(self.obs_srv().state)
-            action = self.choose_action(p = 0.85)
+            action = self.choose_action(p = 0.6)
 
             num_steps = np.random.randint(12,50)
             
