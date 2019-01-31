@@ -16,10 +16,12 @@ rospy.init_node('run_rollout_set', anonymous=True)
 rate = rospy.Rate(15) # 15hz
 state_dim = 6
 
-set_mode = 'mean_only'
+set_mode = 'naive'
 
-#path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
-path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+# path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+results_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
+
 
 ############################# Rollout ################################
 if 0:
@@ -51,13 +53,27 @@ if 0:
 
 ############################# Plot ################################
 
+# Goal centers
+C = np.array([[-5.043, 106.210], #Experiment 1
+    [-74.9059, 97.05], #Experiment 2
+    [-72,77], #Experiment 3
+    [65,83], #Experiment 4
+    [-46,77], #Experiment 5
+    [40,100], #Experiment 6
+    [-26,105], #Experiment 7
+    [20,103]]) #Experiment 8
+r = 8
+
 if 1:
+
+    fo  = open(results_path + set_mode + '.txt', 'wt') 
 
     files = glob.glob(path + "*.pkl")
 
     for k in range(len(files)):
 
         pklfile = files[k]
+        ctr = C[int(pklfile[pklfile.find('goal')+4])-1, :] # Goal center
 
         for j in range(len(pklfile)-1, 0, -1):
             if pklfile[j] == '/':
@@ -84,11 +100,23 @@ if 1:
         Smean = np.array(Smean)
         Sstd = np.array(Sstd)
 
-        print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
+        c = float(c) / len(Pro)*100
+        print("Finished episode success rate: " + str(c) + "%")
 
-        fig = plt.figure(k)
+        # fig = plt.figure(k)
+        fig, ax = plt.subplots()
+        p = 0
         for S in Pro:
             plt.plot(S[:,0], S[:,1], 'r')
+
+            if np.linalg.norm(S[-1,:2]-ctr) <= r:
+                p += 1
+        p = float(p) / len(Pro)*100
+        print("Reached goal success rate: " + str(p) + "%")
+
+        plt.plot(ctr[0], ctr[1], 'om')
+        goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
+        ax.add_artist(goal)
 
         plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
         X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
@@ -97,5 +125,18 @@ if 1:
         plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
         plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
         plt.title(file_name + ", suc. rate: " + str(float(c) / len(Pro)*100) + "%")
+        plt.axis('equal')
+
+        for i in range(len(pklfile)-1, 0, -1):
+            if pklfile[i] == '/':
+                break
+
+        fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
+
+        plt.savefig(results_path + set_mode + '/' + pklfile[i+1:-4] + '.png')
+
+    fo.close()
         
-    plt.show()
+    # plt.show()
+
+    
