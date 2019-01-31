@@ -18,14 +18,16 @@ state_dim = 6
 
 set_mode = 'mean_only'
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+#path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
 ############################# Rollout ################################
 if 0:
 
     files = glob.glob(path + "*.txt")
 
-    for i in range(len(files)):
+    for _ in range(1):#len(files)-6, len(files)-7):
+        i = 13
 
         action_file = files[i]
         pklfile = action_file[:-3] + 'pkl'
