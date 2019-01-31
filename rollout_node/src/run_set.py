@@ -16,7 +16,7 @@ rospy.init_node('run_rollout_set', anonymous=True)
 rate = rospy.Rate(15) # 15hz
 state_dim = 6
 
-set_mode = 'robust'
+set_mode = 'robust_plus'
 
 #path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
