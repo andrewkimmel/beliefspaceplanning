@@ -15,7 +15,7 @@ import time
 # np.random.seed(10)
 
 state_dim = 4+2
-tr = '1'
+tr = '5'
 stepSize = 10
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -88,6 +88,15 @@ if tr == '1':
 [0.00000000000000000000,1.00000000000000000000],
 [-1.00000000000000000000,-1.00000000000000000000]])
 
+if tr=='4': 
+    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan.txt', delimiter=',', dtype=float)[:,:2]
+
+if tr=='5': 
+    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal1_run1_plan.txt', delimiter=',', dtype=float)[:,:2]
+      
+if tr=='6': 
+    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan.txt', delimiter=',', dtype=float)[:,:2]
+      
 ######################################## Roll-out ##################################################
 
 rospy.init_node('verification_gazebo', anonymous=True)
@@ -104,11 +113,20 @@ if 0:
         Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
 
         Pro.append(Sro)
-
+        
         with open(path + 'ver_rollout_' + tr + '_v5_d6_m' + str(stepSize) + '.pkl', 'w') as f: 
             pickle.dump(Pro, f)
 
-with open(path + 'ver_rollout_' + tr + '_v5_d6_m' + str(stepSize) + '.pkl') as f:  
+
+if tr=='4':
+    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan'
+elif tr=='5':
+    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal1_run1_plan'
+elif tr=='6':
+    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan'
+else:
+    f = path + 'ver_rollout_' + tr + '_v5_d6_m' + str(stepSize)
+with open(f + '.pkl') as f:  
     Pro = pickle.load(f) 
 # fig = plt.figure(0)
 # ax = fig.add_subplot(111)#, aspect='equal')
@@ -118,7 +136,7 @@ for j in range(len(Pro)):
     Sro = Pro[j]
     # ax.plot(Sro[:,0], Sro[:,1], 'b')
     S.append(Sro[0,:state_dim])
-    if Sro.shape[0]==Pro[0].shape[0]:
+    if Sro.shape[0]==A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
 sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,0,0])
@@ -128,10 +146,11 @@ sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,0,0])
 
 Smean = []
 Sstd = []
-for i in range(Sro.shape[0]):
+for i in range(A.shape[0]):
     F = []
     for j in range(len(Pro)): 
-        F.append(Pro[j][i])
+        if Pro[j].shape[0] > i:
+            F.append(Pro[j][i])
     Smean.append( np.mean(np.array(F), axis=0) )
     Sstd.append( np.std(np.array(F), axis=0) )
 Smean = np.array(Smean)
@@ -142,8 +161,7 @@ print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 # plt.show()
 # exit(1)
 
-
-if 0:   
+if 1:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
@@ -322,82 +340,6 @@ print "GP mean probability: " + str(stats[1][2])
 print "GPUP probability: " + str(stats[1][3])
 print "-----------------------------------"
 
-# Animate
-if 0:
-    fig = plt.figure(0)
-    ax = fig.add_subplot(111)#, aspect='equal')
-    for j in range(len(Pro)): 
-        Sro = Pro[j]
-        ax.plot(Sro[:,0], Sro[:,1], '.-b')
-
-    prtc_mean_line, = ax.plot([], [], '-g')
-    prtc, = ax.plot([], [], '.k', markersize=1)
-
-    sm, = ax.plot([], [], 'ok', markerfacecolor='r', markersize=8)
-
-    prtc_mean, = ax.plot([], [], '*g')
-    patch_prtc = Ellipse(xy=(Ypred_mean_gp[0,0], Ypred_mean_gp[0,1]), width=Ypred_std_gp[0,0]*2, height=Ypred_std_gp[0,1]*2, angle=0., animated=True, edgecolor='y', linewidth=2., fill=False)
-    ax.add_patch(patch_prtc)
-
-    patch = Ellipse(xy=(Ypred_mean_gpup[0,0], Ypred_mean_gpup[0,1]), width=Ypred_std_gpup[0,0]*2, height=Ypred_std_gpup[0,1]*2, angle=0., animated=True, edgecolor='m', linewidth=2., linestyle='--', fill=False)
-    ax.add_patch(patch)
-    patch_mean, = ax.plot([], [], '--m')
-
-    naive, = ax.plot([], [], '-k')
-
-
-    # plt.xlim(np.min(Ypred_mean_gp, 0)[0]*0-5, np.max(Ypred_mean_gp, 0)[0]*1.0)
-    # plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.99, np.max(Ypred_mean_gp, 0)[1]*1.01)
-
-    def init():
-        prtc.set_data([], [])
-        prtc_mean.set_data([], [])
-        prtc_mean_line.set_data([], [])
-        patch_mean.set_data([], [])
-        # sm.set_data([], [])
-        naive.set_data([], [])
-
-        return prtc, prtc_mean, prtc_mean_line, patch_prtc, patch, patch_mean, naive,
-
-    def animate(i):
-
-        S = Pgp[i]
-        prtc.set_data(S[:,0], S[:,1])
-        # print i, len(idx_g), len(idx_f)
-
-        # sm.set_data(Smean[i][0], Smean[i][1])
-
-        prtc_mean.set_data(Ypred_mean_gp[i,0], Ypred_mean_gp[i,1])
-        prtc_mean_line.set_data(Ypred_mean_gp[:i+1,0], Ypred_mean_gp[:i+1,1])
-
-        patch_prtc.center = (Ypred_mean_gp[i,0], Ypred_mean_gp[i,1])
-        patch_prtc.width = Ypred_std_gp[i,0]*2
-        patch_prtc.height = Ypred_std_gp[i,1]*2
-
-        patch.center = (Ypred_mean_gpup[i,0], Ypred_mean_gpup[i,1])
-        patch.width = Ypred_std_gpup[i,0]*2
-        patch.height = Ypred_std_gpup[i,1]*2
-        patch_mean.set_data(Ypred_mean_gpup[:i+1,0], Ypred_mean_gpup[:i+1,1])
-
-        naive.set_data(Ypred_naive[:i+1,0], Ypred_naive[:i+1,1])
-
-        return prtc, prtc_mean, prtc_mean_line, patch_prtc, patch, patch_mean, naive,
-
-    ani = animation.FuncAnimation(fig, animate, frames=len(Pgp), init_func=init, interval=80, repeat_delay=1000, blit=True)
-    # ani.save(path + 'belief_gazebo_' + str(tr) + '_v5.mp4', metadata={'artist':'Avishai Sintov','year':'2019'}, bitrate=-1, codec="libx264")
-
-    # plt.figure(1)
-    # for k in range(4):
-    #     ax1 = plt.subplot(2,2,k+1)
-    #     for i in range(len(Pgp)):
-    #         S = Pgp[i]
-    #         ax1.plot(S[:,k], '-b')
-    #     for i in range(len(Pro)):
-    #         S = Pro[i]
-    #         ax1.plot(S[:,k], '-k')
-
-    plt.show()
-
 
 t = range(A.shape[0]+1)
 
@@ -546,6 +488,18 @@ if tr == '3':
     ix = [0, 10, 20, 30, 42, 48]
     for i in range(len(ix)):
         plt.plot(Pgp[ix[i]][:,0], Pgp[ix[i]][:,1], '.k')
+
+if tr == '4' or tr == '5':
+    plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
+    plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
+    plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
+
+    plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
+
+    plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
+    
+    plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+    plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
 plt.show()
 

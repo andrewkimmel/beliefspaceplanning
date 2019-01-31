@@ -20,7 +20,6 @@ set_mode = 'naive'
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
-results_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
 
 
 ############################# Rollout ################################
@@ -62,80 +61,95 @@ C = np.array([[-5.043, 106.210], #Experiment 1
     [40,100], #Experiment 6
     [-26,105], #Experiment 7
     [20,103]]) #Experiment 8
-r = 8
+r = 12
 
 if 1:
 
-    fo  = open(results_path + set_mode + '.txt', 'wt') 
+    set_modes = ['naive', 'mean_only', 'robust', 'robust_plus']
+    results_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
 
-    files = glob.glob(path + "*.pkl")
+    for set_mode in set_modes:
 
-    for k in range(len(files)):
+        path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-        pklfile = files[k]
-        ctr = C[int(pklfile[pklfile.find('goal')+4])-1, :] # Goal center
+        fo  = open(results_path + set_mode + '.txt', 'wt') 
 
-        for j in range(len(pklfile)-1, 0, -1):
-            if pklfile[j] == '/':
-                break
-        file_name = pklfile[j+1:-4]
+        files = glob.glob(path + "*.pkl")
 
-        print('Plotting file number ' + str(k+1) + ': ' + file_name)
-        
-        with open(pklfile) as f:  
-            Pro = pickle.load(f) 
+        for k in range(len(files)):
 
-        maxR = np.max([x.shape[0] for x in Pro])
-        c = np.sum([(1 if x.shape[0]==maxR else 0) for x in Pro])
+            pklfile = files[k]
+            ctr = C[int(pklfile[pklfile.find('goal')+4])-1, :] # Goal center
 
-        Smean = []
-        Sstd = []
-        for i in range(maxR):
-            F = []
-            for j in range(len(Pro)): 
-                if Pro[j].shape[0] > i:
-                    F.append(Pro[j][i])
-            Smean.append( np.mean(np.array(F), axis=0) )
-            Sstd.append( np.std(np.array(F), axis=0) )
-        Smean = np.array(Smean)
-        Sstd = np.array(Sstd)
+            for j in range(len(pklfile)-1, 0, -1):
+                if pklfile[j] == '/':
+                    break
+            file_name = pklfile[j+1:-4]
 
-        c = float(c) / len(Pro)*100
-        print("Finished episode success rate: " + str(c) + "%")
+            print('Plotting file number ' + str(k+1) + ': ' + file_name)
+            
+            with open(pklfile) as f:  
+                Pro = pickle.load(f) 
 
-        # fig = plt.figure(k)
-        fig, ax = plt.subplots()
-        p = 0
-        for S in Pro:
-            plt.plot(S[:,0], S[:,1], 'r')
+            A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
+            maxR = A.shape[0] 
+            maxX = np.max([x.shape[0] for x in Pro])
+            
+            c = np.sum([(1 if x.shape[0]==maxR else 0) for x in Pro])
 
-            if np.linalg.norm(S[-1,:2]-ctr) <= r:
-                p += 1
-        p = float(p) / len(Pro)*100
-        print("Reached goal success rate: " + str(p) + "%")
+            Smean = []
+            Sstd = []
+            for i in range(min(maxR, maxX)):
+                F = []
+                for j in range(len(Pro)): 
+                    if Pro[j].shape[0] > i:
+                        F.append(Pro[j][i])
+                Smean.append( np.mean(np.array(F), axis=0) )
+                Sstd.append( np.std(np.array(F), axis=0) )
+            Smean = np.array(Smean)
+            Sstd = np.array(Sstd)
 
-        plt.plot(ctr[0], ctr[1], 'om')
-        goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
-        ax.add_artist(goal)
+            
+            # print maxR, Smean.shape, len(Pro)           
 
-        plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
-        X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
-        Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
-        plt.fill( X, Y , alpha = 0.5 , color = 'b')
-        plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
-        plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
-        plt.title(file_name + ", suc. rate: " + str(float(c) / len(Pro)*100) + "%")
-        plt.axis('equal')
 
-        for i in range(len(pklfile)-1, 0, -1):
-            if pklfile[i] == '/':
-                break
+            c = float(c) / len(Pro)*100
+            print("Finished episode success rate: " + str(c) + "%")
 
-        fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
+            # fig = plt.figure(k)
+            fig, ax = plt.subplots()
+            p = 0
+            for S in Pro:
+                plt.plot(S[:,0], S[:,1], 'r')
+                if S.shape[0] < maxR:
+                    plt.plot(S[-1,0], S[-1,1], 'oc')
 
-        plt.savefig(results_path + set_mode + '/' + pklfile[i+1:-4] + '.png')
+                if np.linalg.norm(S[-1,:2]-ctr) <= r:
+                    p += 1
+            p = float(p) / len(Pro)*100
+            print("Reached goal success rate: " + str(p) + "%")
 
-    fo.close()
+            plt.plot(ctr[0], ctr[1], 'om')
+            goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
+            ax.add_artist(goal)
+
+            plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
+            X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
+            Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
+            plt.fill( X, Y , alpha = 0.5 , color = 'b')
+            plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
+            plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
+            plt.title(file_name + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%")
+            plt.axis('equal')
+
+            for i in range(len(pklfile)-1, 0, -1):
+                if pklfile[i] == '/':
+                    break
+
+            fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
+            plt.savefig(results_path + set_mode + '/' + pklfile[i+1:-4] + '.png')
+
+        fo.close()
         
     # plt.show()
 
