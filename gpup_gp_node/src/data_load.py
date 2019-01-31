@@ -12,7 +12,7 @@ class data_load(object):
 
     def __init__(self, simORreal = 't42_35', discreteORcont = 'discrete', K = 100):
         
-        self.postfix = '_v0_d4_m10'
+        self.postfix = '_v0_d4_m1'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -31,7 +31,7 @@ class data_load(object):
         print('[data_load] Loading data from "' + self.file + '"...' )
         Q = loadmat(self.path + self.file)
         Qtrain = Q['D']
-        is_start = int(Q['is_start'])
+        is_start = int(Q['is_start'])#100080
         is_end = int(Q['is_end'])
 
         self.Qtest = Qtrain[is_start:is_end, :]
@@ -110,7 +110,7 @@ class data_load(object):
 
         SA_opt = []
         theta_opt = []
-        N = 1000
+        N = 10000
         for i in range(N):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]

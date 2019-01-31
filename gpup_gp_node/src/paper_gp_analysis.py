@@ -17,7 +17,7 @@ from data_load import data_load
 
 state_dim = 4
 tr = '1'
-stepSize = 10
+stepSize = 1
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
@@ -33,7 +33,7 @@ rate = rospy.Rate(15) # 15hz
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 1:   
+if 0:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
@@ -84,7 +84,7 @@ if 1:
 
     print("Running (open loop) path...")
     p_naive = 1
-    for i in range(0, A.shape[0]):
+    for i in range(0, 2+0*A.shape[0]):
         print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
@@ -114,7 +114,7 @@ if 1:
 
     print("Running (open loop) path...")
     p_mean = 1
-    for i in range(0, A.shape[0]):
+    for i in range(0, 2+0*A.shape[0]):
         print("[Mean] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
@@ -151,21 +151,21 @@ for i in range(A.shape[0]):
     if i < Smean.shape[0]-1:
         d += np.linalg.norm(Smean[i,:]-Smean[i+1,:])
     d_gp += np.linalg.norm(Ypred_mean_gp[i,:] - Smean[i,:])
-    d_naive += np.linalg.norm(Ypred_bmean[i,:] - Smean[i,:])
-    d_mean += np.linalg.norm(Ypred_naive[i,:] - Smean[i,:])
+    # d_naive += np.linalg.norm(Ypred_bmean[i,:] - Smean[i,:])
+    # d_mean += np.linalg.norm(Ypred_naive[i,:] - Smean[i,:])
 d_gp = np.sqrt(d_gp/A.shape[0])
-d_naive = np.sqrt(d_naive/A.shape[0])
-d_mean = np.sqrt(d_mean/A.shape[0])
+# d_naive = np.sqrt(d_naive/A.shape[0])
+# d_mean = np.sqrt(d_mean/A.shape[0])
 
 print "-----------------------------------"
 print "Path length: " + str(d)
 print "-----------------------------------"
 print "GP rmse: " + str(d_gp) + "mm"
-print "Naive rmse: " + str(d_naive) + "mm"
-print "mean rmse: " + str(d_mean) + "mm"
+# print "Naive rmse: " + str(d_naive) + "mm"
+# print "mean rmse: " + str(d_mean) + "mm"
 print "-----------------------------------"
 print "GP runtime: " + str(stats[0][0]) + "sec."
-print "GP Naive: " + str(stats[0][2]) + "sec."
+# print "GP Naive: " + str(stats[0][2]) + "sec."
 print "GP mean: " + str(stats[0][1]) + "sec."
 print "-----------------------------------"
 print "GP probability: " + str(stats[1][0])
@@ -269,18 +269,18 @@ ix = [0, 1]
 
 plt.figure(2)
 
-plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
+plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 # X = np.concatenate((Smean[:,ix[0]]+Sstd[:,ix[0]], np.flip(Smean[:,ix[0]]-Sstd[:,ix[0]])), axis=0)
 # Y = np.concatenate((Smean[:,ix[1]]+Sstd[:,ix[1]], np.flip(Smean[:,ix[1]]-Sstd[:,ix[1]])), axis=0)
 # plt.fill( X, Y , alpha = 0.5 , color = 'b')
 
-plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
+plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
 # X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
 # Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
 # plt.fill( X, Y , alpha = 0.5 , color = 'r')
 
-plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
-plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
+# plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+# plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
 plt.show()
 
