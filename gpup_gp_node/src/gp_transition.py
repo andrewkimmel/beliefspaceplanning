@@ -37,7 +37,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         rospy.Service('/gp/transition', batch_transition, self.GetTransition)
         rospy.Service('/gp/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
         rospy.Service('/gp/transitionRepeat', batch_transition_repeat, self.GetTransitionRepeat)
-        rospy.Service('/gp/batchSVMcheck', batchSVM, self.batch_svm_check_service)
+        rospy.Service('/gp/batchSVMcheck', batch_transition, self.batch_svm_check_service)
         rospy.init_node('gp_transition', anonymous=True)
         print('[gp_transition] Ready.')
 
