@@ -15,13 +15,12 @@ class transition_experience():
     def __init__(self, Load=True, discrete = False):
 
         if discrete:
-            self.mode = 'd'
+            self.mode = 'discrete'
         else:
             self.mode = 'cont'
         
-        self.file = 'raw_35_' + self.mode + '_v0'
+        self.file = 'sim_raw_' + self.mode + '_v5'
         self.file_name = self.path + self.file + '.obj'
-        print self.file
 
         if Load:
             self.load()
@@ -38,6 +37,7 @@ class transition_experience():
         if os.path.isfile(self.file_name):
             print('Loading data from ' + self.file_name)
             with open(self.file_name, 'rb') as filehandler:
+            # filehandler = open(self.file_name, 'r')
                 self.memory = pickle.load(filehandler)
             print('Loaded transition data of size %d.'%self.getSize())
         else:
@@ -122,23 +122,28 @@ class transition_experience():
 
         np.savetxt(filen, M, delimiter=' ')
 
-    def process_transition_data(self, stepSize = 1, plot = False):
-
-        def clean(D, done):
+    def process_transition_data(self, mode = 1, stepSize = 1, plot = False):
+        '''
+        mode:
+            1 - Position and load
+            2 - Position and velocity
+            3 - Postion, load and velocity
+        '''
+        def clean(D, done, mode):
             print('[transition_experience] Cleaning data...')
 
-            jj = range(6,8) 
+            jj = range(6,8) if mode == 1 or mode == 2 else range(8,10)
             i = 0
             inx = []
             while i < D.shape[0]:
-                if np.linalg.norm( D[i, 0:2] - D[i, jj] ) < 3 or np.all(D[i,:]==0.0):
+                if np.linalg.norm( D[i, 0:2] - D[i, jj] ) < 3:
                     inx.append(i)
                 i += 1
             return D[inx,:], done[inx]
 
-        def multiStep(D, done, stepSize): 
+        def multiStep(D, done, stepSize, mode): 
             Dnew = []
-            ia = range(4,6) 
+            ia = range(4,6) if mode == 1 or mode == 2 else range(6,8)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize+1, ia]) or np.any(done[i:i+stepSize+1]):
@@ -157,7 +162,15 @@ class transition_experience():
         next_states = np.array([item[2] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
-        # signal.medfilt(states[:, 4]
+        if mode == 1:
+            states = states[:, [0, 1, 2, 3]]
+            next_states = next_states[:, [0, 1, 2, 3]]
+        elif mode == 2:
+            states = states[:, [0, 1, 4, 5]]
+            next_states = next_states[:, [0, 1, 4, 5]]
+        elif mode == 3:
+            states = np.concatenate((states[:, :4], signal.medfilt(states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
+            next_states = np.concatenate((next_states[:, :4], signal.medfilt(next_states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(next_states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
         self.state_dim = states.shape[1]
 
         inx = np.where(done)
@@ -165,27 +178,27 @@ class transition_experience():
         D = np.delete(D, inx, 0)
         done = np.delete(done, inx, 0)
 
-        D, done = clean(D, done)
+        D, done = clean(D, done, mode)
 
         if stepSize > 1:
-            D = multiStep(D, done, stepSize)
+            D = multiStep(D, done, stepSize, mode)
 
         self.D = D
         Dreduced = []
 
-        savemat(self.path + 't42_35_data_discrete_v0_d' + str(4) + '_m' + str(stepSize) + '.mat', {'D': D, 'Dreduced': Dreduced, 'is_start': is_start, 'is_end': is_end})
+        savemat(self.path + 'sim_data_discrete_v5_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.mat', {'D': D, 'Dreduced': Dreduced, 'is_start': is_start, 'is_end': is_end})
         print "Saved mat file with " + str(D.shape[0]) + " transition points."
 
         if plot:
             plt.scatter(D[:,0], D[:,1])
             plt.show()
     
-    def process_svm(self, stepSize = 1):
+    def process_svm(self, mode = 1, stepSize = 1):
 
-        def multiStep(D, done, stepSize): 
+        def multiStep(D, done, stepSize, mode): 
             Dnew = []
             done_new = []
-            ia = range(4,6) 
+            ia = range(4,6) if mode == 1 or mode == 2 else range(6,8)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize+1, ia]):
@@ -207,22 +220,18 @@ class transition_experience():
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
-        for i in range(len(done)):
-            if done[i]:
-                done[i-1] = True
-
         SA = np.concatenate((states, actions), axis=1)
-        SA, done = multiStep(SA, done, stepSize)
-        print('Transition data with step size %d has now %d points'%(stepSize, SA.shape[0]))
+        SA, done = multiStep(SA, done, stepSize, mode)
+        print('Transition data with steps size %d has now %d points'%(stepSize, SA.shape[0]))
 
         inx_fail = np.where(done)[0]
         print "Number of failed states " + str(inx_fail.shape[0])
         T = np.where(np.logical_not(done))[0]
-        inx_suc = T[np.random.choice(T.shape[0], 10000, replace=False)]
+        inx_suc = T[np.random.choice(T.shape[0], 1000, replace=False)]
         SA = np.concatenate((SA[inx_fail], SA[inx_suc]), axis=0)
         done = np.concatenate((done[inx_fail], done[inx_suc]), axis=0)
 
-        with open(self.path + 'svm_t42_35_data_' + self.mode + '_v0_d' + str(4) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
+        with open(self.path + 'svm_data_' + self.mode + '_v5_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
             pickle.dump([SA, done], f)
         print('Saved svm data.')
 
@@ -269,7 +278,6 @@ class transition_experience():
         print 'Success rate: ' + str(float(s)/SA_test.shape[0]*100)
         print 'Drop prediction accuracy: ' + str(float(s_fail)/c_fail*100)
         print 'Success prediction accuracy: ' + str(float(s_suc)/c_suc*100)
-
 
 
 
