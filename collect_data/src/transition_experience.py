@@ -131,7 +131,7 @@ class transition_experience():
             i = 0
             inx = []
             while i < D.shape[0]:
-                if np.linalg.norm( D[i, 0:2] - D[i, jj] ) < 3 or np.all(D[i,:]==0.0):
+                if np.linalg.norm( D[i, 0:2] - D[i, jj] ) < 3 and not np.all(D[i,:]==0.0):
                     inx.append(i)
                 i += 1
             return D[inx,:], done[inx]

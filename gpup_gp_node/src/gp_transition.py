@@ -25,7 +25,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         # Number of NN
         if useDiffusionMaps:
             self.K = 500
-            self.K_manifold = 10
+            self.K_manifold = 20
             self.df = DiffusionMap(sigma=.5, embedding_dim=3, k = self.K)
         else:
             self.K = 20
@@ -37,6 +37,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         rospy.Service('/gp/transition', batch_transition, self.GetTransition)
         rospy.Service('/gp/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
         rospy.Service('/gp/transitionRepeat', batch_transition_repeat, self.GetTransitionRepeat)
+        rospy.Service('/gp/batchSVMcheck', batch_transition, self.batch_svm_check_service)
         rospy.init_node('gp_transition', anonymous=True)
         print('[gp_transition] Ready.')
 
@@ -111,6 +112,23 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         return failed_inx
 
+
+    def batch_svm_check_service(self, req):
+
+        S = np.array(req.states).reshape(-1, self.state_dim)
+        a = np.array(req.action)
+
+        failed_inx = []
+        for i in range(S.shape[0]):
+            p, _ = self.probability(S[i,:], a) # Probability of failure
+            prob_fail = np.random.uniform(0,1)
+            if prob_fail <= p:
+                failed_inx.append(i)
+
+        node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+
+        return {'node_probability': node_probability}
+        
     # Predicts the next step by calling the GP class
     def GetTransition(self, req):
 
