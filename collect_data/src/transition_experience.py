@@ -231,6 +231,10 @@ class transition_experience():
         SA = np.concatenate((SA[inx_fail], SA[inx_suc]), axis=0)
         done = np.concatenate((done[inx_fail], done[inx_suc]), axis=0)
 
+        print SA.shape
+        print list(SA)
+        exit(1) 
+
         with open(self.path + 'svm_data_' + self.mode + '_v5_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
             pickle.dump([SA, done], f)
         print('Saved svm data.')
