@@ -76,6 +76,7 @@ from collect_data.srv import sparse_goal
 
 nodes =[
 "robust_particles_pc_svmHeuristic",
+"robust_particles_pp_pc_svmHeuristic",
 "naive_with_svm",
 "mean_only_particles",
 ]
@@ -89,17 +90,29 @@ nodes =[
 # "20,103,  16,  16,  0.026,  0"
 # ]
 
-## ROBUST PLUS GOALS part 2
+## ROBUST PLUS GOALS part 3- Avishai changed this
+
+# goals = [
+# "-40, 100.210,  16,  16,  0.026,  0",
+# "-60.9059, 90.05,  16,  16,  0.026,  0",
+# "0,110,  16,  16,  0.026,  0",
+# "77,90,  16,  16,  0.026,  0",
+# "42,85,  16,  16,  0.026,  0",
+# "20,127,  16,  16,  0.026,  0"
+# ]
+
+## ROBUST PLUS GOALS part 4 - Avishai changed this
 
 goals = [
-"-40, 100.210,  16,  16,  0.026,  0",
-"-60.9059, 90.05,  16,  16,  0.026,  0",
-"0,110,  16,  16,  0.026,  0",
-"77,90,  16,  16,  0.026,  0",
-"42,85,  16,  16,  0.026,  0",
-"20,127,  16,  16,  0.026,  0"
+"-22, 110.210,  16,  16,  0.026,  0",
+"-30.9059, 125.05,  16,  16,  0.026,  0",
+"-70,90,  16,  16,  0.026,  0",
+"30,108,  16,  16,  0.026,  0",
+"30,125,  16,  16,  0.026,  0",
+"60,90,  16,  16,  0.026,  0",
+"5,130,  16,  16,  0.026,  0",
+"90,60,  16,  16,  0.026,  0",
 ]
-
 GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
@@ -108,7 +121,7 @@ FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
     for x in range(20):
-        count = 0 #9
+        count = 6 #9
         for g in goals:
             for n in nodes:
                 node_name = "node:="+ n + "_goal" + str(count) + "_run" + str(x)

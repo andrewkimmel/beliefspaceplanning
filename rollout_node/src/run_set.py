@@ -10,12 +10,13 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = True
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
+# comp = 'juntao'
+comp = 'pracsys'
 
 ############################# Rollout ################################
 if rollout:
@@ -58,36 +59,40 @@ if rollout:
 
 ############################# Plot ################################
 
+C = []
 # Goal centers - set 1
-# C = np.array([[-5.043, 106.210], #Experiment 1
-#     [-74.9059, 97.05], #Experiment 2
-#     [-72,77], #Experiment 3
-#     [65,83], #Experiment 4
-#     [-46,77], #Experiment 5
-#     [40,100], #Experiment 6
-#     [-26,105], #Experiment 7
-#     [20,103]]) #Experiment 8
+C.append(np.array([[-5.043, 106.210], #Experiment 1
+    [-74.9059, 97.05], #Experiment 2
+    [-72,77], #Experiment 3
+    [65,83], #Experiment 4
+    [-46,77], #Experiment 5
+    [40,100], #Experiment 6
+    [-26,105], #Experiment 7
+    [20,103]])) #Experiment 8
 # Goal centers - set 2
-C = np.array([[-5.043, 106.210], #Experiment 0
+C.append(np.array([[-5.043, 106.210], #Experiment 0
     [-74.9059, 97.05], #Experiment 1
     [65,83], #Experiment 2
     [40,100], #Experiment 3
     [-26,105], #Experiment 4
-    [20,103]]) #Experiment 5
+    [20,103]])) #Experiment 5
+# Goal centers - set 3
+C.append(np.array([[-40, 100.210], #Experiment 0
+    [-60.9059, 90.05], #Experiment 1
+    [0,110], #Experiment 2
+    [77,90], #Experiment 3
+    [42,85], #Experiment 4
+    [20,127]])) #Experiment 5
 
-# "-5.043, 106.210,  16,  16,  0.026,  0", #Goal 0
-# "-74.9059, 97.05,  16,  16,  0.026,  0", #Goal 1
-# "65,83,  16,  16,  0.026,  0", #Goal 2
-# "40,100,  16,  16,  0.026,  0",#Goal 3
-# "-26,105,  16,  16,  0.026,  0",#Goal 4
-# "20,103,  16,  16,  0.026,  0" #Goal 5
 
 r = 12
+
+set_num = 3
 
 if not rollout:
 
     # set_modes = ['naive', 'mean_only', 'robust', 'robust_plus']
-    set_modes = ['robust_plus3', 'naive3', 'mean_only3']
+    set_modes = ['robust_plus'+str(set_num), 'naive'+str(set_num), 'mean_only'+str(set_num)]
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
 
     for set_mode in set_modes:
@@ -101,7 +106,9 @@ if not rollout:
         for k in range(len(files)):
 
             pklfile = files[k]
-            ctr = C[int(pklfile[pklfile.find('goal')+4]), :] # Goal center
+            ctr = C[set_num-1][int(pklfile[pklfile.find('goal')+4]), :] # Goal center
+            print ctr
+            # exit(1)
 
             for j in range(len(pklfile)-1, 0, -1):
                 if pklfile[j] == '/':

@@ -1,0 +1,5 @@
+naive_with_svm_goal0_run0_plan: 100.0, 73.6842105263
+naive_with_svm_goal4_run0_plan: 100.0, 94.7368421053
+naive_with_svm_goal3_run0_plan: 100.0, 0.0
+naive_with_svm_goal5_run0_plan: 100.0, 15.7894736842
+naive_with_svm_goal1_run0_plan: 100.0, 100.0
