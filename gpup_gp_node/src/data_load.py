@@ -15,8 +15,8 @@ class data_load(object):
         
         self.postfix = '_v5_d6_m10'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
-        # self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
-        self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
+        self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.load()
         self.K = K
 
@@ -41,11 +41,11 @@ class data_load(object):
         Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
-        # self.state_action_dim = 6+2
-        # self.state_dim = 4+2
+        self.state_action_dim = 6+2
+        self.state_dim = 4+2
 
-        self.state_action_dim = 4+2
-        self.state_dim = 2+2
+        # self.state_action_dim = 4+2
+        # self.state_dim = 2+2
         self.Xtrain = Qtrain[:,:self.state_action_dim]
         self.Ytrain = Qtrain[:,self.state_action_dim:]
 

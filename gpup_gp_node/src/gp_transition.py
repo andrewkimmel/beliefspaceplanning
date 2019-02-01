@@ -2,7 +2,7 @@
 import rospy
 from std_msgs.msg import Float64MultiArray, Float32MultiArray, Int16
 from std_srvs.srv import SetBool, Empty, EmptyResponse
-from gpup_gp_node.srv import batch_transition, batch_transition_repeat, one_transition, batchSVM
+from gpup_gp_node.srv import batch_transition, batch_transition_repeat, one_transition
 import math
 import numpy as np
 from gp import GaussianProcess
