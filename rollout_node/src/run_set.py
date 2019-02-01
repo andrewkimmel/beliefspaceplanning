@@ -10,11 +10,12 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = False
+rollout = True
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
+comp = 'juntao'
 
 ############################# Rollout ################################
 if rollout:
@@ -23,17 +24,19 @@ if rollout:
     rate = rospy.Rate(15) # 15hz
     state_dim = 6
 
-    set_modes = ['robust_plus2']
+    set_modes = ['naive3']
     # set_modes =['mean_only2', 'robust_plus2', 'naive2'] 
 
     for set_mode in set_modes:
-        path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
         files = glob.glob(path + "*.txt")
 
         for i in range(len(files)):
 
             action_file = files[i]
+            if action_file.find('traj') > 0:
+                continue
             pklfile = action_file[:-3] + 'pkl'
 
             print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
@@ -84,12 +87,12 @@ r = 12
 if not rollout:
 
     # set_modes = ['naive', 'mean_only', 'robust', 'robust_plus']
-    set_modes = ['robust_plus2', 'naive2', 'mean_only2']
-    results_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
+    set_modes = ['robust_plus3', 'naive3', 'mean_only3']
+    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
 
     for set_mode in set_modes:
 
-        path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
         fo  = open(results_path + set_mode + '.txt', 'wt') 
 
