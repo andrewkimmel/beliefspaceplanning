@@ -9,8 +9,8 @@ from sklearn.neighbors import KDTree #pip install -U scikit-learn
 
 
 class transition_experience():
-    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
-    # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
+    # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
 
     def __init__(self, Load=True, discrete = False):
 
@@ -45,7 +45,8 @@ class transition_experience():
 
     def add_rollout_data(self):
         # Include rollout data in transitions DB
-        with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'rb') as filehandler:
+        with open(path +'rollout_tmp.pkl', 'rb') as filehandler:
+        # with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'rb') as filehandler:
             roll_memory = pickle.load(filehandler)
 
         self.memory += roll_memory

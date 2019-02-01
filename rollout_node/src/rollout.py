@@ -91,6 +91,7 @@ class rollout():
         #pickle.dump(self.rollout_transition, file_pi)
         #file_pi.close()
 
+
         print("[rollout] Rollout done.")
 
         return np.array(S), success
