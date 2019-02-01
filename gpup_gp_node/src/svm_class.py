@@ -37,6 +37,9 @@ class svm_failure():
         self.x_mean = scaler.mean_
         self.x_std = scaler.scale_
 
+        print SA.shape
+        exit(1)
+
         print 'Fitting SVM...'
         self.clf = svm.SVC( probability=True, class_weight='balanced', C=1.0 )
         self.clf.fit( list(self.SA), 1*self.done )
