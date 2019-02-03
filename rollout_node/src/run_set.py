@@ -10,13 +10,13 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+#comp = 'pracsys'
 
 ############################# Rollout ################################
 if rollout:
@@ -25,7 +25,7 @@ if rollout:
     rate = rospy.Rate(15) # 15hz
     state_dim = 6
 
-    set_modes = ['naive3']
+    set_modes = ['mean_only4']
     # set_modes =['mean_only2', 'robust_plus2', 'naive2'] 
 
     for set_mode in set_modes:
@@ -46,7 +46,7 @@ if rollout:
 
             Af = A.reshape((-1,))
             Pro = []
-            for j in range(20):
+            for j in range(10):
                 print("Rollout number " + str(j) + ".")
                 
                 Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
