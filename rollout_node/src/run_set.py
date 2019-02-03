@@ -10,13 +10,13 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-#comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 ############################# Rollout ################################
 if rollout:
@@ -76,15 +76,15 @@ C.append(np.array([[-5.043, 106.210], #Experiment 0
     [40,100], #Experiment 3
     [-26,105], #Experiment 4
     [20,103]])) #Experiment 5
-# Goal centers - set 3
+# Goal centers - set 3 and 4 in 4
+C.append([])
 C.append(np.array([[-40, 100.210], #Experiment 0
     [-60.9059, 90.05], #Experiment 1
     [0,110], #Experiment 2
     [77,90], #Experiment 3
     [42,85], #Experiment 4
-    [20,127]])) #Experiment 5
-# Goal centers - set 4
-C.append(np.array([[-22, 110.210], #Experiment 0
+    [20,127], #Experiment 5
+    [-22, 110.210], #Experiment 0
     [-30.9059, 125.05], #Experiment 1
     [-70,90],           #Experiment 2
     [30,108],           #Experiment 3
@@ -95,7 +95,7 @@ C.append(np.array([[-22, 110.210], #Experiment 0
 
 r = 12
 
-set_num = 2
+set_num = 4
 set_modes = ['robust_plus'+str(set_num), 'naive'+str(set_num), 'mean_only'+str(set_num)]
 results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
 
@@ -197,15 +197,16 @@ if not rollout and 0:
 
 if 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results_goal/'
+    PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 
     fo  = open(results_path + 'set' + str(set_num) + '.txt', 'wt') 
 
-    for goal_num in range(6):
+    for goal_num in range(len(C[set_num-1])):
         ctr = C[set_num-1][goal_num]
 
-        fo.write('\ngoal ' + str(goal_num) + ':\n')
+        fo.write('\ngoal ' + str(goal_num) + ': ' + str(C[set_num-1][goal_num]) + '\n')
         
-        fig = plt.figure(figsize=(20,7))
+        fig = plt.figure(figsize=(20,4))
 
         a = 0
         for set_mode in set_modes:
@@ -217,7 +218,9 @@ if 1:
             found = False
             for k in range(len(files)):
                 pklfile = files[k]
-                if int(pklfile[pklfile.find('goal')+4]) == goal_num:
+                ja = pklfile.find('goal')+4
+                ja = pklfile[ja:ja+2] if not pklfile[ja+1] == '_' else pklfile[ja]
+                if int(ja) == goal_num:
                     found = True
                     break
 
@@ -230,11 +233,14 @@ if 1:
             ax.add_artist(goal)
             goal_plan = plt.Circle((ctr[0], ctr[1]), 8, color='w')
             ax.add_artist(goal_plan)
+            # plt.ylim([80,130])
+            # plt.xlim([-100, 100])
             
             if not found:
                 plt.title(set_mode + ", No plan")
                 fo.write(set_mode + ': No plan\n')
                 continue
+            PL[set_mode] += 1.
             pklfile = files[k]
 
             for j in range(len(pklfile)-1, 0, -1):
@@ -269,8 +275,14 @@ if 1:
             c = float(c) / len(Pro)*100
 
             p = 0
+            t = True
             for S in Pro:
-                plt.plot(S[:,0], S[:,1], 'r')
+                if t:
+                    plt.plot(S[:,0], S[:,1], 'r', label='rollouts')
+                    t = False
+                else:
+                    plt.plot(S[:,0], S[:,1], 'r')
+
                 if S.shape[0] < maxR:
                     plt.plot(S[-1,0], S[-1,1], 'oc')
 
@@ -288,7 +300,9 @@ if 1:
             # plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
             plt.title(set_mode + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%")
             # plt.axis('equal')
-            # plt.ylim([85,130])
+
+            plt.plot(Smean[0,0], Smean[0,1], 'og', markersize=14 , label='start state')
+            
             plt.legend()
 
             for i in range(len(pklfile)-1, 0, -1):
@@ -297,6 +311,11 @@ if 1:
 
             fo.write(set_mode + ': ' + str(c) + ', ' + str(p) + '\n')
         plt.savefig(results_path + 'set' + str(set_num) + '_goal' + str(goal_num) + '.png')    
+    
+    fo.write('\n\nPlanning success rate: \n')
+    for k in list(PL.keys()):
+        fo.write(k + ': ' + str(PL[k]/13.*100.) + '\n')
+    
     fo.close()
     # plt.show()
 
