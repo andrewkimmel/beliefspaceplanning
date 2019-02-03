@@ -1,0 +1,30 @@
+
+goal 0:
+robust_plus2: 100.0, 0.0
+naive2: No plan
+mean_only2: 55.0, 45.0
+
+goal 1:
+robust_plus2: 100.0, 100.0
+naive2: 100.0, 98.9583333333
+mean_only2: 100.0, 85.0
+
+goal 2:
+robust_plus2: 100.0, 100.0
+naive2: 100.0, 100.0
+mean_only2: 100.0, 0.0
+
+goal 3:
+robust_plus2: 100.0, 0.0
+naive2: 100.0, 0.0
+mean_only2: 100.0, 0.0
+
+goal 4:
+robust_plus2: 100.0, 94.7368421053
+naive2: No plan
+mean_only2: No plan
+
+goal 5:
+robust_plus2: No plan
+naive2: No plan
+mean_only2: No plan
