@@ -9,13 +9,14 @@ import numpy as np
 from gpup import UncertaintyPropagation
 from data_load import data_load
 from svm_class import svm_failure
-from diffusionMaps import DiffusionMap
+# from diffusionMaps import DiffusionMap
+from dr_diffusionmaps import DiffusionMap
 
 np.random.seed(10)
 
 simORreal = 'sim'
 discreteORcont = 'discrete'
-useDiffusionMaps = False
+useDiffusionMaps = True
 
 class Spin_gpup(data_load, svm_failure):
 
@@ -25,9 +26,12 @@ class Spin_gpup(data_load, svm_failure):
 
         # Number of NN
         if useDiffusionMaps:
-            self.K = 1000
-            self.K_manifold = 100
-            self.df = DiffusionMap(sigma=1, embedding_dim=3, k = self.K)
+            dim = 5
+            self.K = 500
+            self.K_manifold = 50
+            self.df = DiffusionMap(sigma=5, embedding_dim=dim)
+            # self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
+            print('[gp_transition] Using diffusion maps with dimension %d.'%dim)
         else:
             self.K = 100
 
@@ -48,7 +52,7 @@ class Spin_gpup(data_load, svm_failure):
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 
         if useDiffusionMaps:
-            X_nn, Y_nn = reduction(sa, X_nn, Y_nn)
+            X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
 
         m = np.zeros(self.state_dim)
         v = np.zeros(self.state_dim)
