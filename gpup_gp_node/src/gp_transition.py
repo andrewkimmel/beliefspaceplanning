@@ -8,7 +8,8 @@ import numpy as np
 from gp import GaussianProcess
 from data_load import data_load
 from svm_class import svm_failure
-from diffusionMaps import DiffusionMap
+# from diffusionMaps import DiffusionMap
+from dr_diffusionmaps import DiffusionMap
 from mean_shift import mean_shift
 
 # np.random.seed(10)
@@ -24,9 +25,12 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     def __init__(self):
         # Number of NN
         if useDiffusionMaps:
+            dim = 2
             self.K = 500
-            self.K_manifold = 20
-            self.df = DiffusionMap(sigma=.5, embedding_dim=3, k = self.K)
+            self.K_manifold = 50
+            self.df = DiffusionMap(sigma=5., embedding_dim=dim)
+            # self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
+            print('[gp_transition] Using diffusion maps with dimension %d.'%dim)
         else:
             self.K = 20
 

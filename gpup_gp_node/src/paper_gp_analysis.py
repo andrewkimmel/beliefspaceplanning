@@ -43,7 +43,7 @@ rate = rospy.Rate(15) # 15hz
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 0:   
+if 1:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
