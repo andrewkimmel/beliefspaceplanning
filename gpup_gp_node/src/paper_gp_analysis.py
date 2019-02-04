@@ -27,9 +27,9 @@ naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 # A = DL.Qtest[:,4:6]
 # 
 
-Smean = A = np.loadtxt('/home/pracsys/catkin_ws/src/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_traj.txt', delimiter=',')[:,:4]
-A = np.loadtxt('/home/pracsys/catkin_ws/src/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_plan.txt', delimiter=',')[:,:2]
-R = np.loadtxt('/home/pracsys/catkin_ws/src/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_roll.txt', delimiter=',')[:,:4]
+Smean = A = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_traj.txt', delimiter=',')[:,:4]
+A = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_plan.txt', delimiter=',')[:,:2]
+R = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_roll.txt', delimiter=',')[:,:4]
 
 # s_start = Smean[0,:]
 s_start = R[0,:]
@@ -43,7 +43,7 @@ rate = rospy.Rate(15) # 15hz
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 1:   
+if 0:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
@@ -284,15 +284,18 @@ try:
 except:
     pass
 
-plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='Plan')
+# plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='Plan')
 # X = np.concatenate((Smean[:,ix[0]]+Sstd[:,ix[0]], np.flip(Smean[:,ix[0]]-Sstd[:,ix[0]])), axis=0)
 # Y = np.concatenate((Smean[:,ix[1]]+Sstd[:,ix[1]], np.flip(Smean[:,ix[1]]-Sstd[:,ix[1]])), axis=0)
 # plt.fill( X, Y , alpha = 0.5 , color = 'b')
 
 plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP')
-X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
-Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
-plt.fill( X, Y , alpha = 0.5 , color = 'r')
+# X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
+# Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
+# plt.fill( X, Y , alpha = 0.5 , color = 'r')
+# plt.plot(Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], '--r', label='BPP')
+# plt.plot(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], '--r', label='BPP')
+
 
 # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
 # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
