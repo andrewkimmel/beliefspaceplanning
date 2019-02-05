@@ -9,8 +9,8 @@ from sklearn.neighbors import KDTree #pip install -U scikit-learn
 
 
 class transition_experience():
-    # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
-    path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
+    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
 
     def __init__(self, Load=True, discrete = False):
 
@@ -76,20 +76,26 @@ class transition_experience():
         done = [item[3] for item in self.memory]
         states = np.array(states)
         failed_states = states[done]
+        print len(self.memory)
+        print [item[4] for item in self.memory[:2000]]
+        # print self.memory[:][4]
 
         plt.figure(1)
-        ax1 = plt.subplot(121)
-        #ax1.plot(states[:,0],states[:,1],'-k')
-        ax1.plot(states[:,0],states[:,1],'.y')
-        #ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
-        ax1.set(title='Object position')
-        plt.xlim(-100., 100.)
-        plt.ylim(0., 150.)
+        # ax1 = plt.subplot(121)
+        # #ax1.plot(states[:,0],states[:,1],'-k')
+        # ax1.plot(states[:,0],states[:,1],'.y')
+        # #ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
+        # ax1.set(title='Object position')
+        # plt.xlim(-100., 100.)
+        # plt.ylim(0., 150.)
         
-        ax2 = plt.subplot(122)
-        ax2.plot(states[:,2],states[:,3],'.k')
-        ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
-        ax2.set(title='Actuator loads')
+        # ax2 = plt.subplot(122)
+        # ax2.plot(states[:,2],states[:,3],'.k')
+        # ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
+        # ax2.set(title='Actuator loads')
+
+        # plt.plot(dt)
+        # print self.memory
         
         # ax3 = plt.subplot(223)
         # ax3.plot(ep_mean_r)
@@ -99,7 +105,7 @@ class transition_experience():
         # ax4.plot(c_losses)
         # ax4.set(title='Q-value losses')
 
-        plt.show()
+        # plt.show()
 
     def save_to_file(self):
 

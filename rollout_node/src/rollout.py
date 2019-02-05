@@ -56,16 +56,18 @@ class rollout():
             suc = True
             state_tmp = state
             for _ in range(self.stepSize):
-            # for _ in range(self.stepSize):
+                tr = rospy.get_time()
                 suct = self.move_srv(action).success
-
-                next_state = np.array(self.obs_srv().state)
-                self.rollout_transition += [(state_tmp, action, next_state, not suct or self.drop_srv().dropped)]
-                state_tmp = next_state
 
                 rospy.sleep(0.2) # For sim_data_discrete v5
                 # rospy.sleep(0.05) # For all other
                 self.rate.sleep()
+
+                next_state = np.array(self.obs_srv().state)
+
+                self.rollout_transition += [(state_tmp, action, next_state, not suct or self.drop_srv().dropped, rospy.get_time()-tr)]
+                state_tmp = next_state
+
                 if not suct:
                     suc = False
 

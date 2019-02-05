@@ -53,8 +53,8 @@ class collect_data():
         print('[collect_data] Proccessing data...')
 
         self.texp.save()
-        self.texp.process_transition_data(stepSize = 10, mode = 3, plot = False)
-        self.texp.process_svm(stepSize = 10, mode = 3)
+        # self.texp.process_transition_data(stepSize = 10, mode = 3, plot = False)
+        # self.texp.process_svm(stepSize = 10, mode = 3)
 
         # print('[collect_data] Data processed and saved. Plotting current data...')
         # self.texp.plot_data()
@@ -91,9 +91,9 @@ class collect_data():
                 tr = rospy.get_time()
                 
                 msg.data = action
-                self.pub_gripper_action.publish(msg)
+                # self.pub_gripper_action.publish(msg)
                 suc = self.move_srv(action).success
-                rospy.sleep(0.1)
+                rospy.sleep(0.2)
                 self.rate.sleep()
 
                 # Get observation
@@ -115,9 +115,6 @@ class collect_data():
 
             if Done:
                 break
-
-        print self.texp.memory
-        raw_input()
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 
@@ -150,9 +147,9 @@ class collect_data():
             
             for _ in range( num_steps ):
                 tr = rospy.get_time()
-                
+
                 msg.data = action
-                self.pub_gripper_action.publish(msg)
+                # self.pub_gripper_action.publish(msg)
                 suc = self.move_srv(action).success
                 rospy.sleep(0.2)
                 self.rate.sleep()
