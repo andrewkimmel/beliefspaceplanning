@@ -11,14 +11,17 @@ from svm_class import svm_failure
 # from diffusionMaps import DiffusionMap
 from dr_diffusionmaps import DiffusionMap
 from mean_shift import mean_shift
+import matplotlib.pyplot as plt
+
 
 # np.random.seed(10)
 
 simORreal = 'sim'
 discreteORcont = 'discrete'
-useDiffusionMaps = True
+useDiffusionMaps = False
 probability_threshold = 0.65
 # probability_threshold = 0.8
+plotRegData = False
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
@@ -63,12 +66,21 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         dS_next = np.zeros((SA.shape[0], self.state_dim))
         std_next = np.zeros((SA.shape[0], self.state_dim))
         for i in range(self.state_dim):
-            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
             mm, vv = gp_est.batch_predict(SA[:,:self.state_dim])
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
 
         S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
+
+        if plotRegData:
+            if np.random.uniform() < 0.1:
+                plt.plot(sa[0], sa[1], 'og')
+                plt.plot(SA[:,0], SA[:,1], '.k')
+                plt.plot(X_nn[:,0], X_nn[:,1], '.m')
+                plt.plot([X_nn[:,0], X_nn[:,0]+Y_nn[:,0]], [X_nn[:,1], X_nn[:,1]+Y_nn[:,1]], '.-b')
+                plt.plot([SA[:,0], S_next[:,0]], [SA[:,1], S_next[:,1]], '-y')
+                plt.show()
 
         return S_next 
 
