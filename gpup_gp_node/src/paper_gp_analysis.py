@@ -94,7 +94,7 @@ if 1:
 
     print("Running (open loop) path...")
     p_naive = 1
-    for i in range(0, 2+0*A.shape[0]):
+    for i in range(0, A.shape[0]):
         print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
@@ -297,7 +297,7 @@ plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP')
 # plt.plot(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], '--r', label='BPP')
 
 
-# plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-c', label='Naive')
 # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 plt.legend()
 plt.show()

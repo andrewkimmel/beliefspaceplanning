@@ -11,6 +11,7 @@ from svm_class import svm_failure
 # from diffusionMaps import DiffusionMap
 from dr_diffusionmaps import DiffusionMap
 from mean_shift import mean_shift
+import matplotlib.pyplot as plt
 
 # np.random.seed(10)
 
@@ -19,6 +20,7 @@ discreteORcont = 'discrete'
 useDiffusionMaps = False
 probability_threshold = 0.65
 # probability_threshold = 0.8
+plotRegData = False
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
@@ -69,6 +71,28 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             std_next[:,i] = np.sqrt(np.diag(vv))
 
         S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
+
+        if plotRegData:
+            if np.random.uniform() < 0.1:
+                ia = [0, 1]
+                ax = plt.subplot(121)
+                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
+                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
+                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
+                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
+                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
+                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
+                plt.title('Position')
+                ia = [2, 3]
+                ax = plt.subplot(122)
+                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
+                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
+                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
+                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
+                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
+                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
+                plt.title('Load')
+            plt.show()
 
         return S_next 
 
