@@ -18,7 +18,7 @@ rand_epi_srv = rospy.ServiceProxy('/collect/random_episode', Empty)
 
 for i in range(1,100000):
 
-    if np.random.uniform() > 0.5:
+    if np.random.uniform() > 0.7:
         goal = str(np.random.randint(1,18))
         print('Running goal number ' + goal + '.')
 
@@ -34,7 +34,6 @@ for i in range(1,100000):
     else:
         print "Running random episode."
         rand_epi_srv()
-
         
     if not (i % 5):
         process_srv()

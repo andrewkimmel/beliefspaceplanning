@@ -15,7 +15,7 @@ import time
 # np.random.seed(10)
 
 state_dim = 4+2
-tr = '6'
+tr = '1'
 stepSize = 10
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -163,7 +163,7 @@ print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 
 if 1:
     D = []
-    for l in range(10):
+    for l in range(20):
         Np = 100 # Number of particles
 
         ######################################## GP propagation ##################################################
@@ -227,6 +227,8 @@ if 1:
             s_next = np.array(res.next_state)
             s = s_next
 
+            # s_next = np.ones((1,6))
+
             Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
 
         t_naive /= A.shape[0]
@@ -257,6 +259,8 @@ if 1:
             S_next = np.array(res.next_states).reshape(-1,state_dim)
             s_mean_next = np.mean(S_next, 0)
             S = np.tile(s_mean_next, (Np,1))
+
+            # s_mean_next = np.ones((1,6))
 
             Ypred_bmean = np.append(Ypred_bmean, s_mean_next.reshape(1,state_dim), axis=0)
 
@@ -291,6 +295,8 @@ if 1:
                 s = s_next
                 sigma_x = sigma_next
 
+                # s_next = sigma_next = np.ones((1,6))
+
                 Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
                 Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)
 
@@ -301,11 +307,11 @@ if 1:
         d_gp = d_gpup = d_naive = d_mean = d = 0.
         for i in range(A.shape[0]):
             if i < Smean.shape[0]-1:
-                d += np.linalg.norm(Smean[i,:]-Smean[i+1,:])
-            d_gp += np.linalg.norm(Ypred_mean_gp[i,:] - Smean[i,:])
-            d_naive += np.linalg.norm(Ypred_bmean[i,:] - Smean[i,:])
-            d_mean += np.linalg.norm(Ypred_naive[i,:] - Smean[i,:])
-            d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:] - Smean[i,:])
+                d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
+            d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
+            d_naive += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
+            d_mean += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
+            d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
         d_gp = np.sqrt(d_gp/A.shape[0])
         d_naive = np.sqrt(d_naive/A.shape[0])
         d_mean = np.sqrt(d_mean/A.shape[0])
@@ -316,14 +322,14 @@ if 1:
 
         D.append((d_gp, d_naive, d_mean, d_gpup, p_gp, p_naive, p_mean, p_gpup))
 
-        with open(path + 'stats_' + tr + '_v5_d6_m' + str(stepSize) + '.pkl', 'w') as f:
-            pickle.dump(D, f)
+        # with open(path + 'stats_' + tr + '_v5_d6_m' + str(stepSize) + '.pkl', 'w') as f:
+        #     pickle.dump(D, f)
 
 ######################################## Stats ###########################################################
 
 
-with open(path + 'stats_' + tr + '_v5_d6_m' + str(stepSize) + '.pkl') as f:  
-    D = pickle.load(f)  
+# with open(path + 'stats_' + tr + '_v5_d6_m' + str(stepSize) + '.pkl') as f:  
+#     D = pickle.load(f)  
 
 # print np.array(D)[:,7]
 
@@ -334,13 +340,13 @@ D = np.mean(np.array(D), 0)
 # print "Path length: " + str(d)
 print "-----------------------------------"
 print "Naive rmse: " + str(D[1]) + "mm"
-print "mean rmse: " + str(D[2]) + "mm"
-print "GP rmse: " + str(D[0]) + "mm"
-print "GPUP rmse: " + str(D[3]) + "mm"
+print "mean rmse: "  + str(D[2]) + "mm"
+print "GP rmse: "    + str(D[0]) + "mm"
+print "GPUP rmse: "  + str(D[3]) + "mm"
 print "-----------------------------------"
-print "GP naive probability: " + str(D[5])
-print "GP mean probability: " + str(D[6])
-print "GP probability: " + str(D[4])
-print "GPUP probability: " + str(D[7])
+print "GP naive probability: "   + str(D[5])
+print "GP mean probability: "    + str(D[6])
+print "GP probability: "         + str(D[4])
+print "GPUP probability: "       + str(D[7])
 print "-----------------------------------"
 

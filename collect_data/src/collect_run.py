@@ -10,6 +10,7 @@ from rollout_node.srv import rolloutReq, observation, IsDropped, TargetAngles
 from sklearn.neighbors import NearestNeighbors 
 from transition_experience import *
 from collect_data.srv import sparse_goal
+import matplotlib.pyplot as plt
 
 
 class collect_data():
@@ -74,7 +75,6 @@ class collect_data():
 
         # Start episode
         for ep_step in range(self.episode_length):
-
             # Get observation and choose action
             state = np.array(self.obs_srv().state)
             action = self.choose_action()
@@ -88,10 +88,12 @@ class collect_data():
                 num_steps = np.random.randint(11,30)
             
             for _ in range( num_steps ):
+                tr = rospy.get_time()
+                
                 msg.data = action
                 self.pub_gripper_action.publish(msg)
                 suc = self.move_srv(action).success
-                rospy.sleep(0.2)
+                rospy.sleep(0.1)
                 self.rate.sleep()
 
                 # Get observation
@@ -104,8 +106,8 @@ class collect_data():
                     rospy.logerr('[RL] Failed to move gripper. Episode declared failed.')
                     fail = True
 
-                self.texp.add(state, action, next_state, not suc or fail)
-                state = next_state
+                self.texp.add(state, action, next_state, not suc or fail, rospy.get_time()-tr)
+                state = next_state              
 
                 if not suc or fail:
                     Done = True
@@ -113,6 +115,9 @@ class collect_data():
 
             if Done:
                 break
+
+        print self.texp.memory
+        raw_input()
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 
@@ -144,6 +149,8 @@ class collect_data():
             num_steps = np.random.randint(12,50)
             
             for _ in range( num_steps ):
+                tr = rospy.get_time()
+                
                 msg.data = action
                 self.pub_gripper_action.publish(msg)
                 suc = self.move_srv(action).success
@@ -160,7 +167,7 @@ class collect_data():
                     rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
                     fail = True
 
-                self.texp.add(state, action, next_state, not suc or fail)
+                self.texp.add(state, action, next_state, not suc or fail, rospy.get_time()-tr)
                 state = next_state
 
                 if not suc or fail:

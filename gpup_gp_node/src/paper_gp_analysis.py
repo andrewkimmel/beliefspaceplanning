@@ -15,7 +15,7 @@ import time
 # np.random.seed(10)
 
 state_dim = 4+2
-tr = '5'
+tr = '2'
 stepSize = 10
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -171,7 +171,7 @@ if 1:
     t_gp = 0
 
     s = np.copy(s_start)
-    S = np.tile(s, (Np,1)) + np.random.normal(0, sigma_start, (Np, state_dim))
+    S = np.tile(s, (Np,1))# + np.random.normal(0, sigma_start, (Np, state_dim))
     Ypred_mean_gp = s.reshape(1,state_dim)
     Ypred_std_gp = sigma_start.reshape(1,state_dim)
 
@@ -216,14 +216,16 @@ if 1:
         print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        st = time.time()
-        res = naive_srv(s.reshape(-1,1), a)
-        t_naive += (time.time() - st) 
+        # st = time.time()
+        # res = naive_srv(s.reshape(-1,1), a)
+        # t_naive += (time.time() - st) 
 
-        if res.node_probability < p_naive:
-            p_naive = res.node_probability
-        s_next = np.array(res.next_state)
-        s = s_next
+        # if res.node_probability < p_naive:
+        #     p_naive = res.node_probability
+        # s_next = np.array(res.next_state)
+        # s = s_next
+
+        s_next = np.ones((1,6))
 
         Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
 
@@ -246,15 +248,17 @@ if 1:
         print("[Mean] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        st = time.time()
-        res = gp_srv(S.reshape(-1,1), a)
-        t_mean += (time.time() - st) 
+        # st = time.time()
+        # res = gp_srv(S.reshape(-1,1), a)
+        # t_mean += (time.time() - st) 
 
-        if res.node_probability < p_mean:
-            p_mean = res.node_probability
-        S_next = np.array(res.next_states).reshape(-1,state_dim)
-        s_mean_next = np.mean(S_next, 0)
-        S = np.tile(s_mean_next, (Np,1))
+        # if res.node_probability < p_mean:
+        #     p_mean = res.node_probability
+        # S_next = np.array(res.next_states).reshape(-1,state_dim)
+        # s_mean_next = np.mean(S_next, 0)
+        # S = np.tile(s_mean_next, (Np,1))
+
+        s_mean_next = np.ones((1,6))
 
         Ypred_bmean = np.append(Ypred_bmean, s_mean_next.reshape(1,state_dim), axis=0)
 
@@ -278,16 +282,18 @@ if 1:
         print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        st = time.time()
-        res = gpup_srv(s, sigma_x, a)
-        t_gpup += (time.time() - st) 
+        # st = time.time()
+        # res = gpup_srv(s, sigma_x, a)
+        # t_gpup += (time.time() - st) 
 
-        if res.node_probability < p_gpup:
-            p_gpup = res.node_probability
-        s_next = np.array(res.next_mean)
-        sigma_next = np.array(res.next_std)
-        s = s_next
-        sigma_x = sigma_next
+        # if res.node_probability < p_gpup:
+        #     p_gpup = res.node_probability
+        # s_next = np.array(res.next_mean)
+        # sigma_next = np.array(res.next_std)
+        # s = s_next
+        # sigma_x = sigma_next
+
+        s_next = sigma_next = np.ones((1,6))
 
         Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
         Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)
@@ -311,11 +317,11 @@ with open(path + 'ver_pred_' + tr + '_v5_d6_m' + str(stepSize) + '.pkl') as f:
 d_gp = d_gpup = d_naive = d_mean = d = 0.
 for i in range(A.shape[0]):
     if i < Smean.shape[0]-1:
-        d += np.linalg.norm(Smean[i,:]-Smean[i+1,:])
-    d_gp += np.linalg.norm(Ypred_mean_gp[i,:] - Smean[i,:])
-    d_naive += np.linalg.norm(Ypred_bmean[i,:] - Smean[i,:])
-    d_mean += np.linalg.norm(Ypred_naive[i,:] - Smean[i,:])
-    d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:] - Smean[i,:])
+        d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
+    d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
+    d_naive += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
+    d_mean += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
+    d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
 d_gp = np.sqrt(d_gp/A.shape[0])
 d_naive = np.sqrt(d_naive/A.shape[0])
 d_mean = np.sqrt(d_mean/A.shape[0])
@@ -373,66 +379,66 @@ plt.figure(2)
 if tr == '1':
 
     plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
-    X = np.concatenate((Smean[:,ix[0]]+Sstd[:,ix[0]], np.flip(Smean[:,ix[0]]-Sstd[:,ix[0]])), axis=0)
-    Y = np.concatenate((Smean[:,ix[1]]+Sstd[:,ix[1]], np.flip(Smean[:,ix[1]]-Sstd[:,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'b')
+    # X = np.concatenate((Smean[:,ix[0]]+Sstd[:,ix[0]], np.flip(Smean[:,ix[0]]-Sstd[:,ix[0]])), axis=0)
+    # Y = np.concatenate((Smean[:,ix[1]]+Sstd[:,ix[1]], np.flip(Smean[:,ix[1]]-Sstd[:,ix[1]])), axis=0)
+    # plt.fill( X, Y , alpha = 0.5 , color = 'b')
 
     plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
-    X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
-    Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'r')
-
-    plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
-    X = np.concatenate((Ypred_mean_gpup[:,ix[0]]+Ypred_std_gpup[:,ix[0]], np.flip(Ypred_mean_gpup[:,ix[0]]-Ypred_std_gpup[:,ix[0]])), axis=0)
-    Y = np.concatenate((Ypred_mean_gpup[:,ix[1]]+Ypred_std_gpup[:,ix[1]], np.flip(Ypred_mean_gpup[:,ix[1]]-Ypred_std_gpup[:,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'c')
-
-    plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
-    plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
-
-if tr == '2':
-
-    plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
-    t = 16
-    X = np.concatenate((Smean[:t,ix[0]]+Sstd[:t,ix[0]], np.flip(Smean[:t,ix[0]]-Sstd[:t,ix[0]])), axis=0)
-    Y = np.concatenate((Smean[:t,ix[1]]+Sstd[:t,ix[1]], np.flip(Smean[:t,ix[1]]-Sstd[:t,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'b')
-    t1 = t+10
-    X = np.concatenate((Smean[t:t1,ix[0]]+Sstd[t:t1,ix[0]], np.flip(Smean[t:t1,ix[0]]-Sstd[t:t1,ix[0]])), axis=0)
-    Y = np.concatenate((Smean[t:t1,ix[1]]+Sstd[t:t1,ix[1]], np.flip(Smean[t:t1,ix[1]]-Sstd[t:t1,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'b')
-    t2 = Smean.shape[0]
-    X = np.concatenate((Smean[t1-1:t2,ix[0]]+Sstd[t1-1:t2,ix[0]], np.flip(Smean[t1-1:t2,ix[0]]+Sstd[t1-1:t2,ix[0]])), axis=0)
-    Y = np.concatenate((Smean[t1-1:t2,ix[1]]+Sstd[t1-1:t2,ix[1]], np.flip(Smean[t1-1:t2,ix[1]]-Sstd[t1-1:t2,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'b')
-    # plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
-    # plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
-
-    plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
-    t = 15
-    X = np.concatenate((Ypred_mean_gp[:t,ix[0]]+Ypred_std_gp[:t,ix[0]], np.flip(Ypred_mean_gp[:t,ix[0]]-Ypred_std_gp[:t,ix[0]])), axis=0)
-    Y = np.concatenate((Ypred_mean_gp[:t,ix[1]]+Ypred_std_gp[:t,ix[1]], np.flip(Ypred_mean_gp[:t,ix[1]]-Ypred_std_gp[:t,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'r')
-    t1 = t+9
-    X = np.concatenate((Ypred_mean_gp[t:t1,ix[0]]+Ypred_std_gp[t:t1,ix[0]], np.flip(Ypred_mean_gp[t:t1,ix[0]]-Ypred_std_gp[t:t1,ix[0]])), axis=0)
-    Y = np.concatenate((Ypred_mean_gp[t:t1,ix[1]]+Ypred_std_gp[t:t1,ix[1]], np.flip(Ypred_mean_gp[t:t1,ix[1]]-Ypred_std_gp[t:t1,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'r')
-    t2 = Ypred_mean_gp.shape[0]
-    X = np.concatenate((Ypred_mean_gp[t1-1:t2,ix[0]]+Ypred_std_gp[t1-1:t2,ix[0]], np.flip(Ypred_mean_gp[t1-1:t2,ix[0]]-Ypred_std_gp[t1-1:t2,ix[0]])), axis=0)
-    Y = np.concatenate((Ypred_mean_gp[t1-1:t2,ix[1]]+Ypred_std_gp[t1-1:t2,ix[1]], np.flip(Ypred_mean_gp[t1-1:t2,ix[1]]-Ypred_std_gp[t1-1:t2,ix[1]])), axis=0)
-    plt.fill( X, Y , alpha = 0.5 , color = 'r')
-    # plt.plot(Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], '--r', label='rollout mean')
-    # plt.plot(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], '--r', label='rollout mean')
+    # X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
+    # Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
+    # plt.fill( X, Y , alpha = 0.5 , color = 'r')
 
     # plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
     # X = np.concatenate((Ypred_mean_gpup[:,ix[0]]+Ypred_std_gpup[:,ix[0]], np.flip(Ypred_mean_gpup[:,ix[0]]-Ypred_std_gpup[:,ix[0]])), axis=0)
     # Y = np.concatenate((Ypred_mean_gpup[:,ix[1]]+Ypred_std_gpup[:,ix[1]], np.flip(Ypred_mean_gpup[:,ix[1]]-Ypred_std_gpup[:,ix[1]])), axis=0)
     # plt.fill( X, Y , alpha = 0.5 , color = 'c')
 
-    plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
-    plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
+    # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+    # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-if tr == '3':
+if tr == '2':
+
+    plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
+    # t = 16
+    # X = np.concatenate((Smean[:t,ix[0]]+Sstd[:t,ix[0]], np.flip(Smean[:t,ix[0]]-Sstd[:t,ix[0]])), axis=0)
+    # Y = np.concatenate((Smean[:t,ix[1]]+Sstd[:t,ix[1]], np.flip(Smean[:t,ix[1]]-Sstd[:t,ix[1]])), axis=0)
+    # plt.fill( X, Y , alpha = 0.5 , color = 'b')
+    # t1 = t+10
+    # X = np.concatenate((Smean[t:t1,ix[0]]+Sstd[t:t1,ix[0]], np.flip(Smean[t:t1,ix[0]]-Sstd[t:t1,ix[0]])), axis=0)
+    # Y = np.concatenate((Smean[t:t1,ix[1]]+Sstd[t:t1,ix[1]], np.flip(Smean[t:t1,ix[1]]-Sstd[t:t1,ix[1]])), axis=0)
+    # plt.fill( X, Y , alpha = 0.5 , color = 'b')
+    # t2 = Smean.shape[0]
+    # X = np.concatenate((Smean[t1-1:t2,ix[0]]+Sstd[t1-1:t2,ix[0]], np.flip(Smean[t1-1:t2,ix[0]]+Sstd[t1-1:t2,ix[0]])), axis=0)
+    # Y = np.concatenate((Smean[t1-1:t2,ix[1]]+Sstd[t1-1:t2,ix[1]], np.flip(Smean[t1-1:t2,ix[1]]-Sstd[t1-1:t2,ix[1]])), axis=0)
+    # plt.fill( X, Y , alpha = 0.5 , color = 'b')
+    # # plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
+    # # plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
+
+    plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
+    # t = 15
+    # X = np.concatenate((Ypred_mean_gp[:t,ix[0]]+Ypred_std_gp[:t,ix[0]], np.flip(Ypred_mean_gp[:t,ix[0]]-Ypred_std_gp[:t,ix[0]])), axis=0)
+    # Y = np.concatenate((Ypred_mean_gp[:t,ix[1]]+Ypred_std_gp[:t,ix[1]], np.flip(Ypred_mean_gp[:t,ix[1]]-Ypred_std_gp[:t,ix[1]])), axis=0)
+    # plt.fill( X, Y , alpha = 0.5 , color = 'r')
+    # t1 = t+9
+    # X = np.concatenate((Ypred_mean_gp[t:t1,ix[0]]+Ypred_std_gp[t:t1,ix[0]], np.flip(Ypred_mean_gp[t:t1,ix[0]]-Ypred_std_gp[t:t1,ix[0]])), axis=0)
+    # Y = np.concatenate((Ypred_mean_gp[t:t1,ix[1]]+Ypred_std_gp[t:t1,ix[1]], np.flip(Ypred_mean_gp[t:t1,ix[1]]-Ypred_std_gp[t:t1,ix[1]])), axis=0)
+    # plt.fill( X, Y , alpha = 0.5 , color = 'r')
+    # t2 = Ypred_mean_gp.shape[0]
+    # X = np.concatenate((Ypred_mean_gp[t1-1:t2,ix[0]]+Ypred_std_gp[t1-1:t2,ix[0]], np.flip(Ypred_mean_gp[t1-1:t2,ix[0]]-Ypred_std_gp[t1-1:t2,ix[0]])), axis=0)
+    # Y = np.concatenate((Ypred_mean_gp[t1-1:t2,ix[1]]+Ypred_std_gp[t1-1:t2,ix[1]], np.flip(Ypred_mean_gp[t1-1:t2,ix[1]]-Ypred_std_gp[t1-1:t2,ix[1]])), axis=0)
+    # plt.fill( X, Y , alpha = 0.5 , color = 'r')
+    # # plt.plot(Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], '--r', label='rollout mean')
+    # # plt.plot(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], '--r', label='rollout mean')
+
+    # # plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
+    # # X = np.concatenate((Ypred_mean_gpup[:,ix[0]]+Ypred_std_gpup[:,ix[0]], np.flip(Ypred_mean_gpup[:,ix[0]]-Ypred_std_gpup[:,ix[0]])), axis=0)
+    # # Y = np.concatenate((Ypred_mean_gpup[:,ix[1]]+Ypred_std_gpup[:,ix[1]], np.flip(Ypred_mean_gpup[:,ix[1]]-Ypred_std_gpup[:,ix[1]])), axis=0)
+    # # plt.fill( X, Y , alpha = 0.5 , color = 'c')
+
+    # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+    # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
+
+if tr == '35':
 
     plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
     t = 27
@@ -489,17 +495,17 @@ if tr == '3':
     for i in range(len(ix)):
         plt.plot(Pgp[ix[i]][:,0], Pgp[ix[i]][:,1], '.k')
 
-if tr == '4' or tr == '5':
+if tr == '3' or tr == '4' or tr == '5' or tr == '6':
     plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
-    plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
-    plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
+    # plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
+    # plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
 
     plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
 
-    plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
+    # plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
     
-    plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
-    plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
+    # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+    # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
 plt.show()
 

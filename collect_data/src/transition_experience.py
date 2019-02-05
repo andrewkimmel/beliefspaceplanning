@@ -19,7 +19,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v5'
+        self.file = 'sim_raw_' + self.mode + '_v6'
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -27,8 +27,8 @@ class transition_experience():
         else:
             self.clear()
         
-    def add(self, state, action, next_state, done):
-        self.memory += [(state, action, next_state, done)]
+    def add(self, state, action, next_state, done, dt):
+        self.memory += [(state, action, next_state, done, dt)]
         
     def clear(self):
         self.memory = []
@@ -45,7 +45,7 @@ class transition_experience():
 
     def add_rollout_data(self):
         # Include rollout data in transitions DB
-        with open(path +'rollout_tmp.pkl', 'rb') as filehandler:
+        with open(self.path +'rollout_tmp.pkl', 'rb') as filehandler:
         # with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'rb') as filehandler:
             roll_memory = pickle.load(filehandler)
 

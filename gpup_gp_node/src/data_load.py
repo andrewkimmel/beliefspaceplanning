@@ -7,7 +7,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-N_dillute = 700000 # Number of points to randomly select from data
+N_dillute = 300000 # Number of points to randomly select from data
 
 class data_load(object):
 

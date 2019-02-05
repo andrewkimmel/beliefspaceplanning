@@ -18,10 +18,10 @@ import matplotlib.pyplot as plt
 
 simORreal = 'sim'
 discreteORcont = 'discrete'
-useDiffusionMaps = False
+useDiffusionMaps = True
 probability_threshold = 0.65
 # probability_threshold = 0.8
-plotRegData = False
+plotRegData = True
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
@@ -66,7 +66,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         dS_next = np.zeros((SA.shape[0], self.state_dim))
         std_next = np.zeros((SA.shape[0], self.state_dim))
         for i in range(self.state_dim):
-            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
+            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
             mm, vv = gp_est.batch_predict(SA[:,:self.state_dim])
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
@@ -75,11 +75,33 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         if plotRegData:
             if np.random.uniform() < 0.1:
-                plt.plot(sa[0], sa[1], 'og')
-                plt.plot(SA[:,0], SA[:,1], '.k')
-                plt.plot(X_nn[:,0], X_nn[:,1], '.m')
-                plt.plot([X_nn[:,0], X_nn[:,0]+Y_nn[:,0]], [X_nn[:,1], X_nn[:,1]+Y_nn[:,1]], '.-b')
-                plt.plot([SA[:,0], S_next[:,0]], [SA[:,1], S_next[:,1]], '-y')
+                ia = [0, 1]
+                ax = plt.subplot(131)
+                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
+                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
+                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
+                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
+                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
+                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
+                plt.title('Position')
+                ia = [2, 3]
+                ax = plt.subplot(132)
+                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
+                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
+                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
+                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
+                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
+                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
+                plt.title('Load')
+                ia = [4, 5]
+                ax = plt.subplot(133)
+                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
+                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
+                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
+                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
+                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
+                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
+                plt.title('Velocity')
                 plt.show()
 
         return S_next 
