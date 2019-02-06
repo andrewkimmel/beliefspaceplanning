@@ -13,7 +13,7 @@ class data_load(object):
 
     def __init__(self, simORreal = 'sim', discreteORcont = 'discrete', K = 100):
         
-        self.postfix = '_v5_d6_m10'
+        self.postfix = '_v6_d6_m10'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -38,7 +38,7 @@ class data_load(object):
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']
 
-        Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
+        # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
         self.state_action_dim = 6+2

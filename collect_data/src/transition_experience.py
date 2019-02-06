@@ -76,36 +76,27 @@ class transition_experience():
         done = [item[3] for item in self.memory]
         states = np.array(states)
         failed_states = states[done]
-        print len(self.memory)
-        print [item[4] for item in self.memory[:2000]]
-        # print self.memory[:][4]
+        dt = [item[4] for item in self.memory]
 
         plt.figure(1)
-        # ax1 = plt.subplot(121)
-        # #ax1.plot(states[:,0],states[:,1],'-k')
-        # ax1.plot(states[:,0],states[:,1],'.y')
-        # #ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
-        # ax1.set(title='Object position')
-        # plt.xlim(-100., 100.)
-        # plt.ylim(0., 150.)
+        ax1 = plt.subplot(221)
+        #ax1.plot(states[:,0],states[:,1],'-k')
+        ax1.plot(states[:,0],states[:,1],'.y')
+        ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
+        ax1.set(title='Object position')
+        plt.xlim(-100., 100.)
+        plt.ylim(0., 150.)
         
-        # ax2 = plt.subplot(122)
-        # ax2.plot(states[:,2],states[:,3],'.k')
-        # ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
-        # ax2.set(title='Actuator loads')
+        ax2 = plt.subplot(222)
+        ax2.plot(states[:,2],states[:,3],'.k')
+        ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
+        ax2.set(title='Actuator loads')
 
-        # plt.plot(dt)
-        # print self.memory
+        ax3 = plt.subplot(223)
+        ax3.plot(dt)
+        ax3.set(title='Sampling time')
         
-        # ax3 = plt.subplot(223)
-        # ax3.plot(ep_mean_r)
-        # ax3.set(title='Mean Episode Rewards')
-
-        # ax4 = plt.subplot(224)
-        # ax4.plot(c_losses)
-        # ax4.set(title='Q-value losses')
-
-        # plt.show()
+        plt.show()
 
     def save_to_file(self):
 
@@ -169,6 +160,10 @@ class transition_experience():
         next_states = np.array([item[2] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
+        for i in range(done.shape[0]):
+            if done[i]:
+                done[i-2:i] = True
+
         if mode == 1:
             states = states[:, [0, 1, 2, 3]]
             next_states = next_states[:, [0, 1, 2, 3]]
@@ -180,20 +175,19 @@ class transition_experience():
             next_states = np.concatenate((next_states[:, :4], signal.medfilt(next_states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(next_states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
         self.state_dim = states.shape[1]
 
-        inx = np.where(done)
         D = np.concatenate((states, actions, next_states), axis = 1)
+        D, done = clean(D, done, mode)
+
+        inx = np.where(done)
         D = np.delete(D, inx, 0)
         done = np.delete(done, inx, 0)
-
-        D, done = clean(D, done, mode)
 
         if stepSize > 1:
             D = multiStep(D, done, stepSize, mode)
 
         self.D = D
-        Dreduced = []
 
-        savemat(self.path + 'sim_data_discrete_v5_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.mat', {'D': D, 'Dreduced': Dreduced, 'is_start': is_start, 'is_end': is_end})
+        savemat(self.path + 'sim_data_discrete_v6_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
         print "Saved mat file with " + str(D.shape[0]) + " transition points."
 
         if plot:
@@ -227,6 +221,10 @@ class transition_experience():
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
+        for i in range(done.shape[0]):
+            if done[i]:
+                done[i-2:i] = True
+
         SA = np.concatenate((states, actions), axis=1)
         SA, done = multiStep(SA, done, stepSize, mode)
         print('Transition data with steps size %d has now %d points'%(stepSize, SA.shape[0]))
@@ -238,11 +236,9 @@ class transition_experience():
         SA = np.concatenate((SA[inx_fail], SA[inx_suc]), axis=0)
         done = np.concatenate((done[inx_fail], done[inx_suc]), axis=0)
 
-        print SA.shape
-        print list(SA)
-        exit(1) 
+        # exit(1) 
 
-        with open(self.path + 'svm_data_' + self.mode + '_v5_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
+        with open(self.path + 'svm_data_' + self.mode + '_v6_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
             pickle.dump([SA, done], f)
         print('Saved svm data.')
 

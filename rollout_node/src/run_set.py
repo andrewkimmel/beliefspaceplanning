@@ -33,7 +33,7 @@ if rollout:
 
         files = glob.glob(path + "*.txt")
 
-        for i in range(len(files)):
+        for i in range(len(files)-10):
 
             action_file = files[i]
             if action_file.find('traj') > 0:
@@ -46,7 +46,7 @@ if rollout:
 
             Af = A.reshape((-1,))
             Pro = []
-            for j in range(10):
+            for j in range(2):
                 print("Rollout number " + str(j) + ".")
                 
                 Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)

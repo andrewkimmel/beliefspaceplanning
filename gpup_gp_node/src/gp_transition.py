@@ -21,16 +21,16 @@ discreteORcont = 'discrete'
 useDiffusionMaps = True
 probability_threshold = 0.65
 # probability_threshold = 0.8
-plotRegData = True
+plotRegData = False
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
     def __init__(self):
         # Number of NN
         if useDiffusionMaps:
-            dim = 5
-            self.K = 500
-            self.K_manifold = 50
+            dim = 2
+            self.K = 1000
+            self.K_manifold = 100
             self.df = DiffusionMap(sigma=5, embedding_dim=dim)
             # self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
             print('[gp_transition] Using diffusion maps with dimension %d.'%dim)

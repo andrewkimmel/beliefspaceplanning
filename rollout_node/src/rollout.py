@@ -64,8 +64,9 @@ class rollout():
                 self.rate.sleep()
 
                 next_state = np.array(self.obs_srv().state)
+                dr = self.drop_srv().dropped
 
-                self.rollout_transition += [(state_tmp, action, next_state, not suct or self.drop_srv().dropped, rospy.get_time()-tr)]
+                self.rollout_transition += [(state_tmp, action, next_state, not suct or dr, rospy.get_time()-tr)]
                 state_tmp = next_state
 
                 if not suct:
@@ -89,10 +90,9 @@ class rollout():
                 success = False
                 break
 
-        #file_pi = open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
-        #pickle.dump(self.rollout_transition, file_pi)
-        #file_pi.close()
-
+        file_pi = open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
+        pickle.dump(self.rollout_transition, file_pi)
+        file_pi.close()
 
         print("[rollout] Rollout done.")
 
