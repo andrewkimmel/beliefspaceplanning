@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 simORreal = 'sim'
 discreteORcont = 'discrete'
-useDiffusionMaps = True
+useDiffusionMaps = False
 probability_threshold = 0.65
 # probability_threshold = 0.8
 plotRegData = False

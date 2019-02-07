@@ -19,7 +19,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v6'
+        self.file = 'sim_raw_' + self.mode + '_v6a'
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -205,7 +205,7 @@ class transition_experience():
                 if not np.all(a == D[i:i+stepSize+1, ia]):
                     continue
                 
-                if np.any(done[i:i+stepSize+1]):
+                if np.any(done[i:i+stepSize]):
                     done_new.append(True)
                 else:
                     done_new.append(False)

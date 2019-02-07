@@ -15,7 +15,7 @@ import time
 # np.random.seed(10)
 
 state_dim = 4+2
-tr = '3'
+tr = '2'
 stepSize = 10
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -107,7 +107,7 @@ path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results
 if 0:
     Af = A.reshape((-1,))
     Pro = []
-    for j in range(10):
+    for j in range(2):
         print("Rollout number " + str(j) + ".")
         
         Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
@@ -225,7 +225,7 @@ if 1:
         # s_next = np.array(res.next_state)
         # s = s_next
 
-        s_next = np.ones((1,6))
+        s_next = np.ones((1,state_dim))
 
         Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
 
@@ -258,7 +258,7 @@ if 1:
         # s_mean_next = np.mean(S_next, 0)
         # S = np.tile(s_mean_next, (Np,1))
 
-        s_mean_next = np.ones((1,6))
+        s_mean_next = np.ones((1,state_dim))
 
         Ypred_bmean = np.append(Ypred_bmean, s_mean_next.reshape(1,state_dim), axis=0)
 
@@ -293,7 +293,7 @@ if 1:
         # s = s_next
         # sigma_x = sigma_next
 
-        s_next = sigma_next = np.ones((1,6))
+        s_next = sigma_next = np.ones((1,state_dim))
 
         Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
         Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)

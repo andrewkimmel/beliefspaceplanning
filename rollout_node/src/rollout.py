@@ -29,8 +29,10 @@ class rollout():
         self.action_dim = 2
         self.stepSize = 10 # !!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        if self.stepSize == 1:
-            self.stepSize = 0
+        # if self.stepSize == 1:
+            # self.stepSize = 0
+
+        print("[rollout] Ready to rollout...")
 
         self.rate = rospy.Rate(15) # 15hz
         while not rospy.is_shutdown():
