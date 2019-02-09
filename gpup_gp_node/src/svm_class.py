@@ -6,6 +6,7 @@ from sklearn.neighbors import KDTree #pip install -U scikit-learn
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+import var
 
 
 class svm_failure():
@@ -24,21 +25,18 @@ class svm_failure():
 
         # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
-        File = 'svm_data_' + self.mode + '_v6_d6_m10.obj' # <= File name here!!!!!
+        File = 'svm_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_) + '.obj' # <= File name here!!!!!
 
         print('Loading data from ' + File)
         with open(path + File, 'rb') as f: 
             self.SA, self.done = pickle.load(f)
-        print('Loaded svm data.')            
+        print('Loaded svm data.')      
 
         # Normalize
         scaler = StandardScaler()
         self.SA = scaler.fit_transform(self.SA)
         self.x_mean = scaler.mean_
         self.x_std = scaler.scale_
-
-        # print SA.shape
-        # exit(1)
 
         print 'Fitting SVM...'
         self.clf = svm.SVC( probability=True, class_weight='balanced', C=1.0 )

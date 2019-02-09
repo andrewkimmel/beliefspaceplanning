@@ -15,9 +15,9 @@ def main():
     texp = transition_experience(discrete=True)
 
     # texp.save_to_file()
-    texp.process_transition_data(stepSize = 10, plot = False, mode = 3)
+    texp.process_transition_data(stepSize = 1, plot = False, mode = 1)
     # texp.reduce_data(mode = 3)
-    texp.process_svm(stepSize = 10, mode = 3)
+    # texp.process_svm(stepSize = 1, mode = 1)
 
     texp.plot_data()
 

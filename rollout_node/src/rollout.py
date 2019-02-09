@@ -7,6 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
+import sys
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+import var
+
 
 class rollout():
 
@@ -25,9 +29,9 @@ class rollout():
         self.move_srv = rospy.ServiceProxy('/hand_control/MoveGripper', TargetAngles)
         self.reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
 
-        self.state_dim = 6
-        self.action_dim = 2
-        self.stepSize = 10 # !!!!!!!!!!!!!!!!!!!!!!!!!!
+        self.state_dim = var.state_dim_
+        self.action_dim = var.state_action_dim_-var.state_dim_
+        self.stepSize = var.stepSize_ # !!!!!!!!!!!!!!!!!!!!!!!!!!
 
         # if self.stepSize == 1:
             # self.stepSize = 0

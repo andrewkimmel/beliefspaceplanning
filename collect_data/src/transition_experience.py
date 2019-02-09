@@ -19,7 +19,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v6a'
+        self.file = 'sim_raw_' + self.mode + '_v6'
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -111,10 +111,6 @@ class transition_experience():
 
         inx = np.where(done)
 
-        # for i in range(len(done)):
-        #     if done[i]:
-        #         next_states[i] = np.array([-1000.,-1000.,-1000.,-1000.])
-
         M = np.concatenate((states, actions, next_states), axis=1)
         M = np.delete(M, inx, 0)
 
@@ -185,6 +181,7 @@ class transition_experience():
         if stepSize > 1:
             D = multiStep(D, done, stepSize, mode)
 
+        # D = D[np.random.choice(D.shape[0], int(0.4*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
         savemat(self.path + 'sim_data_discrete_v6_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
@@ -221,18 +218,25 @@ class transition_experience():
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
+        if mode == 1:
+            states = states[:, [0, 1, 2, 3]]
+        if mode == 2:
+            states = states[:, [0, 1, 4, 5]]
+
+
         for i in range(done.shape[0]):
             if done[i]:
                 done[i-2:i] = True
 
         SA = np.concatenate((states, actions), axis=1)
-        SA, done = multiStep(SA, done, stepSize, mode)
+        if stepSize > 1:
+            SA, done = multiStep(SA, done, stepSize, mode)
         print('Transition data with steps size %d has now %d points'%(stepSize, SA.shape[0]))
 
         inx_fail = np.where(done)[0]
         print "Number of failed states " + str(inx_fail.shape[0])
         T = np.where(np.logical_not(done))[0]
-        inx_suc = T[np.random.choice(T.shape[0], 1000, replace=False)]
+        inx_suc = T[np.random.choice(T.shape[0], inx_fail.shape[0], replace=False)]
         SA = np.concatenate((SA[inx_fail], SA[inx_suc]), axis=0)
         done = np.concatenate((done[inx_fail], done[inx_suc]), axis=0)
 

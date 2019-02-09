@@ -11,12 +11,13 @@ import pickle
 from rollout_node.srv import rolloutReq
 from gp_sim_node.srv import sa_bool
 import time
+import var
 
 # np.random.seed(10)
 
-state_dim = 4+2
+state_dim = var.state_dim_
 tr = '2'
-stepSize = 10
+stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
@@ -29,18 +30,18 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 if tr == '3':
     # Rollout 1
     A = np.concatenate( (np.array([[-1., -1.] for _ in range(int(150*1./stepSize))]), 
-            np.array([[-1., 1.] for _ in range(int(100*1./stepSize))]), 
-            np.array([[1., 0.] for _ in range(int(100*1./stepSize))]), 
-            np.array([[1., -1.] for _ in range(int(70*1./stepSize))]),
-            np.array([[-1., 1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
+            np.array([[-1.,  1.] for _ in range(int(100*1./stepSize))]), 
+            np.array([[ 1.,  0.] for _ in range(int(100*1./stepSize))]), 
+            np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]),
+            np.array([[-1.,  1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
 if tr == '2':
     # Rollout 2
-    A = np.concatenate( (np.array([[-1., -1.] for _ in range(int(5*1./stepSize+1))]), 
-            np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
+    A = np.concatenate( (np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
             np.array([[-1., -1.] for _ in range(int(40*1./stepSize))]), 
             np.array([[-1.,  1.] for _ in range(int(80*1./stepSize))]),
             np.array([[ 1.,  0.] for _ in range(int(70*1./stepSize))]),
             np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
+    # A = A[:160,:]    
 if tr == '1':
     A = np.array([[-1.00000000000000000000,1.00000000000000000000],
 [-1.00000000000000000000,0.00000000000000000000],
@@ -107,7 +108,7 @@ path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results
 if 0:
     Af = A.reshape((-1,))
     Pro = []
-    for j in range(2):
+    for j in range(1):
         print("Rollout number " + str(j) + ".")
         
         Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
@@ -139,7 +140,7 @@ for j in range(len(Pro)):
     if Sro.shape[0]==A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,0,0])
+sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
@@ -160,7 +161,6 @@ print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 
 # plt.show()
 # exit(1)
-
 if 1:   
     Np = 100 # Number of particles
 
@@ -183,16 +183,19 @@ if 1:
         Pgp.append(S)
         a = A[i,:]
 
-        st = time.time()
-        res = gp_srv(S.reshape(-1,1), a)
-        t_gp += (time.time() - st) 
+        # st = time.time()
+        # res = gp_srv(S.reshape(-1,1), a)
+        # t_gp += (time.time() - st) 
 
-        S_next = np.array(res.next_states).reshape(-1,state_dim)
-        if res.node_probability < p_gp:
-            p_gp = res.node_probability
-        s_mean_next = np.mean(S_next, 0)
-        s_std_next = np.std(S_next, 0)
-        S = S_next
+        # S_next = np.array(res.next_states).reshape(-1,state_dim)
+        # if res.node_probability < p_gp:
+        #     p_gp = res.node_probability
+        # s_mean_next = np.mean(S_next, 0)
+        # s_std_next = np.std(S_next, 0)
+        # S = S_next
+
+        s_mean_next = np.ones((1,state_dim))
+        s_std_next = np.ones((1,state_dim))
 
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
@@ -216,16 +219,16 @@ if 1:
         print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        # st = time.time()
-        # res = naive_srv(s.reshape(-1,1), a)
-        # t_naive += (time.time() - st) 
+        st = time.time()
+        res = naive_srv(s.reshape(-1,1), a)
+        t_naive += (time.time() - st) 
 
-        # if res.node_probability < p_naive:
-        #     p_naive = res.node_probability
-        # s_next = np.array(res.next_state)
-        # s = s_next
+        if res.node_probability < p_naive:
+            p_naive = res.node_probability
+        s_next = np.array(res.next_state)
+        s = s_next
 
-        s_next = np.ones((1,state_dim))
+        # s_next = np.ones((1,state_dim))
 
         Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
 
@@ -267,7 +270,7 @@ if 1:
     ######################################## GPUP propagation ###############################################
 
     print "Running GPUP."
-    sigma_start += np.array([1e-4,1e-4,0.,0.,1e-4,1e-4])
+    sigma_start += np.array([1e-4,1e-4,0.,0.])#,1e-4,1e-4])
 
     t_gpup = 0
 
@@ -347,7 +350,7 @@ print "GPUP probability: " + str(stats[1][3])
 print "-----------------------------------"
 
 
-if 1:
+if 0:
     fig = plt.figure(0)
     ax = fig.add_subplot(111)#, aspect='equal')
     plt.plot(Smean[:,0], Smean[:,1], '-b')
@@ -382,33 +385,33 @@ t = range(A.shape[0]+1)
 
 ix = [0, 1]
 
-plt.figure(1)
-ax1 = plt.subplot(3,1,1)
-ax1.plot(t[:-1], Smean[:,ix[0]], '-b', label='rollout mean')
-ax1.fill_between(t[:-1], Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[0]]-Sstd[:,ix[0]], facecolor='blue', alpha=0.5, label='rollout std.')
-ax1.plot(t, Ypred_mean_gp[:,ix[0]], '-r', label='BPP mean')
-ax1.fill_between(t, Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], facecolor='red', alpha=0.5, label='BGP std.')
-# ax1.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
-# ax1.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
+# plt.figure(1)
+# ax1 = plt.subplot(3,1,1)
+# ax1.plot(t[:-1], Smean[:,ix[0]], '-b', label='rollout mean')
+# ax1.fill_between(t[:-1], Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[0]]-Sstd[:,ix[0]], facecolor='blue', alpha=0.5, label='rollout std.')
+# # ax1.plot(t, Ypred_mean_gp[:,ix[0]], '-r', label='BPP mean')
+# # ax1.fill_between(t, Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], facecolor='red', alpha=0.5, label='BGP std.')
+# # ax1.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
+# # ax1.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
 # ax1.plot(t, Ypred_naive[:,0], '-k', label='Naive')
-# ax1.plot(t, Ypred_bmean[:,0], '-m', label='Batch mean')
-ax1.legend()
-plt.title('Path ' + tr)
+# # ax1.plot(t, Ypred_bmean[:,0], '-m', label='Batch mean')
+# ax1.legend()
+# plt.title('Path ' + tr)
 
-ax2 = plt.subplot(3,1,2)
-ax2.plot(t[:-1], Smean[:,ix[1]], '-b')
-ax2.fill_between(t[:-1], Smean[:,ix[1]]+Sstd[:,ix[1]], Smean[:,ix[1]]-Sstd[:,ix[1]], facecolor='blue', alpha=0.5)
-ax2.plot(t, Ypred_mean_gp[:,ix[1]], '-r')
-ax2.fill_between(t, Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], facecolor='red', alpha=0.5)
-# ax2.plot(t, Ypred_mean_gpup[:,1], '--c')
-# ax2.fill_between(t, Ypred_mean_gpup[:,1]+Ypred_std_gpup[:,1], Ypred_mean_gpup[:,1]-Ypred_std_gpup[:,1], facecolor='cyan', alpha=0.5)
+# ax2 = plt.subplot(3,1,2)
+# ax2.plot(t[:-1], Smean[:,ix[1]], '-b')
+# ax2.fill_between(t[:-1], Smean[:,ix[1]]+Sstd[:,ix[1]], Smean[:,ix[1]]-Sstd[:,ix[1]], facecolor='blue', alpha=0.5)
+# # ax2.plot(t, Ypred_mean_gp[:,ix[1]], '-r')
+# # ax2.fill_between(t, Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], facecolor='red', alpha=0.5)
+# # ax2.plot(t, Ypred_mean_gpup[:,1], '--c')
+# # ax2.fill_between(t, Ypred_mean_gpup[:,1]+Ypred_std_gpup[:,1], Ypred_mean_gpup[:,1]-Ypred_std_gpup[:,1], facecolor='cyan', alpha=0.5)
 # ax2.plot(t, Ypred_naive[:,1], '-k')
-# ax2.plot(t, Ypred_bmean[:,1], '-m')
+# # ax2.plot(t, Ypred_bmean[:,1], '-m')
 
-ax3 = plt.subplot(3,1,3)
-ax3.plot(t[:-1], np.abs(Smean[:,ix[0]]-Ypred_mean_gp[1:,ix[0]]), '-b', label='error_x')
-ax3.plot(t[:-1], np.abs(Smean[:,ix[1]]-Ypred_mean_gp[1:,ix[1]]), '-r', label='error_y')
-plt.legend()
+# ax3 = plt.subplot(3,1,3)
+# ax3.plot(t[:-1], np.abs(Smean[:,ix[0]]-Ypred_mean_gp[1:,ix[0]]), '-b', label='error_x')
+# ax3.plot(t[:-1], np.abs(Smean[:,ix[1]]-Ypred_mean_gp[1:,ix[1]]), '-r', label='error_y')
+# plt.legend()
 
 plt.figure(2)
 
@@ -433,7 +436,7 @@ if tr == '1':
     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
 if tr == '2':
-
+    ax1 = plt.subplot(1,2,1)
     plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
     # t = 16
     # X = np.concatenate((Smean[:t,ix[0]]+Sstd[:t,ix[0]], np.flip(Smean[:t,ix[0]]-Sstd[:t,ix[0]])), axis=0)
@@ -450,7 +453,7 @@ if tr == '2':
     # # plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
     # # plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
 
-    plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
+    # plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
     # t = 15
     # X = np.concatenate((Ypred_mean_gp[:t,ix[0]]+Ypred_std_gp[:t,ix[0]], np.flip(Ypred_mean_gp[:t,ix[0]]-Ypred_std_gp[:t,ix[0]])), axis=0)
     # Y = np.concatenate((Ypred_mean_gp[:t,ix[1]]+Ypred_std_gp[:t,ix[1]], np.flip(Ypred_mean_gp[:t,ix[1]]-Ypred_std_gp[:t,ix[1]])), axis=0)
@@ -471,8 +474,12 @@ if tr == '2':
     # # Y = np.concatenate((Ypred_mean_gpup[:,ix[1]]+Ypred_std_gpup[:,ix[1]], np.flip(Ypred_mean_gpup[:,ix[1]]-Ypred_std_gpup[:,ix[1]])), axis=0)
     # # plt.fill( X, Y , alpha = 0.5 , color = 'c')
 
-    # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+    plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
+
+    ax2 = plt.subplot(1,2,2)
+    plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
+    plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
 
 if tr == '35':
 
@@ -543,6 +550,7 @@ if tr == '3' or tr == '4' or tr == '5' or tr == '6':
     # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path.png')
 plt.show()
 
 

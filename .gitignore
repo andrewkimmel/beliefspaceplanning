@@ -3,6 +3,7 @@
 *.mp4
 gpup_gp_node/src/verf/
 gpup_gp_node/src/results/
+gpup_gp_node/data/temp/
 
 
 # Prerequisites

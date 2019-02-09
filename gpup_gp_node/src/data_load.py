@@ -5,27 +5,24 @@ from sklearn.neighbors import KDTree
 import os.path
 import pickle
 import matplotlib.pyplot as plt
-
-
-N_dillute = 300000 # Number of points to randomly select from data
+import var
 
 class data_load(object):
 
-    def __init__(self, simORreal = 'sim', discreteORcont = 'discrete', K = 100):
+    def __init__(self, simORreal = 'sim', discreteORcont = 'discrete', K = 100, K_manifold=-1, sigma=-1, dim=-1):
         
-        self.postfix = '_v6_d6_m10'
+        self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.load()
-        self.K = K
 
         if os.path.exists(self.path + 'opt_data_discrete' + self.postfix + '.obj'):
             with open(self.path + 'opt_data_discrete' + self.postfix + '.obj', 'rb') as f: 
                 _, self.theta_opt, self.opt_kdt = pickle.load(f)
             print('[data_load] Loaded hyper-parameters data.')
         else:
-            self.precompute_hyperp()
+            self.precompute_hyperp(K, K_manifold, sigma, dim)
 
     def load(self):
 
@@ -38,14 +35,12 @@ class data_load(object):
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']
 
-        # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], N_dillute, replace=False),:] # Dillute
+        # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], var.N_dillute_, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
-        self.state_action_dim = 6+2
-        self.state_dim = 4+2
+        self.state_action_dim = var.state_action_dim_
+        self.state_dim = var.state_dim_
 
-        # self.state_action_dim = 4+2
-        # self.state_dim = 2+2
         self.Xtrain = Qtrain[:,:self.state_action_dim]
         self.Ytrain = Qtrain[:,self.state_action_dim:]
 
@@ -71,7 +66,7 @@ class data_load(object):
         self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
 
         print('[data_load] Loading data to kd-tree...')
-        self.kdt = KDTree(self.Xtrain, leaf_size=20, metric='euclidean')
+        self.kdt = KDTree(self.Xtrain, leaf_size=100, metric='euclidean')
         print('[data_load] kd-tree ready.')
 
     def normz(self, x):
@@ -102,8 +97,17 @@ class data_load(object):
             X[:,i] = X[:,i]*(self.x_max_X[i]-self.x_min_X[i]) + self.x_min_X[i]
         return X
 
-    def precompute_hyperp(self):
+    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1):
         print('[data_load] Pre-computing GP hyper-parameters data.')
+
+        if K_manifold > 0:
+            from dr_diffusionmaps import DiffusionMap
+            df = DiffusionMap(sigma=sigma, embedding_dim=dim)
+
+        def reduction(sa, X, Y, K_manifold):
+            inx = df.ReducedClosestSetIndices(sa, X, k_manifold = K_manifold)
+
+            return X[inx,:][0], Y[inx,:][0]
 
         from gp import GaussianProcess
         import pickle
@@ -115,9 +119,12 @@ class data_load(object):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
 
-            idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
+            idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
             X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
             Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+
+            if K_manifold > 0:
+                X_nn, Y_nn = reduction(sa, X_nn, Y_nn, K_manifold)
 
             gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,0], optimize = True, theta=None) # Optimize to get hyper-parameters
             theta = gp_est.cov.theta
