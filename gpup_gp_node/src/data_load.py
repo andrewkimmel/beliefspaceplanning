@@ -35,7 +35,7 @@ class data_load(object):
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']
 
-        # Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], var.N_dillute_, replace=False),:] # Dillute
+        Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], var.N_dillute_, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
         self.state_action_dim = var.state_action_dim_

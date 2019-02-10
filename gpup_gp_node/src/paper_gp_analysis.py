@@ -140,10 +140,15 @@ for j in range(len(Pro)):
     if Sro.shape[0]==A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
+sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,1e-4,1e-4])
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
+
+from scipy.io import savemat
+savemat(path + 'test_v6_d6_m1.mat', {'S': Pro[0]} )
+exit(1)
+
 
 Smean = []
 Sstd = []
@@ -161,6 +166,7 @@ print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 
 # plt.show()
 # exit(1)
+
 if 1:   
     Np = 100 # Number of particles
 
@@ -270,7 +276,7 @@ if 1:
     ######################################## GPUP propagation ###############################################
 
     print "Running GPUP."
-    sigma_start += np.array([1e-4,1e-4,0.,0.])#,1e-4,1e-4])
+    sigma_start += np.array([1e-4,1e-4,0.,0.,1e-4,1e-4])
 
     t_gpup = 0
 
