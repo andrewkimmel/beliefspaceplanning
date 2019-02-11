@@ -36,7 +36,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             print('[gp_transition] Using diffusion maps with dimension %d, K: (%d, %d) and sigma=%f.'%(dim, self.K_manifold, self.K, sigma))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim)
         else:
-            self.K = 20
+            self.K = 100
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K)
 
         svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
@@ -74,8 +74,6 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             if V[4]:
                 self.precompute_hyperp(K = self.K)
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
-
-        
 
 
     # Particles prediction

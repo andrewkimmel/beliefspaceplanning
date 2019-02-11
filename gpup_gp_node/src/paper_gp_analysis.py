@@ -101,7 +101,7 @@ if tr=='6':
 ######################################## Roll-out ##################################################
 
 rospy.init_node('verification_gazebo', anonymous=True)
-rate = rospy.Rate(15) # 15hz
+# rate = rospy.Rate(15) # 15hz
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
@@ -140,14 +140,14 @@ for j in range(len(Pro)):
     if Sro.shape[0]==A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,1e-4,1e-4])
+sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
 
-from scipy.io import savemat
-savemat(path + 'test_v6_d6_m1.mat', {'S': Pro[0]} )
-exit(1)
+# from scipy.io import savemat
+# savemat(path + 'test_v6_d6_m1.mat', {'S': Pro[0]} )
+# exit(1)
 
 
 Smean = []
@@ -549,11 +549,11 @@ if tr == '3' or tr == '4' or tr == '5' or tr == '6':
     # plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
     # plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
 
-    plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
+    # plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
 
     # plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
     
-    # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+    plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
 plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path.png')

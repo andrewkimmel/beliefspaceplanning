@@ -40,7 +40,8 @@ class rollout():
 
         self.rate = rospy.Rate(15) # 15hz
         while not rospy.is_shutdown():
-            rospy.spin()
+            # rospy.spin()
+            self.rate.sleep()
 
     def run_rollout(self, A):
         self.rollout_transition = []

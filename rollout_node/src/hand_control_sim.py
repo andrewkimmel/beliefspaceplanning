@@ -2,12 +2,12 @@
 
 import rospy
 import numpy as np 
-from std_msgs.msg import Float64MultiArray, Float32MultiArray, String
+from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
 from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import TargetAngles, IsDropped, observation, MoveServos
 import math
 
-state_form = 'pos_load_vel' # 'pos_load' or 'pos_vel' or 'pos_load_vel'
+state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel'
 
 class hand_control():
 
@@ -42,6 +42,7 @@ class hand_control():
         rospy.Subscriber('/hand/obj_vel', Float32MultiArray, self.callbackObjVel)
         rospy.Subscriber('/hand/my_joint_states', Float32MultiArray, self.callbackJoints)
         pub_gripper_status = rospy.Publisher('/hand_control/gripper_status', String, queue_size=10)
+        pub_drop = rospy.Publisher('/hand_control/cylinder_drop', Bool, queue_size=10)
 
         rospy.Service('/hand_control/ResetGripper', Empty, self.ResetGripper)
         rospy.Service('/hand_control/MoveGripper', TargetAngles, self.MoveGripper)
@@ -57,6 +58,7 @@ class hand_control():
         rate = rospy.Rate(100)
         while not rospy.is_shutdown():
             pub_gripper_status.publish(self.gripper_status)
+            pub_drop.publish(not self.object_grasped)
 
             # print(self.obj_pos)
             # rospy.spin()

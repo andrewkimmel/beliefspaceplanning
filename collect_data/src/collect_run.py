@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 import time
 import random
-from std_msgs.msg import String, Float32MultiArray
+from std_msgs.msg import String, Float32MultiArray, Bool
 from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import rolloutReq, observation, IsDropped, TargetAngles
 from sklearn.neighbors import NearestNeighbors 
@@ -17,6 +17,7 @@ class collect_data():
 
     gripper_closed = False
     discrete_actions = True # Discrete or continuous actions
+    drop = True
 
     num_episodes = 20000
     episode_length = 10000
@@ -37,17 +38,22 @@ class collect_data():
         self.move_srv = rospy.ServiceProxy('/hand_control/MoveGripper', TargetAngles)
         self.reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
         self.rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
+        rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
 
-        rospy.sleep(1)
+        rospy.sleep(1.)
 
         print('[collect_data] Ready to collect...')
 
-        self.rate = rospy.Rate(15) # 15hz
+        self.rate = rospy.Rate(7) # 15hz
         while not rospy.is_shutdown():
-            self.rate.sleep()
+            # self.rate.sleep()
+            rospy.spin()
 
     def callbackGripperStatus(self, msg):
         self.gripper_closed = msg.data == "closed"
+
+    def callbackDrop(self, msg):
+        self.drop = msg.data
 
     def process_data(self, msg):
         print('[collect_data] Proccessing data...')
@@ -73,48 +79,38 @@ class collect_data():
         Done = False
         msg = Float32MultiArray()
 
+        state = np.array(self.obs_srv().state)
+
         # Start episode
+        n = 0
+        action = np.array([0.,0.])
         for ep_step in range(self.episode_length):
-            # Get observation and choose action
-            state = np.array(self.obs_srv().state)
-            action = self.choose_action()
 
-            if np.random.uniform() > 0.5:
-                if np.random.uniform() > 0.6:
-                    num_steps = np.random.randint(200)
-                else:
-                    num_steps = np.random.randint(80)
+            if n == 0:
+                action, n = self.choose_action()
+
+            # msg.data = action
+            # self.pub_gripper_action.publish(msg)
+            suc = self.move_srv(action).success
+            n -= 1
+
+            # Get observation
+            next_state = np.array(self.obs_srv().state)
+
+            if suc:
+                fail = self.drop# self.drop_srv().dropped # Check if dropped - end of episode
             else:
-                num_steps = np.random.randint(11,30)
-            
-            for _ in range( num_steps ):
-                tr = rospy.get_time()
-                
-                msg.data = action
-                # self.pub_gripper_action.publish(msg)
-                suc = self.move_srv(action).success
-                rospy.sleep(0.2)
-                self.rate.sleep()
+                # End episode if overload or angle limits reached
+                rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
+                fail = True
 
-                # Get observation
-                next_state = np.array(self.obs_srv().state)
+            self.texp.add(state, action, next_state, not suc or fail)
+            state = np.copy(next_state)
 
-                if suc:
-                    fail = self.drop_srv().dropped # Check if dropped - end of episode
-                else:
-                    # End episode if overload or angle limits reached
-                    rospy.logerr('[RL] Failed to move gripper. Episode declared failed.')
-                    fail = True
-
-                self.texp.add(state, action, next_state, not suc or fail, rospy.get_time()-tr)
-                state = next_state              
-
-                if not suc or fail:
-                    Done = True
-                    break
-
-            if Done:
+            if not suc or fail:
                 break
+
+            self.rate.sleep()
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 
@@ -187,6 +183,16 @@ class collect_data():
                     a = A[0]
                 else:
                     a = A[1]
+
+            if np.random.uniform() > 0.5:
+                if np.random.uniform() > 0.6:
+                    num_steps = np.random.randint(200)
+                else:
+                    num_steps = np.random.randint(80)
+            else:
+                num_steps = np.random.randint(11,30)
+
+            return a, num_steps
         else:
             a = np.random.uniform(-1.,1.,2)
             if np.random.uniform(0,1,1) > 0.35:
@@ -197,7 +203,7 @@ class collect_data():
                     a[0] = np.random.uniform(0.8,1.,1)
                     a[1] = np.random.uniform(0.8,1.,1)
 
-        return a
+            return a
 
     def find_sparse_region(self, req):
 

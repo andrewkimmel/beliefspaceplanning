@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 from scipy.io import savemat
 from scipy import signal
 from sklearn.neighbors import KDTree #pip install -U scikit-learn
+import sys
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+import var
 
 
 class transition_experience():
@@ -19,7 +22,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v6'
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'a'
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -27,8 +30,8 @@ class transition_experience():
         else:
             self.clear()
         
-    def add(self, state, action, next_state, done, dt):
-        self.memory += [(state, action, next_state, done, dt)]
+    def add(self, state, action, next_state, done):
+        self.memory += [(state, action, next_state, done)]
         
     def clear(self):
         self.memory = []
@@ -184,7 +187,7 @@ class transition_experience():
         # D = D[np.random.choice(D.shape[0], int(0.4*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
-        savemat(self.path + 'sim_data_discrete_v6_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
+        savemat(self.path + 'sim_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
         print "Saved mat file with " + str(D.shape[0]) + " transition points."
 
         if plot:
@@ -242,7 +245,7 @@ class transition_experience():
 
         # exit(1) 
 
-        with open(self.path + 'svm_data_' + self.mode + '_v6_d' + str(6 if mode == 3 else 4) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
+        with open(self.path + 'svm_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
             pickle.dump([SA, done], f)
         print('Saved svm data.')
 
