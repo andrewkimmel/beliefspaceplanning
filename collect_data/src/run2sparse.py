@@ -35,6 +35,6 @@ for i in range(1,100000):
     print "Running random episode."
     rand_epi_srv()
         
-    if not (i % 5):
-        process_srv()
+    # if not (i % 5):
+    process_srv()
 

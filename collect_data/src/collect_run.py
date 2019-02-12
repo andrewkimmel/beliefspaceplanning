@@ -11,7 +11,8 @@ from sklearn.neighbors import NearestNeighbors
 from transition_experience import *
 from collect_data.srv import sparse_goal
 import matplotlib.pyplot as plt
-
+import subprocess
+import os
 
 class collect_data():
 
@@ -22,7 +23,20 @@ class collect_data():
     num_episodes = 20000
     episode_length = 10000
 
+    gz_steps = 300
+
     texp = transition_experience(Load=True, discrete = discrete_actions)
+    
+
+    # pauseMessage = pygazebo.msg.world_control_pb2.WorldControl()
+    # pauseMessage.pause = 1
+
+    # resumeMessage = pygazebo.msg.world_control_pb2.WorldControl()
+    # resumeMessage.pause = 0
+
+    # stepMessage = pygazebo.msg.world_control_pb2.WorldControl()
+    # stepMessage.multi_step = gz_steps
+
 
     def __init__(self):
         rospy.init_node('collect_data', anonymous=True)
@@ -44,10 +58,10 @@ class collect_data():
 
         print('[collect_data] Ready to collect...')
 
-        self.rate = rospy.Rate(7) # 15hz
-        while not rospy.is_shutdown():
+        self.rate = rospy.Rate(15) 
+        # while not rospy.is_shutdown():
             # self.rate.sleep()
-            rospy.spin()
+        rospy.spin()
 
     def callbackGripperStatus(self, msg):
         self.gripper_closed = msg.data == "closed"
@@ -69,6 +83,7 @@ class collect_data():
 
     def run_random_episode(self, req):
 
+
         # Reset gripper
         self.reset_srv()
         while not self.gripper_closed:
@@ -84,6 +99,7 @@ class collect_data():
         # Start episode
         n = 0
         action = np.array([0.,0.])
+        os.system("gz world -p 1") # pause (gz world -p 1)
         for ep_step in range(self.episode_length):
 
             if n == 0:
@@ -94,11 +110,13 @@ class collect_data():
             suc = self.move_srv(action).success
             n -= 1
 
+            os.system("gz world -m 200")
+        
             # Get observation
             next_state = np.array(self.obs_srv().state)
 
             if suc:
-                fail = self.drop# self.drop_srv().dropped # Check if dropped - end of episode
+                fail = self.drop # self.drop_srv().dropped # Check if dropped - end of episode
             else:
                 # End episode if overload or angle limits reached
                 rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
@@ -108,9 +126,10 @@ class collect_data():
             state = np.copy(next_state)
 
             if not suc or fail:
+                os.system("gz world -p 0")
                 break
 
-            self.rate.sleep()
+            # self.rate.sleep()
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 
@@ -133,42 +152,38 @@ class collect_data():
         print('[collect_data] Roll-out finished, running random actions...')
 
         # Start episode
+        # subprocess.call(["gz", "world", "-p", "1"]) # pause (gz world -p 1)
+        publisher.publish(pauseMessage)
         for ep_step in range(self.episode_length):
 
-            # Get observation and choose action
-            state = np.array(self.obs_srv().state)
-            action = self.choose_action(p = 0.6)
+            if n == 0:
+                action, n = self.choose_action()
 
-            num_steps = np.random.randint(12,50)
-            
-            for _ in range( num_steps ):
-                tr = rospy.get_time()
+            # msg.data = action
+            # self.pub_gripper_action.publish(msg)
+            suc = self.move_srv(action).success
+            n -= 1
 
-                msg.data = action
-                # self.pub_gripper_action.publish(msg)
-                suc = self.move_srv(action).success
-                rospy.sleep(0.2)
-                self.rate.sleep()
+            subprocess.call(["gz world -m", str(self.gz_steps)])
 
-                # Get observation
-                next_state = np.array(self.obs_srv().state)
+            # Get observation
+            next_state = np.array(self.obs_srv().state)
 
-                if suc:
-                    fail = self.drop_srv().dropped # Check if dropped - end of episode
-                else:
-                    # End episode if overload or angle limits reached
-                    rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
-                    fail = True
+            if suc:
+                fail = self.drop # self.drop_srv().dropped # Check if dropped - end of episode
+            else:
+                # End episode if overload or angle limits reached
+                rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
+                fail = True
 
-                self.texp.add(state, action, next_state, not suc or fail, rospy.get_time()-tr)
-                state = next_state
+            self.texp.add(state, action, next_state, not suc or fail)
+            state = np.copy(next_state)
 
-                if not suc or fail:
-                    Done = True
-                    break
-
-            if Done:
+            if not suc or fail:
+                subprocess.call(["gz", "world", "-p", "0"])
                 break
+
+            # self.rate.sleep()
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 

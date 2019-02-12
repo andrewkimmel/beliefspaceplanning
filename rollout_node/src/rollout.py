@@ -2,6 +2,7 @@
 
 import rospy
 from std_srvs.srv import Empty, EmptyResponse
+from std_msgs.msg import Bool
 from rollout_node.srv import rolloutReq, rolloutReqFile, plotReq, observation, IsDropped, TargetAngles
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,6 +17,7 @@ class rollout():
 
     states = []
     plot_num = 0
+    drop = True
 
     def __init__(self):
         rospy.init_node('rollout_node', anonymous=True)
@@ -23,6 +25,7 @@ class rollout():
         rospy.Service('/rollout/rollout', rolloutReq, self.CallbackRollout)
         rospy.Service('/rollout/rollout_from_file', rolloutReqFile, self.CallbackRolloutFile)
         rospy.Service('/rollout/plot', plotReq, self.Plot)
+        rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
 
         self.obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
         self.drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)
@@ -33,15 +36,11 @@ class rollout():
         self.action_dim = var.state_action_dim_-var.state_dim_
         self.stepSize = var.stepSize_ # !!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        # if self.stepSize == 1:
-            # self.stepSize = 0
-
         print("[rollout] Ready to rollout...")
 
-        self.rate = rospy.Rate(15) # 15hz
+        self.rate = rospy.Rate(7) 
         while not rospy.is_shutdown():
-            # rospy.spin()
-            self.rate.sleep()
+            rospy.spin()
 
     def run_rollout(self, A):
         self.rollout_transition = []
@@ -52,50 +51,32 @@ class rollout():
 
         # Start episode
         success = True
-        S = []
-        for i in range(A.shape[0]):
-            # Get observation and choose action
-            state = np.array(self.obs_srv().state)
-            action = A[i,:]
+        state = np.array(self.obs_srv().state)
+        S = [state]
+        for action in A:
 
-            S.append(state)
+            suc = self.move_srv(action).success
             
-            suc = True
-            state_tmp = state
-            for _ in range(self.stepSize):
-                tr = rospy.get_time()
-                suct = self.move_srv(action).success
-
-                rospy.sleep(0.2) # For sim_data_discrete v5
-                # rospy.sleep(0.05) # For all other
-                self.rate.sleep()
-
-                next_state = np.array(self.obs_srv().state)
-                dr = self.drop_srv().dropped
-
-                self.rollout_transition += [(state_tmp, action, next_state, not suct or dr, rospy.get_time()-tr)]
-                state_tmp = next_state
-
-                if not suct:
-                    suc = False
-
-            # Get observation
             next_state = np.array(self.obs_srv().state)
 
             if suc:
-                fail = self.drop_srv().dropped # Check if dropped - end of episode
+                fail = self.drop # self.drop_srv().dropped # Check if dropped - end of episode
             else:
                 # End episode if overload or angle limits reached
                 rospy.logerr('[rollout] Failed to move gripper. Episode declared failed.')
                 fail = True
 
-            state = next_state
+            S.append(next_state)
+            self.rollout_transition += [(state, action, next_state, not suc or fail)]
+
+            state = np.copy(next_state)
 
             if not suc or fail:
-                print("[rollout] Fail")
-                S.append(state)
+                print("[rollout] Fail.")
                 success = False
                 break
+
+            self.rate.sleep()
 
         file_pi = open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
         pickle.dump(self.rollout_transition, file_pi)
@@ -104,6 +85,9 @@ class rollout():
         print("[rollout] Rollout done.")
 
         return np.array(S), success
+
+    def callbackDrop(self, msg):
+        self.drop = msg.data
 
     def CallbackRollout(self, req):
         

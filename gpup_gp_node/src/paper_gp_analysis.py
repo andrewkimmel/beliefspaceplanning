@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '2'
+tr = '1'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -100,6 +100,16 @@ if tr=='6':
       
 ######################################## Roll-out ##################################################
 
+
+from data_load import data_load
+dl = data_load(Dillute=4000)
+Dtest = dl.Qtest
+A = Dtest[:,4:6]
+Pro = []
+Sro = Dtest[:,:4]
+Pro.append(Sro)
+
+
 rospy.init_node('verification_gazebo', anonymous=True)
 # rate = rospy.Rate(15) # 15hz
 
@@ -107,7 +117,7 @@ path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results
 
 if 0:
     Af = A.reshape((-1,))
-    Pro = []
+    # Pro = []
     for j in range(1):
         print("Rollout number " + str(j) + ".")
         
@@ -115,7 +125,7 @@ if 0:
 
         Pro.append(Sro)
         
-        with open(path + 'ver_rollout_' + tr + '_v6_d6_m' + str(stepSize) + '.pkl', 'w') as f: 
+        with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
             pickle.dump(Pro, f)
 
 
@@ -126,9 +136,12 @@ elif tr=='5':
 elif tr=='6':
     f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan'
 else:
-    f = path + 'ver_rollout_' + tr + '_v6_d6_m' + str(stepSize)
-with open(f + '.pkl') as f:  
-    Pro = pickle.load(f) 
+    f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
+# with open(f + '.pkl') as f:  
+#     Pro = pickle.load(f) 
+
+
+
 # fig = plt.figure(0)
 # ax = fig.add_subplot(111)#, aspect='equal')
 S = []
@@ -136,8 +149,10 @@ c = 0
 for j in range(len(Pro)): 
     Sro = Pro[j]
     # ax.plot(Sro[:,0], Sro[:,1], 'b')
+    plt.plot(Sro[:,0], Sro[:,1], ':r')
     S.append(Sro[0,:state_dim])
-    if Sro.shape[0]==A.shape[0]:
+    print Sro.shape[0]
+    if Sro.shape[0]>=A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
 sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
@@ -189,19 +204,19 @@ if 1:
         Pgp.append(S)
         a = A[i,:]
 
-        # st = time.time()
-        # res = gp_srv(S.reshape(-1,1), a)
-        # t_gp += (time.time() - st) 
+        st = time.time()
+        res = gp_srv(S.reshape(-1,1), a)
+        t_gp += (time.time() - st) 
 
-        # S_next = np.array(res.next_states).reshape(-1,state_dim)
-        # if res.node_probability < p_gp:
-        #     p_gp = res.node_probability
-        # s_mean_next = np.mean(S_next, 0)
-        # s_std_next = np.std(S_next, 0)
-        # S = S_next
+        S_next = np.array(res.next_states).reshape(-1,state_dim)
+        if res.node_probability < p_gp:
+            p_gp = res.node_probability
+        s_mean_next = np.mean(S_next, 0)
+        s_std_next = np.std(S_next, 0)
+        S = S_next
 
-        s_mean_next = np.ones((1,state_dim))
-        s_std_next = np.ones((1,state_dim))
+        # s_mean_next = np.ones((1,state_dim))
+        # s_std_next = np.ones((1,state_dim))
 
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
@@ -276,7 +291,7 @@ if 1:
     ######################################## GPUP propagation ###############################################
 
     print "Running GPUP."
-    sigma_start += np.array([1e-4,1e-4,0.,0.,1e-4,1e-4])
+    sigma_start += np.array([1e-4,1e-4,0.,0.])
 
     t_gpup = 0
 
@@ -313,13 +328,13 @@ if 1:
 
     stats = np.array([[t_gp, t_naive, t_mean, t_gpup], [p_gp, p_naive, p_mean, p_gpup]])
 
-    with open(path + 'ver_pred_' + tr + '_v6_d6_m' + str(stepSize) + '.pkl', 'w') as f:
+    with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f:
         pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A], f)
 
 ######################################## Plot ###########################################################
 
 
-with open(path + 'ver_pred_' + tr + '_v6_d6_m' + str(stepSize) + '.pkl') as f:  
+with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
 # Compare paths
@@ -419,16 +434,16 @@ ix = [0, 1]
 # ax3.plot(t[:-1], np.abs(Smean[:,ix[1]]-Ypred_mean_gp[1:,ix[1]]), '-r', label='error_y')
 # plt.legend()
 
-plt.figure(2)
+# plt.figure(2)
 
 if tr == '1':
 
-    plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
+    plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
     # X = np.concatenate((Smean[:,ix[0]]+Sstd[:,ix[0]], np.flip(Smean[:,ix[0]]-Sstd[:,ix[0]])), axis=0)
     # Y = np.concatenate((Smean[:,ix[1]]+Sstd[:,ix[1]], np.flip(Smean[:,ix[1]]-Sstd[:,ix[1]])), axis=0)
     # plt.fill( X, Y , alpha = 0.5 , color = 'b')
 
-    plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
+    plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
     # X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
     # Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
     # plt.fill( X, Y , alpha = 0.5 , color = 'r')
@@ -438,7 +453,7 @@ if tr == '1':
     # Y = np.concatenate((Ypred_mean_gpup[:,ix[1]]+Ypred_std_gpup[:,ix[1]], np.flip(Ypred_mean_gpup[:,ix[1]]-Ypred_std_gpup[:,ix[1]])), axis=0)
     # plt.fill( X, Y , alpha = 0.5 , color = 'c')
 
-    # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+    plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
 if tr == '2':
@@ -556,7 +571,7 @@ if tr == '3' or tr == '4' or tr == '5' or tr == '6':
     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path.png')
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path4.png')
 plt.show()
 
 

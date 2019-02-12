@@ -8,9 +8,11 @@ import matplotlib.pyplot as plt
 import var
 
 class data_load(object):
+    # Dillute = 100000
 
-    def __init__(self, simORreal = 'sim', discreteORcont = 'discrete', K = 100, K_manifold=-1, sigma=-1, dim=-1):
+    def __init__(self, simORreal = 'sim', discreteORcont = 'discrete', K = 100, K_manifold=-1, sigma=-1, dim=-1, Dillute = var.N_dillute_):
         
+        self.Dillute = Dillute
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -24,6 +26,7 @@ class data_load(object):
         else:
             self.precompute_hyperp(K, K_manifold, sigma, dim)
 
+
     def load(self):
 
         print('[data_load] Loading data from "' + self.file + '"...' )
@@ -32,10 +35,25 @@ class data_load(object):
         # plt.plot(Qtrain[:,0],Qtrain[:,1],'.')
         # plt.show()
 
+        is_start = 30532 #1540#int(Q['is_start'])#100080
+        # while is_start < 100000:
+        #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
+        #         break
+        #     is_start += 1
+        # print is_start
+        is_end = is_start + 200#int(Q['is_end'])
+        self.Qtest = Qtrain[is_start:is_end, :]
+        # Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
+
+        # plt.plot(self.Qtest[:,0], self.Qtest[:,1],'.-k')
+        # plt.plot(self.Qtest[0,0], self.Qtest[0,1],'o')
+        # plt.show()
+        # exit(1)
+
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']
 
-        Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], var.N_dillute_, replace=False),:] # Dillute
+        Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], self.Dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
         self.state_action_dim = var.state_action_dim_

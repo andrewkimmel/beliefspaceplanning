@@ -5,10 +5,8 @@ from std_srvs.srv import SetBool, Empty, EmptyResponse
 from gpup_gp_node.srv import batch_transition, batch_transition_repeat, one_transition, setk
 import math
 import numpy as np
-from gp import GaussianProcess
 from data_load import data_load
 from svm_class import svm_failure
-# from diffusionMaps import DiffusionMap
 from dr_diffusionmaps import DiffusionMap
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
@@ -42,13 +40,13 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
         mean_shift.__init__(self)
 
-        rospy.Service('/gp/transition', batch_transition, self.GetTransition)
-        rospy.Service('/gp/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
-        rospy.Service('/gp/transitionRepeat', batch_transition_repeat, self.GetTransitionRepeat)
-        rospy.Service('/gp/batchSVMcheck', batch_transition, self.batch_svm_check_service)
-        rospy.Service('/gp/set_K', setk, self.setK)
-        rospy.init_node('gp_transition', anonymous=True)
-        print('[gp_transition] Ready.')            
+        rospy.Service('/inter/transition', batch_transition, self.GetTransition)
+        rospy.Service('/inter/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
+        rospy.Service('/inter/transitionRepeat', batch_transition_repeat, self.GetTransitionRepeat)
+        rospy.Service('/inter/batchSVMcheck', batch_transition, self.batch_svm_check_service)
+        rospy.Service('/inter/set_K', setk, self.setK)
+        rospy.init_node('inter_transition', anonymous=True)
+        print('[inter_transition] Ready.')            
 
         rate = rospy.Rate(15) # 15hz
         while not rospy.is_shutdown():
@@ -74,6 +72,39 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             if V[4]:
                 self.precompute_hyperp(K = self.K)
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
+
+    def inter(self, sa):
+        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
+        X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+
+        if useDiffusionMaps:
+            X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
+
+        dp = dl = 0
+        tp = tl = 0
+        for i in range(self.K):
+            dp += np.linalg.norm(X_nn[i,:2]-Y_nn[i,6:8])
+            dl += np.linalg.norm(X_nn[i,2:4]-Y_nn[i,8:10])
+            tp += np.arctan2(Y_nn[i,7]-X_nn[i,1], Y_nn[i,6]-X_nn[i,0])
+            tl += np.arctan2(Y_nn[i,1]-X_nn[i,1], Y_nn[i,0]-X_nn[i,0])
+        dp /= self.K
+        dl /= self.K
+
+
+
+        ds_next = np.zeros((self.state_dim,))
+        std_next = np.zeros((self.state_dim,))
+        for i in range(self.state_dim):
+            
+
+            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
+            mm, vv = gp_est.predict(sa[:self.state_dim])
+            ds_next[i] = mm
+            std_next[i] = np.sqrt(np.diag(vv))
+
+        s_next = sa[:self.state_dim] + ds_next#np.random.normal(ds_next, std_next)
+
 
 
     # Particles prediction

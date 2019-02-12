@@ -79,10 +79,9 @@ class transition_experience():
         done = [item[3] for item in self.memory]
         states = np.array(states)
         failed_states = states[done]
-        dt = [item[4] for item in self.memory]
 
         plt.figure(1)
-        ax1 = plt.subplot(221)
+        ax1 = plt.subplot(211)
         #ax1.plot(states[:,0],states[:,1],'-k')
         ax1.plot(states[:,0],states[:,1],'.y')
         ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
@@ -90,14 +89,14 @@ class transition_experience():
         plt.xlim(-100., 100.)
         plt.ylim(0., 150.)
         
-        ax2 = plt.subplot(222)
+        ax2 = plt.subplot(212)
         ax2.plot(states[:,2],states[:,3],'.k')
         ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
         ax2.set(title='Actuator loads')
 
-        ax3 = plt.subplot(223)
-        ax3.plot(dt)
-        ax3.set(title='Sampling time')
+        # ax3 = plt.subplot(223)
+        # ax3.plot(dt)
+        # ax3.set(title='Sampling time')
         
         plt.show()
 
@@ -129,7 +128,7 @@ class transition_experience():
         def clean(D, done, mode):
             print('[transition_experience] Cleaning data...')
 
-            jj = range(6,8) if mode == 1 or mode == 2 else range(8,10)
+            jj = range(6,8) if mode == 1 else range(4,6)
             i = 0
             inx = []
             while i < D.shape[0]:
@@ -140,7 +139,7 @@ class transition_experience():
 
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
-            ia = range(4,6) if mode == 1 or mode == 2 else range(6,8)
+            ia = range(4,6) if mode == 1  else range(2,4)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize+1, ia]) or np.any(done[i:i+stepSize+1]):
@@ -167,8 +166,8 @@ class transition_experience():
             states = states[:, [0, 1, 2, 3]]
             next_states = next_states[:, [0, 1, 2, 3]]
         elif mode == 2:
-            states = states[:, [0, 1, 4, 5]]
-            next_states = next_states[:, [0, 1, 4, 5]]
+            states = states[:, [0, 1]]
+            next_states = next_states[:, [0, 1]]
         elif mode == 3:
             states = np.concatenate((states[:, :4], signal.medfilt(states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
             next_states = np.concatenate((next_states[:, :4], signal.medfilt(next_states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(next_states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
@@ -199,7 +198,7 @@ class transition_experience():
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
             done_new = []
-            ia = range(4,6) if mode == 1 or mode == 2 else range(6,8)
+            ia = range(4,6) if mode == 1 else range(4,6)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize+1, ia]):
@@ -224,7 +223,7 @@ class transition_experience():
         if mode == 1:
             states = states[:, [0, 1, 2, 3]]
         if mode == 2:
-            states = states[:, [0, 1, 4, 5]]
+            states = states[:, [0, 1]]
 
 
         for i in range(done.shape[0]):
