@@ -11,8 +11,6 @@ from sklearn.neighbors import NearestNeighbors
 from transition_experience import *
 from collect_data.srv import sparse_goal
 import matplotlib.pyplot as plt
-import subprocess
-import os
 
 class collect_data():
 
@@ -23,21 +21,8 @@ class collect_data():
     num_episodes = 20000
     episode_length = 10000
 
-    gz_steps = 300
-
     texp = transition_experience(Load=True, discrete = discrete_actions)
     
-
-    # pauseMessage = pygazebo.msg.world_control_pb2.WorldControl()
-    # pauseMessage.pause = 1
-
-    # resumeMessage = pygazebo.msg.world_control_pb2.WorldControl()
-    # resumeMessage.pause = 0
-
-    # stepMessage = pygazebo.msg.world_control_pb2.WorldControl()
-    # stepMessage.multi_step = gz_steps
-
-
     def __init__(self):
         rospy.init_node('collect_data', anonymous=True)
 
@@ -53,12 +38,13 @@ class collect_data():
         self.reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
         self.rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
+        self.record_srv = rospy.ServiceProxy('/actor/trigger', Empty)
 
         rospy.sleep(1.)
 
         print('[collect_data] Ready to collect...')
 
-        self.rate = rospy.Rate(15) 
+        self.rate = rospy.Rate(5) 
         # while not rospy.is_shutdown():
             # self.rate.sleep()
         rospy.spin()
@@ -83,7 +69,6 @@ class collect_data():
 
     def run_random_episode(self, req):
 
-
         # Reset gripper
         self.reset_srv()
         while not self.gripper_closed:
@@ -99,19 +84,17 @@ class collect_data():
         # Start episode
         n = 0
         action = np.array([0.,0.])
-        os.system("gz world -p 1") # pause (gz world -p 1)
+        self.record_srv()
         for ep_step in range(self.episode_length):
 
             if n == 0:
                 action, n = self.choose_action()
 
-            # msg.data = action
-            # self.pub_gripper_action.publish(msg)
+            msg.data = action
+            self.pub_gripper_action.publish(msg)
             suc = self.move_srv(action).success
             n -= 1
 
-            os.system("gz world -m 200")
-        
             # Get observation
             next_state = np.array(self.obs_srv().state)
 
@@ -126,10 +109,9 @@ class collect_data():
             state = np.copy(next_state)
 
             if not suc or fail:
-                os.system("gz world -p 0")
                 break
 
-            # self.rate.sleep()
+            self.rate.sleep()
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 
@@ -152,8 +134,6 @@ class collect_data():
         print('[collect_data] Roll-out finished, running random actions...')
 
         # Start episode
-        # subprocess.call(["gz", "world", "-p", "1"]) # pause (gz world -p 1)
-        publisher.publish(pauseMessage)
         for ep_step in range(self.episode_length):
 
             if n == 0:
@@ -163,8 +143,6 @@ class collect_data():
             # self.pub_gripper_action.publish(msg)
             suc = self.move_srv(action).success
             n -= 1
-
-            subprocess.call(["gz world -m", str(self.gz_steps)])
 
             # Get observation
             next_state = np.array(self.obs_srv().state)
@@ -180,10 +158,9 @@ class collect_data():
             state = np.copy(next_state)
 
             if not suc or fail:
-                subprocess.call(["gz", "world", "-p", "0"])
                 break
 
-            # self.rate.sleep()
+            self.rate.sleep()
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 

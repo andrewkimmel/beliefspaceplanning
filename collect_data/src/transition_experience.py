@@ -15,14 +15,14 @@ class transition_experience():
     path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
 
-    def __init__(self, Load=True, discrete = False):
+    def __init__(self, Load=True, discrete = False, postfix=''):
 
         if discrete:
             self.mode = 'discrete'
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'a'
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'a' + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
