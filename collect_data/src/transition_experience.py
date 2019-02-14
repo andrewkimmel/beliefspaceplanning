@@ -22,14 +22,14 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'a' + postfix
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
             self.load()
         else:
             self.clear()
-        
+       
     def add(self, state, action, next_state, done):
         self.memory += [(state, action, next_state, done)]
         
@@ -75,13 +75,17 @@ class transition_experience():
 
     def plot_data(self):
 
-        states = [item[0] for item in self.memory]
+        states = np.array([item[0] for item in self.memory])
         done = [item[3] for item in self.memory]
-        states = np.array(states)
+
+        # For data from recorder
+        states = states[:, [0, 1, 3, 4, 5, 6]]
+        states[:,:2] *= 1000 # m to mm
+
         failed_states = states[done]
 
         plt.figure(1)
-        ax1 = plt.subplot(211)
+        ax1 = plt.subplot(311)
         #ax1.plot(states[:,0],states[:,1],'-k')
         ax1.plot(states[:,0],states[:,1],'.y')
         ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
@@ -89,14 +93,15 @@ class transition_experience():
         plt.xlim(-100., 100.)
         plt.ylim(0., 150.)
         
-        ax2 = plt.subplot(212)
+        ax2 = plt.subplot(312)
         ax2.plot(states[:,2],states[:,3],'.k')
         ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
         ax2.set(title='Actuator loads')
 
-        # ax3 = plt.subplot(223)
-        # ax3.plot(dt)
-        # ax3.set(title='Sampling time')
+        ax3 = plt.subplot(313)
+        ax3.plot(states[:,4],states[:,5],'.k')
+        ax3.plot(failed_states[:,4],failed_states[:,5],'.r')
+        ax3.set(title='Object velocity')
         
         plt.show()
 
@@ -128,7 +133,12 @@ class transition_experience():
         def clean(D, done, mode):
             print('[transition_experience] Cleaning data...')
 
-            jj = range(6,8) if mode == 1 else range(4,6)
+            if mode == 1:
+                jj = range(6,8) 
+            elif mode == 2:
+                jj = range(4,6)
+            elif mode == 3:
+                jj = range(8,10)
             i = 0
             inx = []
             while i < D.shape[0]:
@@ -157,6 +167,11 @@ class transition_experience():
         actions = np.array([item[1] for item in self.memory])
         next_states = np.array([item[2] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
+
+        # For data from recorder
+        states = states[:, [0, 1, 3, 4, 5, 6]]
+        states[:,:2] *= 1000 # m to mm
+        next_states = np.roll(states, -1, axis=0)
 
         for i in range(done.shape[0]):
             if done[i]:
@@ -219,6 +234,10 @@ class transition_experience():
         states = np.array([item[0] for item in self.memory])
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
+
+        # For data from recorder
+        states = states[:, [0, 1, 3, 4, 5, 6]]
+        states[:,:2] *= 1000 # m to mm
 
         if mode == 1:
             states = states[:, [0, 1, 2, 3]]

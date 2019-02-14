@@ -2,7 +2,7 @@
 
 import rospy
 from std_srvs.srv import Empty, EmptyResponse
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 from rollout_node.srv import rolloutReq, rolloutReqFile, plotReq, observation, IsDropped, TargetAngles
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,6 +26,7 @@ class rollout():
         rospy.Service('/rollout/rollout_from_file', rolloutReqFile, self.CallbackRolloutFile)
         rospy.Service('/rollout/plot', plotReq, self.Plot)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
+        rospy.Subscriber('/hand_control/gripper_status', String, self.callbackGripperStatus)
 
         self.obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
         self.drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)
@@ -38,15 +39,18 @@ class rollout():
 
         print("[rollout] Ready to rollout...")
 
-        self.rate = rospy.Rate(7) 
-        while not rospy.is_shutdown():
-            rospy.spin()
+        self.rate = rospy.Rate(5) 
+        # while not rospy.is_shutdown():
+        rospy.spin()
 
     def run_rollout(self, A):
         self.rollout_transition = []
 
         # Reset gripper
         self.reset_srv()
+        while not self.gripper_closed:
+            self.rate.sleep()
+        
         print("[rollout] Rolling-out...")
 
         # Start episode
@@ -85,6 +89,9 @@ class rollout():
         print("[rollout] Rollout done.")
 
         return np.array(S), success
+
+    def callbackGripperStatus(self, msg):
+        self.gripper_closed = msg.data == "closed"
 
     def callbackDrop(self, msg):
         self.drop = msg.data
