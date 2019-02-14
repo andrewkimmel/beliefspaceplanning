@@ -22,6 +22,7 @@ stepSize = var.stepSize_
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
+inter_srv = rospy.ServiceProxy('/inter/transitionOneParticle', one_transition)
 
 rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
 plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
@@ -155,7 +156,7 @@ for j in range(len(Pro)):
     if Sro.shape[0]>=A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,1e-4,1e-4])
+sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
@@ -239,16 +240,16 @@ if 1:
         print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        st = time.time()
-        res = naive_srv(s.reshape(-1,1), a)
-        t_naive += (time.time() - st) 
+        # st = time.time()
+        # res = naive_srv(s.reshape(-1,1), a)
+        # t_naive += (time.time() - st) 
 
-        if res.node_probability < p_naive:
-            p_naive = res.node_probability
-        s_next = np.array(res.next_state)
-        s = s_next
+        # if res.node_probability < p_naive:
+        #     p_naive = res.node_probability
+        # s_next = np.array(res.next_state)
+        # s = s_next
 
-        # s_next = np.ones((1,state_dim))
+        s_next = np.ones((1,state_dim))
 
         Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
 
@@ -323,18 +324,49 @@ if 1:
 
     t_gpup /= A.shape[0]
 
+    ######################################## Interpolation propagation ###############################################
+
+    print "Running Naive."
+    Np = 1 # Number of particles
+    t_inter = 0
+
+    s = np.copy(s_start) + np.random.normal(0, sigma_start)
+    # s = np.tile(s, (Np,1)) + np.random.normal(0, sigma_start, (Np, state_dim))
+    Ypred_inter = s.reshape(1,state_dim)
+
+    print("Running (open loop) path...")
+    p_inter = 1
+    for i in range(0, A.shape[0]):
+        print("[inter] Step " + str(i) + " of " + str(A.shape[0]))
+        a = A[i,:]
+
+        st = time.time()
+        res = inter_srv(s.reshape(-1,1), a)
+        t_inter += (time.time() - st) 
+
+        if res.node_probability < p_inter:
+            p_inter = res.node_probability
+        s_next = np.array(res.next_state)
+        s = s_next
+
+        # s_next = np.ones((1,state_dim))
+
+        Ypred_inter = np.append(Ypred_inter, s_next.reshape(1,state_dim), axis=0)
+
+    t_inter /= A.shape[0]
+
     ######################################## Save ###########################################################
 
-    stats = np.array([[t_gp, t_naive, t_mean, t_gpup], [p_gp, p_naive, p_mean, p_gpup]])
+    stats = np.array([[t_gp, t_naive, t_mean, t_gpup,], [p_gp, p_naive, p_mean, p_gpup]])
 
     with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f:
-        pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A], f)
+        pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_inter, Ypred_bmean, stats, A], f)
 
 ######################################## Plot ###########################################################
 
 
 with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
-    Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
+    Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_inter, Ypred_bmean, stats, A = pickle.load(f)  
 
 # Compare paths
 d_gp = d_gpup = d_naive = d_mean = d = 0.
@@ -437,13 +469,14 @@ plt.figure(2)
 ax1 = plt.subplot(1,2,1)
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 # plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
+# plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
+plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-k', label='Inter')
 plt.legend()
 
 ax2 = plt.subplot(1,2,2)
 plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
 # plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
-plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
+plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], '--k', label='Inter')
 
 # if tr == '1':
 

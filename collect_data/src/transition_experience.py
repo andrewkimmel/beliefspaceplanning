@@ -83,7 +83,7 @@ class transition_experience():
 
         # For data from recorder
         if recorder_data:
-            states = states[:, [0, 1, 3, 4, 5, 6]]
+            states = states[:, [0, 1, 6, 7, 8, 9]]
             states[:,:2] *= 1000 # m to mm
 
         failed_states = states[done]
@@ -94,8 +94,8 @@ class transition_experience():
         ax1.plot(states[:,0],states[:,1],'.y')
         ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
         ax1.set(title='Object position')
-        plt.xlim(-100., 100.)
-        plt.ylim(0., 150.)
+        # plt.xlim(-100., 100.)
+        # plt.ylim(0., 150.)
         
         ax2 = plt.subplot(312)
         ax2.plot(states[:,2],states[:,3],'.k')

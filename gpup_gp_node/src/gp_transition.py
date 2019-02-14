@@ -19,7 +19,6 @@ simORreal = 'sim'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 probability_threshold = 0.65
-# probability_threshold = 0.8
 plotRegData = False
 
 class Spin_gp(data_load, mean_shift, svm_failure):
