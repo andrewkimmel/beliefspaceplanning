@@ -28,8 +28,8 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         # Number of NN
         if useDiffusionMaps:
             dim = 2
-            self.K = 500
-            self.K_manifold = 50
+            self.K = 1000
+            self.K_manifold = 100
             sigma = 5
             self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
             # self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
@@ -37,6 +37,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim)
         else:
             self.K = 20
+            print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K)
 
         svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
@@ -75,7 +76,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 self.precompute_hyperp(K = self.K)
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
 
-        return EmptyResponse()
+        # return EmptyResponse()
 
 
     # Particles prediction

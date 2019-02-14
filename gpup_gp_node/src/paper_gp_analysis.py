@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '3'
+tr = '1'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -29,84 +29,85 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 ##########################################################################################################
 if tr == '3':
     # Rollout 1
-    A = np.concatenate( (np.array([[-1., -1.] for _ in range(int(150*1./stepSize))]), 
+    An = np.concatenate( (np.array([[-1., -1.] for _ in range(int(150*1./stepSize))]), 
             np.array([[-1.,  1.] for _ in range(int(100*1./stepSize))]), 
             np.array([[ 1.,  0.] for _ in range(int(100*1./stepSize))]), 
             np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]),
             np.array([[-1.,  1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
 if tr == '2':
     # Rollout 2
-    A = np.concatenate( (np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
+    An = np.concatenate( (np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
             np.array([[-1., -1.] for _ in range(int(40*1./stepSize))]), 
             np.array([[-1.,  1.] for _ in range(int(80*1./stepSize))]),
             np.array([[ 1.,  0.] for _ in range(int(70*1./stepSize))]),
             np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
     # A = A[:160,:]    
 if tr == '1':
-    A = np.array([[-1.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,0.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,0.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000]])
+    An = np.array([[-1., 1.] for _ in range(int(200*1./stepSize))]) 
+#     A = np.array([[-1.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,0.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [-1.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,0.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [0.00000000000000000000,1.00000000000000000000],
+# [-1.00000000000000000000,-1.00000000000000000000]])
 
 if tr=='4': 
-    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan.txt', delimiter=',', dtype=float)[:,:2]
+    An = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan.txt', delimiter=',', dtype=float)[:,:2]
 
 if tr=='5': 
-    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal1_run1_plan.txt', delimiter=',', dtype=float)[:,:2]
+    An = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal1_run1_plan.txt', delimiter=',', dtype=float)[:,:2]
       
 if tr=='6': 
-    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan.txt', delimiter=',', dtype=float)[:,:2]
+    An = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan.txt', delimiter=',', dtype=float)[:,:2]
       
 ######################################## Roll-out ##################################################
 
 
-from data_load import data_load
-dl = data_load(Dillute=4000)
-Dtest = dl.Qtest
-A = Dtest[:,4:6]
-Pro = []
-Pro.append(Dtest[:,:4])
+# from data_load import data_load
+# dl = data_load(Dillute=4000)
+# Dtest = dl.Qtest
+# A = Dtest[:,4:6]
+# Pro = []
+# Pro.append(Dtest[:,:4])
 
 
 rospy.init_node('verification_gazebo', anonymous=True)
@@ -115,17 +116,19 @@ rospy.init_node('verification_gazebo', anonymous=True)
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
 if 0:
-    Af = A.reshape((-1,))
-    # Pro = []
+    Af = An.reshape((-1,))
+    Pro = []
     for j in range(1):
         print("Rollout number " + str(j) + ".")
         
-        Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
+        R = rollout_srv(Af)
+        Sro = np.array(R.states).reshape(-1,state_dim)
+        A = np.array(R.actions_res).reshape(-1,2)
 
         Pro.append(Sro)
         
         with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
-            pickle.dump(Pro, f)
+            pickle.dump([Pro, A], f)
 
 
 if tr=='4':
@@ -136,10 +139,8 @@ elif tr=='6':
     f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan'
 else:
     f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
-# with open(f + '.pkl') as f:  
-#     Pro = pickle.load(f) 
-
-
+with open(f + '.pkl') as f:  
+    Pro, A = pickle.load(f) 
 
 # fig = plt.figure(0)
 # ax = fig.add_subplot(111)#, aspect='equal')
@@ -154,7 +155,7 @@ for j in range(len(Pro)):
     if Sro.shape[0]>=A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
+sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,1e-4,1e-4])
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
@@ -162,7 +163,6 @@ sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
 # from scipy.io import savemat
 # savemat(path + 'test_v6_d6_m1.mat', {'S': Pro[0]} )
 # exit(1)
-
 
 Smean = []
 Sstd = []
@@ -437,7 +437,7 @@ plt.figure(2)
 ax1 = plt.subplot(1,2,1)
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 # plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
+plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
 plt.legend()
 
 ax2 = plt.subplot(1,2,2)
@@ -580,7 +580,7 @@ plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
 #     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
 #     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path7.png')
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path9.png')
 plt.show()
 
 

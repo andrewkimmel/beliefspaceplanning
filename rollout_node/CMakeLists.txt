@@ -63,6 +63,7 @@ add_service_files(
   IsDropped.srv
   observation.srv
   MoveServos.srv
+  gets.srv
 )
 
 ## Generate actions in the 'action' folder

@@ -10,6 +10,7 @@ import sys
 sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
+recorder_data = True
 
 class transition_experience():
     path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -22,7 +23,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'b' + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -78,9 +79,12 @@ class transition_experience():
         states = np.array([item[0] for item in self.memory])
         done = [item[3] for item in self.memory]
 
+        print states.shape
+
         # For data from recorder
-        states = states[:, [0, 1, 3, 4, 5, 6]]
-        states[:,:2] *= 1000 # m to mm
+        if recorder_data:
+            states = states[:, [0, 1, 3, 4, 5, 6]]
+            states[:,:2] *= 1000 # m to mm
 
         failed_states = states[done]
 
@@ -169,9 +173,10 @@ class transition_experience():
         done = np.array([item[3] for item in self.memory])
 
         # For data from recorder
-        states = states[:, [0, 1, 3, 4, 5, 6]]
-        states[:,:2] *= 1000 # m to mm
-        next_states = np.roll(states, -1, axis=0)
+        if recorder_data:
+            states = states[:, [0, 1, 3, 4, 5, 6]]
+            states[:,:2] *= 1000 # m to mm
+            next_states = np.roll(states, -1, axis=0)
 
         for i in range(done.shape[0]):
             if done[i]:
@@ -236,14 +241,14 @@ class transition_experience():
         done = np.array([item[3] for item in self.memory])
 
         # For data from recorder
-        states = states[:, [0, 1, 3, 4, 5, 6]]
-        states[:,:2] *= 1000 # m to mm
+        if recorder_data:
+            states = states[:, [0, 1, 3, 4, 5, 6]]
+            states[:,:2] *= 1000 # m to mm
 
         if mode == 1:
             states = states[:, [0, 1, 2, 3]]
         if mode == 2:
             states = states[:, [0, 1]]
-
 
         for i in range(done.shape[0]):
             if done[i]:

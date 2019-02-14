@@ -22,7 +22,7 @@ class data_load(object):
         if os.path.exists(self.path + 'opt_data_discrete' + self.postfix + '.obj'):
             with open(self.path + 'opt_data_discrete' + self.postfix + '.obj', 'rb') as f: 
                 _, self.theta_opt, self.opt_kdt = pickle.load(f)
-            print('[data_load] Loaded hyper-parameters data.')
+            print('[data_load] Loaded hyper-parameters data from ' + self.file)
         else:
             self.precompute_hyperp(K, K_manifold, sigma, dim)
 

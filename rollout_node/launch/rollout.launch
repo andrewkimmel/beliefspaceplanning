@@ -2,5 +2,6 @@
 
   <node pkg="rollout_node" name="hand_control_sim" type="hand_control_sim.py" output="screen"></node>
   <node pkg="rollout_node" name="rollout" type="rollout.py" output="screen"/>
+  <node pkg="rollout_node" name="rollout_recorder" type="rollout_recorder.py" output="screen"/>
 
 </launch>

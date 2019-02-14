@@ -4,12 +4,13 @@ import rospy
 import numpy as np
 import time
 import random
-from transition_experience import *
 from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
 from std_srvs.srv import Empty, EmptyResponse
+from rollout_node.srv import gets
 
+state_form = 'pos_load_vel' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints'
 
-class actorPubRec():
+class rolloutRec():
     discrete_actions = True
 
     gripper_pos = np.array([0., 0.])
@@ -23,36 +24,40 @@ class actorPubRec():
     state = np.array([0.,0., 0., 0.])
     joint_states = np.array([0., 0., 0., 0.])
     n = 0
+    S = []
+    A = []
     
-    texp = transition_experience(Load=True, discrete = discrete_actions, postfix='_bu')
-
     def __init__(self):
-        rospy.init_node('actor_pub_record', anonymous=True)
+                
+        rospy.init_node('rollout_recorder', anonymous=True)
 
         rospy.Subscriber('/gripper/load', Float32MultiArray, self.callbackGripperLoad)
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
         rospy.Subscriber('/hand/obj_vel', Float32MultiArray, self.callbackObjVel)
-        rospy.Subscriber('/hand/my_joint_states', Float32MultiArray, self.callbackJoints)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
         rospy.Subscriber('/collect/gripper_action', Float32MultiArray, self.callbackAction)
+        rospy.Subscriber('/hand/my_joint_states', Float32MultiArray, self.callbackJoints)
 
-        rospy.Service('/actor/trigger', Empty, self.callbackTrigger)
+        rospy.Service('/rollout_recorder/trigger', Empty, self.callbackTrigger)
+        rospy.Service('/rollout_recorder/get_states', gets, self.get_states)
 
         rate = rospy.Rate(10)
-        count = 0
         while not rospy.is_shutdown():
 
             if self.running:
-                self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.joint_states), axis=0)
-                
-                self.texp.add(self.state, self.action, self.state, self.drop)
+                if state_form == 'pos_load':
+                    self.state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
+                elif state_form == 'pos_load_vel':   
+                    self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel), axis=0)
+                elif state_form == 'pos_load_joints':   
+                    obs = np.concatenate((self.obj_pos, self.gripper_load, self.joint_states), axis=0)
 
+                self.S.append(self.state)
+                self.A.append(self.action)
+                
                 if self.drop:
-                    print('[recorder] Episode ended (%d points so far).' % self.texp.getSize())
+                    print('[rollout_recorder] Episode ended (%d points so far).' % self.texp.getSize())
                     self.running = False
-                    if not (count % 5):
-                        self.texp.save()
-                    count += 1
 
             rate.sleep()
 
@@ -66,7 +71,7 @@ class actorPubRec():
     def callbackObjVel(self, msg):
         Obj_vel = np.array(msg.data)
         self.obj_vel = Obj_vel[:2] * 1000 # m/s to mm/s
-
+    
     def callbackJoints(self, msg):
         self.joint_states = np.array(msg.data)
 
@@ -77,14 +82,19 @@ class actorPubRec():
         self.action = np.array(msg.data)
 
     def callbackTrigger(self, msg):
-        self.running = not self.running
+        self.running = True
+        self.S = []
+        self.A = []
 
         return EmptyResponse()
 
+    def get_states(self, msg):
+        return {'states': np.array(self.S).reshape((-1,)), 'actions': np.array(self.A).reshape((-1,))}
 
+       
 if __name__ == '__main__':
     
     try:
-        actorPubRec()
+        rolloutRec()
     except rospy.ROSInterruptException:
         pass

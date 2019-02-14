@@ -7,7 +7,7 @@ from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import TargetAngles, IsDropped, observation, MoveServos
 import math
 
-state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel'
+state_form = 'pos_load_vel_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints'
 
 class hand_control():
 
@@ -116,7 +116,7 @@ class hand_control():
             self.move_lift_srv.call()
             rospy.sleep(1.0)
             ratein.sleep()
-            if self.object_grasped:# and self.lift_status:
+            if self.object_grasped:# and self.lift_s, self.obj_veltatus:
                 if self.wait2initialGrasp():
                     break
         
@@ -150,8 +150,6 @@ class hand_control():
 
         return suc
 
-        
-        
     def MoveGripper(self, msg):
         # This function should accept a vector of normalized incraments to the current angles: msg.angles = [dq1, dq2], where dq1 and dq2 can be equal to 0 (no move), 1,-1 (increase or decrease angles by finger_move_step_size)
 
@@ -188,6 +186,8 @@ class hand_control():
             obs = np.concatenate((self.obj_pos, self.obj_vel), axis=0)
         if state_form == 'pos_load_vel':   
             obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel), axis=0)
+        if state_form == 'pos_load_vel_joints':   
+            obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.joint_states), axis=0)
 
         return {'state': obs}
 
