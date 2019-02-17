@@ -50,7 +50,7 @@ class actorPubRec():
                 if self.drop:
                     print('[recorder] Episode ended (%d points so far).' % self.texp.getSize())
                     self.running = False
-                    if not (count % 5):
+                    if not (count % 20):
                         self.texp.save()
                     count += 1
 

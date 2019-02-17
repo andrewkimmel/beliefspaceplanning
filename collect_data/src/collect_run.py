@@ -36,7 +36,7 @@ class collect_data():
         self.drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)
         self.move_srv = rospy.ServiceProxy('/hand_control/MoveGripper', TargetAngles)
         self.reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
-        self.rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
+        #self.rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
         self.record_srv = rospy.ServiceProxy('/actor/trigger', Empty)
 
@@ -88,7 +88,7 @@ class collect_data():
         for ep_step in range(self.episode_length):
 
             if n == 0:
-                action, n = self.choose_action()
+                action, n = self.choose_action(0.8)
 
             msg.data = action
             self.pub_gripper_action.publish(msg)
@@ -119,28 +119,42 @@ class collect_data():
 
     def run_planned_episode(self, req):
 
+        # Reset gripper
+        self.reset_srv()
+        while not self.gripper_closed:
+            self.rate.sleep()
+
         print('[collect_data] Rolling-out new planned actions...')
-        state_seq = self.rollout_srv.call(req)
+        #state_seq = self.rollout_srv.call(req)
+        A = np.array(req.actions).reshape(-1, 2)
 
-        self.texp.add_rollout_data() # Add rollout data to database
+        #self.texp.add_rollout_data() # Add rollout data to database
 
-        if not state_seq.success:
-            print('[collect_data] Rollout failed.')
-            return state_seq
+        #if not state_seq.success:
+        #    print('[collect_data] Rollout failed.')
+        #    return state_seq
 
         msg = Float32MultiArray()
-        Done = False
 
-        print('[collect_data] Roll-out finished, running random actions...')
+        #print('[collect_data] Roll-out finished, running random actions...')
+
+        state = np.array(self.obs_srv().state)
 
         # Start episode
+        n = 0
+        action = np.array([0.,0.])
+        self.record_srv()
         for ep_step in range(self.episode_length):
 
             if n == 0:
-                action, n = self.choose_action()
+                if ep_step < A.shape[0]:
+                    action = A[ep_step]
+                    n = 1
+                else:
+                    action, n = self.choose_action(0.7)
 
-            # msg.data = action
-            # self.pub_gripper_action.publish(msg)
+            msg.data = action
+            self.pub_gripper_action.publish(msg)
             suc = self.move_srv(action).success
             n -= 1
 
@@ -164,7 +178,7 @@ class collect_data():
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 
-        return state_seq
+        return {'states': [], 'actions_res': [], 'success': True}
 
     def choose_action(self, p = 0.5):
         if self.discrete_actions:
@@ -176,13 +190,13 @@ class collect_data():
                 else:
                     a = A[1]
 
-            if np.random.uniform() > 0.5:
+            if np.random.uniform() > 0.7:
                 if np.random.uniform() > 0.6:
-                    num_steps = np.random.randint(200)
+                    num_steps = np.random.randint(400)
                 else:
-                    num_steps = np.random.randint(80)
+                    num_steps = np.random.randint(160)
             else:
-                num_steps = np.random.randint(11,30)
+                num_steps = np.random.randint(15,50)
 
             return a, num_steps
         else:
