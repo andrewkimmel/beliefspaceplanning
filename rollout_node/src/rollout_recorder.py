@@ -8,7 +8,7 @@ from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
 from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import gets
 
-state_form = 'pos_load_vel' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints'
+state_form = 'pos_load_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
 
 class rolloutRec():
     discrete_actions = True
@@ -50,7 +50,9 @@ class rolloutRec():
                 elif state_form == 'pos_load_vel':   
                     self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel), axis=0)
                 elif state_form == 'pos_load_joints':   
-                    obs = np.concatenate((self.obj_pos, self.gripper_load, self.joint_states), axis=0)
+                    self.state = np.concatenate((self.obj_pos, self.gripper_load, self.joint_states), axis=0)
+                elif state_form == 'pos_joints':   
+                    self.state = np.concatenate((self.obj_pos, self.joint_states), axis=0)
 
                 self.S.append(self.state)
                 self.A.append(self.action)
@@ -89,6 +91,7 @@ class rolloutRec():
         return EmptyResponse()
 
     def get_states(self, msg):
+
         return {'states': np.array(self.S).reshape((-1,)), 'actions': np.array(self.A).reshape((-1,))}
 
        

@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '1'
+tr = '3'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -106,9 +106,9 @@ if tr=='6':
 # from data_load import data_load
 # dl = data_load(Dillute=4000)
 # Dtest = dl.Qtest
-# A = Dtest[:,4:6]
+# A = Dtest[:,state_dim:state_dim+2]
 # Pro = []
-# Pro.append(Dtest[:,:4])
+# Pro.append(Dtest[:,:state_dim])
 
 
 rospy.init_node('verification_gazebo', anonymous=True)
@@ -156,7 +156,7 @@ for j in range(len(Pro)):
     if Sro.shape[0]>=A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4])
+sigma_start = np.std(np.array(S), 0) + np.concatenate((np.array([0.,0.]), np.ones((state_dim-2,))*1e-3), axis=0)
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
@@ -204,19 +204,19 @@ if 1:
         Pgp.append(S)
         a = A[i,:]
 
-        # st = time.time()
-        # res = gp_srv(S.reshape(-1,1), a)
-        # t_gp += (time.time() - st) 
+        st = time.time()
+        res = gp_srv(S.reshape(-1,1), a)
+        t_gp += (time.time() - st) 
 
-        # S_next = np.array(res.next_states).reshape(-1,state_dim)
-        # if res.node_probability < p_gp:
-        #     p_gp = res.node_probability
-        # s_mean_next = np.mean(S_next, 0)
-        # s_std_next = np.std(S_next, 0)
-        # S = S_next
+        S_next = np.array(res.next_states).reshape(-1,state_dim)
+        if res.node_probability < p_gp:
+            p_gp = res.node_probability
+        s_mean_next = np.mean(S_next, 0)
+        s_std_next = np.std(S_next, 0)
+        S = S_next
 
-        s_mean_next = np.ones((1,state_dim))
-        s_std_next = np.ones((1,state_dim))
+        # s_mean_next = np.ones((1,state_dim))
+        # s_std_next = np.ones((1,state_dim))
 
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
@@ -240,16 +240,16 @@ if 1:
         print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        # st = time.time()
-        # res = naive_srv(s.reshape(-1,1), a)
-        # t_naive += (time.time() - st) 
+        st = time.time()
+        res = naive_srv(s.reshape(-1,1), a)
+        t_naive += (time.time() - st) 
 
-        # if res.node_probability < p_naive:
-        #     p_naive = res.node_probability
-        # s_next = np.array(res.next_state)
-        # s = s_next
+        if res.node_probability < p_naive:
+            p_naive = res.node_probability
+        s_next = np.array(res.next_state)
+        s = s_next
 
-        s_next = np.ones((1,state_dim))
+        # s_next = np.ones((1,state_dim))
 
         Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
 
@@ -326,7 +326,7 @@ if 1:
 
     ######################################## Interpolation propagation ###############################################
 
-    print "Running Naive."
+    print "Running Interpolation."
     Np = 1 # Number of particles
     t_inter = 0
 
@@ -340,16 +340,16 @@ if 1:
         print("[inter] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        st = time.time()
-        res = inter_srv(s.reshape(-1,1), a)
-        t_inter += (time.time() - st) 
+        # st = time.time()
+        # res = inter_srv(s.reshape(-1,1), a)
+        # t_inter += (time.time() - st) 
 
-        if res.node_probability < p_inter:
-            p_inter = res.node_probability
-        s_next = np.array(res.next_state)
-        s = s_next
+        # if res.node_probability < p_inter:
+        #     p_inter = res.node_probability
+        # s_next = np.array(res.next_state)
+        # s = s_next
 
-        # s_next = np.ones((1,state_dim))
+        s_next = np.ones((1,state_dim))
 
         Ypred_inter = np.append(Ypred_inter, s_next.reshape(1,state_dim), axis=0)
 
@@ -468,15 +468,16 @@ ix = [0, 1]
 plt.figure(2)
 ax1 = plt.subplot(1,2,1)
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
-# plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-# plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
-plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-k', label='Inter')
+plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
+plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
+# plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')
 plt.legend()
 
 ax2 = plt.subplot(1,2,2)
 plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
-# plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
-plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], '--k', label='Inter')
+plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
+plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
+# plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], ':y', label='Inter')
 
 # if tr == '1':
 
@@ -486,9 +487,9 @@ plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], '--k', label='Inter')
 #     # plt.fill( X, Y , alpha = 0.5 , color = 'b')
 
 #     plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-#     # X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
-#     # Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'r')
+#     X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
+#     Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
+#     plt.fill( X, Y , alpha = 0.5 , color = 'r')
 
 #     # plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
 #     # X = np.concatenate((Ypred_mean_gpup[:,ix[0]]+Ypred_std_gpup[:,ix[0]], np.flip(Ypred_mean_gpup[:,ix[0]]-Ypred_std_gpup[:,ix[0]])), axis=0)
@@ -497,6 +498,7 @@ plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], '--k', label='Inter')
 
 #     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
 #     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
+#     plt.legend()
 
 # if tr == '2':
 #     ax1 = plt.subplot(1,2,1)
@@ -613,7 +615,7 @@ plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], '--k', label='Inter')
 #     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
 #     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path9.png')
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path10.png')
 plt.show()
 
 

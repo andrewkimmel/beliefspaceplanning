@@ -8,8 +8,8 @@ import numpy as np
 from gp import GaussianProcess
 from data_load import data_load
 from svm_class import svm_failure
-# from diffusionMaps import DiffusionMap
-from dr_diffusionmaps import DiffusionMap
+from diffusionMaps import DiffusionMap
+# from dr_diffusionmaps import DiffusionMap
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
 
@@ -30,12 +30,12 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             self.K = 1000
             self.K_manifold = 100
             sigma = 5
-            self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
-            # self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
+            # self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
+            self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
             print('[gp_transition] Using diffusion maps with dimension %d, K: (%d, %d) and sigma=%f.'%(dim, self.K_manifold, self.K, sigma))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim)
         else:
-            self.K = 20
+            self.K = 10
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K)
 

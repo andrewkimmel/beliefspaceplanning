@@ -23,7 +23,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'b' + postfix
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -83,8 +83,8 @@ class transition_experience():
 
         # For data from recorder
         if recorder_data:
-            states = states[:, [0, 1, 6, 7, 8, 9]]
-            states[:,:2] *= 1000 # m to mm
+            states = states[:, [0, 1, 2, 3, 4, 5]]
+            # states[:,:2] *= 1000 # m to mm
 
         failed_states = states[done]
 
@@ -131,8 +131,10 @@ class transition_experience():
         '''
         mode:
             1 - Position and load
-            2 - Position and velocity
-            3 - Postion, load and velocity
+            2 - Position
+            3 - Position, load and velocity
+            4 - Position, load and joints
+            5 - Position and joints
         '''
         def clean(D, done, mode):
             print('[transition_experience] Cleaning data...')
@@ -143,6 +145,10 @@ class transition_experience():
                 jj = range(4,6)
             elif mode == 3:
                 jj = range(8,10)
+            elif mode == 4:
+                jj = range(10, 12)
+            elif mode == 5:
+                jj = range(8, 10)
             i = 0
             inx = []
             while i < D.shape[0]:
@@ -153,7 +159,7 @@ class transition_experience():
 
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
-            ia = range(4,6) if mode == 1  else range(2,4)
+            ia = range(4,6) if mode == 1  else range(2,4) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize+1, ia]) or np.any(done[i:i+stepSize+1]):
@@ -174,8 +180,6 @@ class transition_experience():
 
         # For data from recorder
         if recorder_data:
-            states = states[:, [0, 1, 3, 4, 5, 6]]
-            states[:,:2] *= 1000 # m to mm
             next_states = np.roll(states, -1, axis=0)
 
         for i in range(done.shape[0]):
@@ -191,6 +195,12 @@ class transition_experience():
         elif mode == 3:
             states = np.concatenate((states[:, :4], signal.medfilt(states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
             next_states = np.concatenate((next_states[:, :4], signal.medfilt(next_states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(next_states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
+        elif mode == 4:
+            states = states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+            next_states = next_states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+        elif mode == 5:
+            states = states[:, [0, 1, 6, 7, 8, 9]]
+            next_states = next_states[:, [0, 1, 6, 7, 8, 9]]
         self.state_dim = states.shape[1]
 
         D = np.concatenate((states, actions, next_states), axis = 1)
@@ -241,14 +251,15 @@ class transition_experience():
         done = np.array([item[3] for item in self.memory])
 
         # For data from recorder
-        if recorder_data:
-            states = states[:, [0, 1, 3, 4, 5, 6]]
-            states[:,:2] *= 1000 # m to mm
 
         if mode == 1:
             states = states[:, [0, 1, 2, 3]]
-        if mode == 2:
+        elif mode == 2:
             states = states[:, [0, 1]]
+        elif mode == 4:
+            states = states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+        elif mode == 5:
+            states = states[:, [0, 1, 6, 7, 8, 9]]
 
         for i in range(done.shape[0]):
             if done[i]:

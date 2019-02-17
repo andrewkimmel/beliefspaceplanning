@@ -7,7 +7,7 @@ from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import TargetAngles, IsDropped, observation, MoveServos
 import math
 
-state_form = 'pos_load_vel_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints'
+state_form = 'pos_load_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints'
 
 class hand_control():
 
@@ -188,6 +188,8 @@ class hand_control():
             obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel), axis=0)
         if state_form == 'pos_load_vel_joints':   
             obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.joint_states), axis=0)
+        if state_form == 'pos_load_joints':   
+            obs = np.concatenate((self.obj_pos, self.gripper_load, self.joint_states), axis=0)
 
         return {'state': obs}
 

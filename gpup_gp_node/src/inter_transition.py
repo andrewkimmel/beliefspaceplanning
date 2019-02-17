@@ -131,7 +131,7 @@ class Spin_inter(data_load, mean_shift, svm_failure):
         # Computes a scalar covariance of two samples
 
         v = 1.
-        w = 0.001 * np.array([1,1,1,1])
+        w = 0.001 * np.ones((self.state_dim,1))
 
         diff = xi - xj
         W = 1. / w
