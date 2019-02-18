@@ -213,7 +213,7 @@ class transition_experience():
         if stepSize > 1:
             D = multiStep(D, done, stepSize, mode)
 
-        # D = D[np.random.choice(D.shape[0], int(0.4*D.shape[0]), replace=False),:] # Dillute
+        D = D[np.random.choice(D.shape[0], int(0.6*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
         savemat(self.path + 'sim_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})

@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '3'
+tr = '2'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -182,7 +182,7 @@ print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 # plt.show()
 # exit(1)
 
-if 1:   
+if 0:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
@@ -615,7 +615,7 @@ plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
 #     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
 #     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path10.png')
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path13.png')
 plt.show()
 
 

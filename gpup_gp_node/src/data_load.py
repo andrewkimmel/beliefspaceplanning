@@ -10,7 +10,7 @@ import var
 class data_load(object):
     # Dillute = 100000
 
-    def __init__(self, simORreal = 'sim', discreteORcont = 'discrete', K = 100, K_manifold=-1, sigma=-1, dim=-1, Dillute = var.N_dillute_):
+    def __init__(self, simORreal = 'sim', discreteORcont = 'discrete', K = 100, K_manifold=-1, sigma=-1, dim=-1, Dillute = var.N_dillute_, dr = 'diff'):
         
         self.Dillute = Dillute
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
@@ -18,6 +18,7 @@ class data_load(object):
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.load()
+        self.dr = dr
 
         if os.path.exists(self.path + 'opt_data_discrete' + self.postfix + '.obj'):
             with open(self.path + 'opt_data_discrete' + self.postfix + '.obj', 'rb') as f: 
@@ -119,11 +120,15 @@ class data_load(object):
         print('[data_load] Pre-computing GP hyper-parameters data.')
 
         if K_manifold > 0:
-            from dr_diffusionmaps import DiffusionMap
-            df = DiffusionMap(sigma=sigma, embedding_dim=dim)
+            if self.dr == 'diff':
+                from dr_diffusionmaps import DiffusionMap
+                DR = DiffusionMap(sigma=sigma, embedding_dim=dim)
+            elif self.dr == 'spec':
+                from spectralEmbed import spectralEmbed
+                DR = spectralEmbed(embedding_dim=dim)
 
         def reduction(sa, X, Y, K_manifold):
-            inx = df.ReducedClosestSetIndices(sa, X, k_manifold = K_manifold)
+            inx = DR.ReducedClosestSetIndices(sa, X, k_manifold = K_manifold)
 
             return X[inx,:][0], Y[inx,:][0]
 

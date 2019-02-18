@@ -10,8 +10,10 @@ from data_load import data_load
 from svm_class import svm_failure
 from diffusionMaps import DiffusionMap
 # from dr_diffusionmaps import DiffusionMap
+from spectralEmbed import spectralEmbed
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
+
 
 # np.random.seed(10)
 
@@ -20,24 +22,29 @@ discreteORcont = 'discrete'
 useDiffusionMaps = False
 probability_threshold = 0.65
 plotRegData = False
+diffORspec = 'spec'
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
     def __init__(self):
         # Number of NN
         if useDiffusionMaps:
-            dim = 2
-            self.K = 1000
-            self.K_manifold = 100
+            dim = 4
+            self.K = 100
+            self.K_manifold = 10
             sigma = 5
-            # self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
-            self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
-            print('[gp_transition] Using diffusion maps with dimension %d, K: (%d, %d) and sigma=%f.'%(dim, self.K_manifold, self.K, sigma))
-            data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim)
+            if diffORspec == 'diff':
+                # self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
+                self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
+                print('[gp_transition] Using diffusion maps with dimension %d, K: (%d, %d) and sigma=%f.'%(dim, self.K_manifold, self.K, sigma))
+            else:
+                self.embedding = spectralEmbed(embedding_dim=dim) 
+                print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
+            data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim, dr = 'diff')
         else:
             self.K = 10
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
-            data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K)
+            data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
         svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
         mean_shift.__init__(self)
@@ -63,11 +70,19 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             dim = int(V[0])
             self.K_manifold = int(V[1])
             self.K = int(V[2])
-            sigma = V[3]
-            self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
-            if V[4]:
-                self.precompute_hyperp(K = self.K, K_manifold = self.K_manifold, sigma = sigma, dim = dim)
-            print('[gp_transition] Using diffusion maps with dimension %d, K: (%d, %d) and sigma=%f.'%(dim, self.K_manifold, self.K, sigma))
+            if diffORspec == 'diff':
+                sigma = V[3]
+                self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
+                if V[4]:
+                    self.dr = 'diff'
+                    self.precompute_hyperp(K = self.K, K_manifold = self.K_manifold, sigma = sigma, dim = dim)
+                print('[gp_transition] Using diffusion maps with dimension %d, K: (%d, %d) and sigma=%f.'%(dim, self.K_manifold, self.K, sigma))
+            elif diffORspec == 'spec':
+                self.embedding = spectralEmbed(embedding_dim=dim)
+                if V[4]:
+                    self.dr = 'spec'
+                    self.precompute_hyperp(K = self.K, K_manifold = self.K_manifold, dim = dim) 
+                print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
         else:
             useDiffusionMaps = False
             self.K = int(V[1])
@@ -188,7 +203,10 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         return s_next 
 
     def reduction(self, sa, X, Y):
-        inx = self.df.ReducedClosestSetIndices(sa, X, k_manifold = self.K_manifold)
+        if diffORspec == 'diff':
+            inx = self.df.ReducedClosestSetIndices(sa, X, k_manifold = self.K_manifold)
+        elif diffORspec == 'spec':
+            inx = self.embedding.ReducedClosestSetIndices(sa, X, k_manifold = self.K_manifold)
 
         return X[inx,:][0], Y[inx,:][0]
 
