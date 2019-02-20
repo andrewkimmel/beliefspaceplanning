@@ -45,51 +45,6 @@ if tr == '2':
     # A = A[:160,:]    
 if tr == '1':
     An = np.array([[-1., 1.] for _ in range(int(200*1./stepSize))]) 
-#     A = np.array([[-1.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,0.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [-1.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,0.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [0.00000000000000000000,1.00000000000000000000],
-# [-1.00000000000000000000,-1.00000000000000000000]])
 
 if tr=='4': 
     An = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan.txt', delimiter=',', dtype=float)[:,:2]
@@ -141,8 +96,6 @@ else:
 with open(f + '.pkl') as f:  
     Pro, A = pickle.load(f) 
 
-Pro[0] = Pro[0][350:,:]
-A = A[350:,:]
 
 # fig = plt.figure(0)
 # ax = fig.add_subplot(111)#, aspect='equal')
@@ -200,24 +153,24 @@ if 1:
     Pgp = []; 
     p_gp = 1
     print("Running (open loop) path...")
-    for i in range(0, 300+0*A.shape[0]):
+    for i in range(0, A.shape[0]):
         print("[GP] Step " + str(i) + " of " + str(A.shape[0]))
         Pgp.append(S)
         a = A[i,:]
 
-        # st = time.time()
-        # res = gp_srv(S.reshape(-1,1), a)
-        # t_gp += (time.time() - st) 
+        st = time.time()
+        res = gp_srv(S.reshape(-1,1), a)
+        t_gp += (time.time() - st) 
 
-        # S_next = np.array(res.next_states).reshape(-1,state_dim)
-        # if res.node_probability < p_gp:
-        #     p_gp = res.node_probability
-        # s_mean_next = np.mean(S_next, 0)
-        # s_std_next = np.std(S_next, 0)
-        # S = S_next
+        S_next = np.array(res.next_states).reshape(-1,state_dim)
+        if res.node_probability < p_gp:
+            p_gp = res.node_probability
+        s_mean_next = np.mean(S_next, 0)
+        s_std_next = np.std(S_next, 0)
+        S = S_next
 
-        s_mean_next = np.ones((1,state_dim))
-        s_std_next = np.ones((1,state_dim))
+        # s_mean_next = np.ones((1,state_dim))
+        # s_std_next = np.ones((1,state_dim))
 
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
@@ -469,14 +422,14 @@ ix = [0, 1]
 plt.figure(2)
 ax1 = plt.subplot(1,2,1)
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
-# plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
+plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
 plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
 # plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')
 plt.legend()
 
 ax2 = plt.subplot(1,2,2)
 plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
-# plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
+plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
 plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
 # plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], ':y', label='Inter')
 
@@ -616,7 +569,7 @@ plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
 #     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
 #     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path13.png')
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png')
 plt.show()
 
 

@@ -45,7 +45,7 @@ class rollout():
 
         print("[rollout] Ready to rollout...")
 
-        self.rate = rospy.Rate(5) 
+        self.rate = rospy.Rate(2) 
         # while not rospy.is_shutdown():
         rospy.spin()
 

@@ -7,7 +7,7 @@ from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import TargetAngles, IsDropped, observation, MoveServos
 import math
 
-state_form = 'all' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
+state_form = 'pos_load_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
 
 class hand_control():
 

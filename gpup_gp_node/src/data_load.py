@@ -35,13 +35,13 @@ class data_load(object):
         # plt.plot(Qtrain[:,0],Qtrain[:,1],'.')
         # plt.show()
 
-        is_start = 23300# 30532 #1540#int(Q['is_start'])#100080
+        is_start = 470# 30532 #1540#int(Q['is_start'])#100080
         # while is_start < 200000:
         #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
         #         break
         #     is_start += 1
         # print is_start
-        is_end = is_start + 1000#int(Q['is_end'])
+        is_end = is_start + 350#int(Q['is_end'])
         self.Qtest = Qtrain[is_start:is_end, :]
         Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
 

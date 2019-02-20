@@ -23,7 +23,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'a' + postfix
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:

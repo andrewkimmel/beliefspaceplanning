@@ -8,7 +8,7 @@ from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
 from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import gets
 
-state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
+state_form = 'pos_load_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
 
 class rolloutRec():
     discrete_actions = True
@@ -41,7 +41,7 @@ class rolloutRec():
         rospy.Service('/rollout_recorder/trigger', Empty, self.callbackTrigger)
         rospy.Service('/rollout_recorder/get_states', gets, self.get_states)
 
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(2)
         while not rospy.is_shutdown():
 
             if self.running:
@@ -58,7 +58,7 @@ class rolloutRec():
                 self.A.append(self.action)
                 
                 if self.drop:
-                    print('[rollout_recorder] Episode ended (%d points so far).' % self.texp.getSize())
+                    print('[rollout_recorder] Episode ended.')
                     self.running = False
 
             rate.sleep()
