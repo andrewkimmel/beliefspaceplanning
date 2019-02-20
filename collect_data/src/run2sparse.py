@@ -9,13 +9,13 @@ from rollout_node.srv import rolloutReq
 import time
 
 epi_srv = rospy.ServiceProxy('/collect/planned_episode', rolloutReq)
-process_srv = rospy.ServiceProxy('/collect/process_data', Empty)
+save_srv = rospy.ServiceProxy('/collect/save_data', Empty)
 rand_epi_srv = rospy.ServiceProxy('/collect/random_episode', Empty)
 
 
 for i in range(1,100000):
 
-    if np.random.uniform() > 0.4:
+    if np.random.uniform() > 1.1:
         # goal = str(np.random.randint(1,18))
         # print('Running goal number ' + goal + '.')
 
@@ -48,6 +48,6 @@ for i in range(1,100000):
         print "Running random episode..."
         rand_epi_srv()
         
-    if not (i % 5):
-        process_srv()
+    if not (i % 10):
+        save_srv()
 

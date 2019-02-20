@@ -85,7 +85,13 @@ class data_load(object):
         self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
 
         print('[data_load] Loading data to kd-tree...')
-        self.kdt = KDTree(self.Xtrain, leaf_size=100, metric='euclidean')
+        if 0 and os.path.exists(self.path + 'kdtree' + self.postfix + '.obj'):
+            with open(self.path + 'kdtree' + self.postfix + '.obj', 'rb') as f: 
+                self.kdt = pickle.load(f)
+        else:
+            self.kdt = KDTree(self.Xtrain, leaf_size=100, metric='euclidean')
+            with open(self.path + 'kdtree' + self.postfix + '.obj', 'wb') as f:
+                pickle.dump(self.kdt, f)
         print('[data_load] kd-tree ready.')
 
     def normz(self, x):

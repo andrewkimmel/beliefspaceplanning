@@ -22,6 +22,7 @@ class actorPubRec():
     action = np.array([0.,0.])
     state = np.array([0.,0., 0., 0.])
     joint_states = np.array([0., 0., 0., 0.])
+    joint_velocities = np.array([0., 0., 0., 0.])
     n = 0
     
     texp = transition_experience(Load=True, discrete = discrete_actions, postfix='_bu')
@@ -33,26 +34,28 @@ class actorPubRec():
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
         rospy.Subscriber('/hand/obj_vel', Float32MultiArray, self.callbackObjVel)
         rospy.Subscriber('/hand/my_joint_states', Float32MultiArray, self.callbackJoints)
+        rospy.Subscriber('/hand/my_joint_velocities', Float32MultiArray, self.callbackJointsVel)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
         rospy.Subscriber('/collect/gripper_action', Float32MultiArray, self.callbackAction)
 
         rospy.Service('/actor/trigger', Empty, self.callbackTrigger)
+        rospy.Service('/actor/save', Empty, self.callbackSave)
 
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(2)
         count = 0
         while not rospy.is_shutdown():
 
             if self.running:
-                self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.joint_states), axis=0)
+                self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.joint_states, self.joint_velocities), axis=0)
                 
                 self.texp.add(self.state, self.action, self.state, self.drop)
 
                 if self.drop:
                     print('[recorder] Episode ended (%d points so far).' % self.texp.getSize())
                     self.running = False
-                    if not (count % 20):
-                        self.texp.save()
-                    count += 1
+                    # if not (count % 20):
+                        # self.texp.save()
+                    # count += 1
 
             rate.sleep()
 
@@ -70,6 +73,9 @@ class actorPubRec():
     def callbackJoints(self, msg):
         self.joint_states = np.array(msg.data)
 
+    def callbackJointsVel(self, msg):
+        self.joint_velocities = np.array(msg.data)
+
     def callbackDrop(self, msg):
         self.drop = msg.data
 
@@ -78,6 +84,11 @@ class actorPubRec():
 
     def callbackTrigger(self, msg):
         self.running = not self.running
+
+        return EmptyResponse()
+
+    def callbackSave(self, msg):
+        self.texp.save()
 
         return EmptyResponse()
 

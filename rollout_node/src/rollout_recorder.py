@@ -8,7 +8,7 @@ from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
 from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import gets
 
-state_form = 'pos_load_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
+state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
 
 class rolloutRec():
     discrete_actions = True

@@ -30,7 +30,7 @@ class collect_data():
         self.pub_gripper_action = rospy.Publisher('/collect/gripper_action', Float32MultiArray, queue_size=10)
         rospy.Service('/collect/random_episode', Empty, self.run_random_episode)
         rospy.Service('/collect/planned_episode', rolloutReq, self.run_planned_episode)
-        rospy.Service('/collect/process_data', Empty, self.process_data)
+        rospy.Service('/collect/save_data', Empty, self.save_data)
         rospy.Service('/collect/find_sparse_region', sparse_goal, self.find_sparse_region)
         self.obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
         self.drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)
@@ -39,12 +39,13 @@ class collect_data():
         #self.rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
         self.record_srv = rospy.ServiceProxy('/actor/trigger', Empty)
-
+        self.recorder_save_srv = rospy.ServiceProxy('/actor/save', Empty)
+        
         rospy.sleep(1.)
 
         print('[collect_data] Ready to collect...')
 
-        self.rate = rospy.Rate(5) 
+        self.rate = rospy.Rate(2) 
         # while not rospy.is_shutdown():
             # self.rate.sleep()
         rospy.spin()
@@ -55,16 +56,12 @@ class collect_data():
     def callbackDrop(self, msg):
         self.drop = msg.data
 
-    def process_data(self, msg):
-        print('[collect_data] Proccessing data...')
+    def save_data(self, msg):
+        print('[collect_data] Saving all data...')
 
+        self.recorder_save_srv()
         self.texp.save()
-        # self.texp.process_transition_data(stepSize = 10, mode = 3, plot = False)
-        # self.texp.process_svm(stepSize = 10, mode = 3)
-
-        # print('[collect_data] Data processed and saved. Plotting current data...')
-        # self.texp.plot_data()
-
+        
         return EmptyResponse()
 
     def run_random_episode(self, req):
@@ -151,7 +148,7 @@ class collect_data():
                     action = A[ep_step]
                     n = 1
                 else:
-                    action, n = self.choose_action(0.95)
+                    action, n = self.choose_action(0.6)
 
             msg.data = action
             self.pub_gripper_action.publish(msg)
@@ -190,8 +187,8 @@ class collect_data():
                 else:
                     a = A[1]
 
-            if np.random.uniform() > 0.95:
-                if np.random.uniform() > 0.6:
+            if np.random.uniform() > 0.65:
+                if np.random.uniform() > 0.5:
                     num_steps = np.random.randint(400)
                 else:
                     num_steps = np.random.randint(160)
