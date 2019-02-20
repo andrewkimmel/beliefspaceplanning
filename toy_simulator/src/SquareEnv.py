@@ -4,87 +4,81 @@ import numpy as np
 import time
 import random
 import matplotlib.pyplot as plt
-
+import var as V
 
 class SquareEnv():
-    visited_states = np.array([[0.,0.]])
-    
-    # noise_std = 0.00001
-    noise_std = 0.06
 
-    def __init__(self, size=1, reward_type='sparse', thr = .4, add_noise = True):
-        self.size = size
-        self.reward_type = reward_type
-        self.thr = thr # distance threshold
-        self.add_noise = add_noise
+    visited_states = np.array([0.,0.])
+
+    def __init__(self):
+        self.size = V.SIZE
         self.state = np.array([0.,0.])
 
     def reset(self):
-        # self.state = np.random.uniform(-self.size, self.size, 2) # Start from a random position
-        self.state = np.array([-0.95,-0.95])# + np.random.normal(0, 0.05) # Always start from [0,0] with some uncertainty
+        # self.state = np.random.uniform(-selfs.size, self.size, 2) # Start from a random position
+        self.state = np.array([-0.95,-0.95]) + np.random.normal(0, V.START_STD, 2) 
+        self.fail = False
+
+        self.visited_states = np.copy(self.state.reshape(1,2))
         return np.copy(self.state)
 
-    def step(self, action, scale=5): # Action is -1 to 1 in each dimension
-        self.state[0] += action[0]/scale
-        self.state[1] += action[1]/scale
-        if self.add_noise: 
-            self.state += np.random.normal(0., self.noise(self.state), 2) # Add noise
+    def step(self, action): # Action is -1 to 1 in each dimension
+        self.state[0] += action[0]/V.SCALE
+        self.state[1] += action[1]/V.SCALE
 
-        return np.copy(self.state)
+        self.log()
 
-    def Step(self, state, action, scale=5): # Action is -1 to 1 in each dimension
-        next_state = np.array([0.,0.])
-        next_state[0] = state[0] + action[0]/scale
-        next_state[1] = state[1] + action[1]/scale
+        if self.state[0] > V.SIZE or self.state[0] < -V.SIZE or self.state[1] > V.SIZE or self.state[1] < -V.SIZE:
+            self.fail = True
+        else:
+            std = self.stdDet(self.state)
+            suc = self.successDet(self.state)
 
-        noise = self.noise(state)
-        if self.add_noise: 
-            next_state += np.random.normal(0., self.noise(self.state), 2) # Add noise
+            self.state += np.random.normal(0., std, 2) # Add noise
 
-        return np.copy(next_state), np.array([self.noise(self.state),self. noise(self.state)])
+            if np.random.uniform() > suc:
+                self.fail = True
+            else:
+                self.fail = False
 
-    def noise(self, state):
-            return 0.005
+        return np.copy(self.state), self.fail
+
+    def stdDet(self, state):
+        if state[0] < -0.9 or state[0] > 0.9:
+            return 0.0
+
+        if state[1] < 0.:
+            return V.HIGH_STD
+        else:
+            return V.LOW_STD
+
+    def successDet(self, state):
+        if state[0] < -0.9 or state[0] > 0.9:
+            return 1.0
+
+        if state[1] < -0.5 or (state[1] > 0. and state[1] < 0.5):
+            return V.LOW_SUC
+        else:
+            return V.HIGH_SUC
 
     def render(self):
-        print("state :" + np.array_str(self.state) + ", goal :" + np.array_str(self.goal) + ", distance to goal: " + str(np.linalg.norm(self.state-self.goal)))
+        print("state :" + np.array_str(self.state) + ', fail: ' + str(self.fail))
 
-    def log(self, reward, done):
-        self.visited_states = np.append(self.visited_states, [self.state], axis=0)
+    def log(self):
+        self.visited_states = np.append(self.visited_states, np.copy(self.state.reshape(1,2)), axis=0)
 
     def plot(self):
         plt.figure(9)
-        plt.plot(self.visited_states[1:,0], self.visited_states[1:,1],'.b', label='visited states')
+        plt.plot(self.visited_states[:,0], self.visited_states[:,1],'.b', label='visited states')
         plt.legend(loc='best')
         plt.xlabel('x')
         plt.ylabel('y')
         # plt.title(self.title)
-        # plt.show()
+        plt.xlim([-V.SIZE, V.SIZE])
+        plt.ylim([-V.SIZE, V.SIZE])
+        plt.show()
 
 
-class ProbEnv():
-    def __init__(self, size=1, thr = 0.7, add_noise = True):
-        self.size = size
-        self.thr = thr
-        self.add_noise = add_noise
-
-    def probability(self, state):
-
-        x = state[0]
-        y = state[1]
-
-        if x <= -0.75 or x >= 0.75 or y <= -0.75:
-            p = 0.02
-        else:
-            p = 0.2
-
-        # if self.add_noise:
-            # p += np.random.normal(0., 0.0005) # Add uncertainty
-
-        p = 1. if p > 1 else p
-        p = 0. if p < 0 else p
-
-        return p, p > self.thr
 
  
 

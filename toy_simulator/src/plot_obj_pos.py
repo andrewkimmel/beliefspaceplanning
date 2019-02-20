@@ -69,17 +69,16 @@ class Plot():
 
     def __init__(self):
         
-        rospy.Subscriber('/toy/obj_pos', Float32MultiArray, self.callbackObj)
-        rospy.Subscriber('/toy/goal', Float32MultiArray, self.callbackGoal)
+        rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
         rospy.Service('/plot/clear', Empty, self.callbackClear)
         rospy.Service('/plot/plot', Empty, self.callbackPlot)
 
         rospy.init_node('Plot_obj_pos_pilco', anonymous=True)
         rate = rospy.Rate(self.freq) # 15hz
         while not rospy.is_shutdown():
-            # plt.show()
-            rospy.spin()
-            # rate.sleep()
+            plt.show()
+            # rospy.spin()
+            rate.sleep()
 
 
 if __name__ == '__main__':
