@@ -27,17 +27,13 @@ class rollout():
         rospy.Service('/rollout/rollout', rolloutReq, self.CallbackRollout)
         rospy.Service('/rollout/rollout_from_file', rolloutReqFile, self.CallbackRolloutFile)
         rospy.Service('/rollout/plot', plotReq, self.Plot)
-        rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
-        rospy.Subscriber('/hand_control/gripper_status', String, self.callbackGripperStatus)
+        rospy.Subscriber('/toy/cylinder_drop', Bool, self.callbackDrop)
         self.action_pub = rospy.Publisher('/collect/gripper_action', Float32MultiArray, queue_size = 10)
 
-        self.obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
-        self.drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)
-        self.move_srv = rospy.ServiceProxy('/hand_control/MoveGripper', TargetAngles)
-        self.reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
-
-        self.trigger_srv = rospy.ServiceProxy('/rollout_recorder/trigger', Empty)
-        self.gets_srv = rospy.ServiceProxy('/rollout_recorder/get_states', gets)
+        self.obs_srv = rospy.ServiceProxy('/toy/observation', observation)
+        self.drop_srv = rospy.ServiceProxy('/toy/IsObjDropped', IsDropped)
+        self.move_srv = rospy.ServiceProxy('/toy/MoveGripper', TargetAngles)
+        self.reset_srv = rospy.ServiceProxy('/toy/ResetGripper', Empty)
 
         self.state_dim = var.state_dim_
         self.action_dim = var.state_action_dim_-var.state_dim_
@@ -45,7 +41,7 @@ class rollout():
 
         print("[rollout] Ready to rollout...")
 
-        self.rate = rospy.Rate(2) 
+        self.rate = rospy.Rate(50) 
         # while not rospy.is_shutdown():
         rospy.spin()
 
@@ -54,8 +50,6 @@ class rollout():
 
         # Reset gripper
         self.reset_srv()
-        while not self.gripper_closed:
-            self.rate.sleep()
         
         print("[rollout] Rolling-out...")
 
@@ -65,7 +59,6 @@ class rollout():
         success = True
         state = np.array(self.obs_srv().state)
         S = [state]
-        self.trigger_srv()
         for action in A:
             
             msg.data = action
@@ -99,16 +92,14 @@ class rollout():
 
         print("[rollout] Rollout done.")
 
-        # return np.array(S), success
-        
-        SA = self.gets_srv()
-        self.states = SA.states
-        self.actions = SA.actions # Actions from recorder are different due to freqency difference
-        
+        self.states = np.array(S)
         return success
-
-    def callbackGripperStatus(self, msg):
-        self.gripper_closed = msg.data == "closed"
+        
+        # SA = self.gets_srv()
+        # self.states = SA.states
+        # self.actions = SA.actions # Actions from recorder are different due to freqency difference
+        
+        # return success
 
     def callbackDrop(self, msg):
         self.drop = msg.data
@@ -119,7 +110,7 @@ class rollout():
         success = True
         success = self.run_rollout(actions_nom)
 
-        return {'states': self.states, 'actions_res': self.actions, 'success' : success}
+        return {'states': self.states.reshape((-1,)), 'actions_res': self.actions, 'success' : success}
 
     def CallbackRolloutFile(self, req):
 

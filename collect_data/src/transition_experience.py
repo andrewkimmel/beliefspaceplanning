@@ -172,33 +172,13 @@ class transition_experience():
         next_states = np.array([item[2] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
-        # For data from recorder
-        if recorder_data:
-            next_states = np.roll(states, -1, axis=0)
+        # for i in range(done.shape[0]):
+        #     if done[i]:
+        #         done[i-2:i] = True
 
-        for i in range(done.shape[0]):
-            if done[i]:
-                done[i-2:i] = True
-
-        if mode == 1:
-            states = states[:, [0, 1, 2, 3]]
-            next_states = next_states[:, [0, 1, 2, 3]]
-        elif mode == 2:
-            states = states[:, [0, 1]]
-            next_states = next_states[:, [0, 1]]
-        elif mode == 3:
-            states = np.concatenate((states[:, :4], signal.medfilt(states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
-            next_states = np.concatenate((next_states[:, :4], signal.medfilt(next_states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(next_states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
-        elif mode == 4:
-            states = states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
-            next_states = next_states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
-        elif mode == 5:
-            states = states[:, [0, 1, 6, 7, 8, 9]]
-            next_states = next_states[:, [0, 1, 6, 7, 8, 9]]
         self.state_dim = states.shape[1]
 
         D = np.concatenate((states, actions, next_states), axis = 1)
-        D, done = clean(D, done, mode)
 
         inx = np.where(done)
         D = np.delete(D, inx, 0)
@@ -210,7 +190,7 @@ class transition_experience():
         # D = D[np.random.choice(D.shape[0], int(0.6*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
-        savemat(self.path + 'sim_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
+        savemat(self.path + 'toy_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
         print "Saved mat file with " + str(D.shape[0]) + " transition points."
 
         if plot:
@@ -244,20 +224,9 @@ class transition_experience():
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
-        # For data from recorder
-
-        if mode == 1:
-            states = states[:, [0, 1, 2, 3]]
-        elif mode == 2:
-            states = states[:, [0, 1]]
-        elif mode == 4:
-            states = states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
-        elif mode == 5:
-            states = states[:, [0, 1, 6, 7, 8, 9]]
-
-        for i in range(done.shape[0]):
-            if done[i]:
-                done[i-2:i] = True
+        # for i in range(done.shape[0]):
+        #     if done[i]:
+        #         done[i-2:i] = True
 
         SA = np.concatenate((states, actions), axis=1)
         if stepSize > 1:
@@ -265,13 +234,12 @@ class transition_experience():
         print('Transition data with steps size %d has now %d points'%(stepSize, SA.shape[0]))
 
         inx_fail = np.where(done)[0]
+        inx_fail = inx_fail[np.random.choice(inx_fail.shape[0], 500, replace=False)]
         print "Number of failed states " + str(inx_fail.shape[0])
         T = np.where(np.logical_not(done))[0]
         inx_suc = T[np.random.choice(T.shape[0], inx_fail.shape[0], replace=False)]
         SA = np.concatenate((SA[inx_fail], SA[inx_suc]), axis=0)
         done = np.concatenate((done[inx_fail], done[inx_suc]), axis=0)
-
-        # exit(1) 
 
         with open(self.path + 'svm_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
             pickle.dump([SA, done], f)
