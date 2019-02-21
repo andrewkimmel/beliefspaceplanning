@@ -111,9 +111,9 @@ class rollout():
 
             self.rate.sleep()
 
-        file_pi = open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
-        pickle.dump(self.rollout_transition, file_pi)
-        file_pi.close()
+        # file_pi = open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
+        # pickle.dump(self.rollout_transition, file_pi)
+        # file_pi.close()
 
         print("[rollout] Rollout done.")
 
