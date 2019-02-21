@@ -7,7 +7,7 @@ from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import TargetAngles, IsDropped, observation, MoveServos
 import math
 
-state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel'
+state_form = 'pos_load_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
 
 class hand_control():
 
@@ -19,6 +19,7 @@ class hand_control():
     gripper_pos = np.array([0., 0.])
     gripper_load = np.array([0., 0.])
     joint_states = np.array([0., 0., 0., 0.])
+    joint_velocities = np.array([0., 0., 0., 0.])
     lift_status = False # True - lift up, False - lift down
     object_grasped = False
     base_pos = [0.,0.]
@@ -41,6 +42,7 @@ class hand_control():
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
         rospy.Subscriber('/hand/obj_vel', Float32MultiArray, self.callbackObjVel)
         rospy.Subscriber('/hand/my_joint_states', Float32MultiArray, self.callbackJoints)
+        rospy.Subscriber('/hand/my_joint_velocities', Float32MultiArray, self.callbackJointsVel)
         pub_gripper_status = rospy.Publisher('/hand_control/gripper_status', String, queue_size=10)
         pub_drop = rospy.Publisher('/hand_control/cylinder_drop', Bool, queue_size=10)
 
@@ -72,6 +74,9 @@ class hand_control():
 
     def callbackJoints(self, msg):
         self.joint_states = np.array(msg.data)
+
+    def callbackJointsVel(self, msg):
+        self.joint_velocities = np.array(msg.data)
 
     def callbackLiftStatus(self, msg):
         self.lift_status = True if msg.data == 'up' else False
@@ -116,7 +121,7 @@ class hand_control():
             self.move_lift_srv.call()
             rospy.sleep(1.0)
             ratein.sleep()
-            if self.object_grasped:# and self.lift_status:
+            if self.object_grasped:# and self.lift_s, self.obj_veltatus:
                 if self.wait2initialGrasp():
                     break
         
@@ -150,8 +155,6 @@ class hand_control():
 
         return suc
 
-        
-        
     def MoveGripper(self, msg):
         # This function should accept a vector of normalized incraments to the current angles: msg.angles = [dq1, dq2], where dq1 and dq2 can be equal to 0 (no move), 1,-1 (increase or decrease angles by finger_move_step_size)
 
@@ -182,12 +185,18 @@ class hand_control():
         return {'dropped': not self.object_grasped}
 
     def GetObservation(self, msg):
-        if state_form == 'pos_load':
+        if state_form == 'all':   
+            obs = np.concatenate((self.obj_pos, self.gripper_load, self.joint_states, self.joint_velocities), axis=0)
+        elif state_form == 'pos_load':
             obs = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
-        if state_form == 'pos_vel':   
+        elif state_form == 'pos_vel':   
             obs = np.concatenate((self.obj_pos, self.obj_vel), axis=0)
-        if state_form == 'pos_load_vel':   
+        elif state_form == 'pos_load_vel':   
             obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel), axis=0)
+        elif state_form == 'pos_load_vel_joints':   
+            obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.joint_states), axis=0)
+        elif state_form == 'pos_load_joints':   
+            obs = np.concatenate((self.obj_pos, self.gripper_load, self.joint_states), axis=0)
 
         return {'state': obs}
 

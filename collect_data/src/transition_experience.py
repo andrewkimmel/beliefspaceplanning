@@ -10,26 +10,27 @@ import sys
 sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
+recorder_data = True
 
 class transition_experience():
     path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
 
-    def __init__(self, Load=True, discrete = False):
+    def __init__(self, Load=True, discrete = False, postfix=''):
 
         if discrete:
             self.mode = 'discrete'
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'a'
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
             self.load()
         else:
             self.clear()
-        
+       
     def add(self, state, action, next_state, done):
         self.memory += [(state, action, next_state, done)]
         
@@ -75,29 +76,36 @@ class transition_experience():
 
     def plot_data(self):
 
-        states = [item[0] for item in self.memory]
+        states = np.array([item[0] for item in self.memory])
         done = [item[3] for item in self.memory]
-        states = np.array(states)
+
+        print states.shape
+
+        # For data from recorder
+        if recorder_data:
+            states = states[:, [0, 1, 2, 3, 4, 5]]
+            # states[:,:2] *= 1000 # m to mm
+
         failed_states = states[done]
-        dt = [item[4] for item in self.memory]
 
         plt.figure(1)
-        ax1 = plt.subplot(221)
+        ax1 = plt.subplot(311)
         #ax1.plot(states[:,0],states[:,1],'-k')
         ax1.plot(states[:,0],states[:,1],'.y')
         ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
         ax1.set(title='Object position')
-        plt.xlim(-100., 100.)
-        plt.ylim(0., 150.)
+        # plt.xlim(-100., 100.)
+        # plt.ylim(0., 150.)
         
-        ax2 = plt.subplot(222)
+        ax2 = plt.subplot(312)
         ax2.plot(states[:,2],states[:,3],'.k')
         ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
         ax2.set(title='Actuator loads')
 
-        ax3 = plt.subplot(223)
-        ax3.plot(dt)
-        ax3.set(title='Sampling time')
+        ax3 = plt.subplot(313)
+        ax3.plot(states[:,4],states[:,5],'.k')
+        ax3.plot(failed_states[:,4],failed_states[:,5],'.r')
+        ax3.set(title='Object velocity')
         
         plt.show()
 
@@ -123,13 +131,24 @@ class transition_experience():
         '''
         mode:
             1 - Position and load
-            2 - Position and velocity
-            3 - Postion, load and velocity
+            2 - Position
+            3 - Position, load and velocity
+            4 - Position, load and joints
+            5 - Position and joints
         '''
         def clean(D, done, mode):
             print('[transition_experience] Cleaning data...')
 
-            jj = range(6,8) if mode == 1 or mode == 2 else range(8,10)
+            if mode == 1:
+                jj = range(6,8) 
+            elif mode == 2:
+                jj = range(4,6)
+            elif mode == 3:
+                jj = range(8,10)
+            elif mode == 4:
+                jj = range(10, 12)
+            elif mode == 5:
+                jj = range(8, 10)
             i = 0
             inx = []
             while i < D.shape[0]:
@@ -140,7 +159,7 @@ class transition_experience():
 
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
-            ia = range(4,6) if mode == 1 or mode == 2 else range(6,8)
+            ia = range(4,6) if mode == 1  else range(2,4) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize+1, ia]) or np.any(done[i:i+stepSize+1]):
@@ -159,6 +178,10 @@ class transition_experience():
         next_states = np.array([item[2] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
+        # For data from recorder
+        if recorder_data:
+            next_states = np.roll(states, -1, axis=0)
+
         for i in range(done.shape[0]):
             if done[i]:
                 done[i-2:i] = True
@@ -167,11 +190,17 @@ class transition_experience():
             states = states[:, [0, 1, 2, 3]]
             next_states = next_states[:, [0, 1, 2, 3]]
         elif mode == 2:
-            states = states[:, [0, 1, 4, 5]]
-            next_states = next_states[:, [0, 1, 4, 5]]
+            states = states[:, [0, 1]]
+            next_states = next_states[:, [0, 1]]
         elif mode == 3:
             states = np.concatenate((states[:, :4], signal.medfilt(states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
             next_states = np.concatenate((next_states[:, :4], signal.medfilt(next_states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(next_states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
+        elif mode == 4:
+            states = states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+            next_states = next_states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+        elif mode == 5:
+            states = states[:, [0, 1, 6, 7, 8, 9]]
+            next_states = next_states[:, [0, 1, 6, 7, 8, 9]]
         self.state_dim = states.shape[1]
 
         D = np.concatenate((states, actions, next_states), axis = 1)
@@ -184,7 +213,7 @@ class transition_experience():
         if stepSize > 1:
             D = multiStep(D, done, stepSize, mode)
 
-        # D = D[np.random.choice(D.shape[0], int(0.4*D.shape[0]), replace=False),:] # Dillute
+        # D = D[np.random.choice(D.shape[0], int(0.6*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
         savemat(self.path + 'sim_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
@@ -199,7 +228,7 @@ class transition_experience():
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
             done_new = []
-            ia = range(4,6) if mode == 1 or mode == 2 else range(6,8)
+            ia = range(4,6) if mode == 1 else range(4,6)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize+1, ia]):
@@ -221,11 +250,16 @@ class transition_experience():
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
+        # For data from recorder
+
         if mode == 1:
             states = states[:, [0, 1, 2, 3]]
-        if mode == 2:
-            states = states[:, [0, 1, 4, 5]]
-
+        elif mode == 2:
+            states = states[:, [0, 1]]
+        elif mode == 4:
+            states = states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+        elif mode == 5:
+            states = states[:, [0, 1, 6, 7, 8, 9]]
 
         for i in range(done.shape[0]):
             if done[i]:

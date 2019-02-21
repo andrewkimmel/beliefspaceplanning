@@ -12,7 +12,6 @@ from transition_experience import *
 from collect_data.srv import sparse_goal
 import matplotlib.pyplot as plt
 
-
 class collect_data():
 
     gripper_closed = False
@@ -23,7 +22,7 @@ class collect_data():
     episode_length = 10000
 
     texp = transition_experience(Load=True, discrete = discrete_actions)
-
+    
     def __init__(self):
         rospy.init_node('collect_data', anonymous=True)
 
@@ -31,23 +30,25 @@ class collect_data():
         self.pub_gripper_action = rospy.Publisher('/collect/gripper_action', Float32MultiArray, queue_size=10)
         rospy.Service('/collect/random_episode', Empty, self.run_random_episode)
         rospy.Service('/collect/planned_episode', rolloutReq, self.run_planned_episode)
-        rospy.Service('/collect/process_data', Empty, self.process_data)
+        rospy.Service('/collect/save_data', Empty, self.save_data)
         rospy.Service('/collect/find_sparse_region', sparse_goal, self.find_sparse_region)
         self.obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
         self.drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)
         self.move_srv = rospy.ServiceProxy('/hand_control/MoveGripper', TargetAngles)
         self.reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
-        self.rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
+        #self.rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
-
+        self.record_srv = rospy.ServiceProxy('/actor/trigger', Empty)
+        self.recorder_save_srv = rospy.ServiceProxy('/actor/save', Empty)
+        
         rospy.sleep(1.)
 
         print('[collect_data] Ready to collect...')
 
-        self.rate = rospy.Rate(7) # 15hz
-        while not rospy.is_shutdown():
+        self.rate = rospy.Rate(2) 
+        # while not rospy.is_shutdown():
             # self.rate.sleep()
-            rospy.spin()
+        rospy.spin()
 
     def callbackGripperStatus(self, msg):
         self.gripper_closed = msg.data == "closed"
@@ -55,16 +56,12 @@ class collect_data():
     def callbackDrop(self, msg):
         self.drop = msg.data
 
-    def process_data(self, msg):
-        print('[collect_data] Proccessing data...')
+    def save_data(self, msg):
+        print('[collect_data] Saving all data...')
 
+        self.recorder_save_srv()
         self.texp.save()
-        # self.texp.process_transition_data(stepSize = 10, mode = 3, plot = False)
-        # self.texp.process_svm(stepSize = 10, mode = 3)
-
-        # print('[collect_data] Data processed and saved. Plotting current data...')
-        # self.texp.plot_data()
-
+        
         return EmptyResponse()
 
     def run_random_episode(self, req):
@@ -84,13 +81,14 @@ class collect_data():
         # Start episode
         n = 0
         action = np.array([0.,0.])
+        self.record_srv()
         for ep_step in range(self.episode_length):
 
             if n == 0:
-                action, n = self.choose_action()
+                action, n = self.choose_action(0.8)
 
-            # msg.data = action
-            # self.pub_gripper_action.publish(msg)
+            msg.data = action
+            self.pub_gripper_action.publish(msg)
             suc = self.move_srv(action).success
             n -= 1
 
@@ -98,7 +96,7 @@ class collect_data():
             next_state = np.array(self.obs_srv().state)
 
             if suc:
-                fail = self.drop# self.drop_srv().dropped # Check if dropped - end of episode
+                fail = self.drop # self.drop_srv().dropped # Check if dropped - end of episode
             else:
                 # End episode if overload or angle limits reached
                 rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
@@ -118,61 +116,66 @@ class collect_data():
 
     def run_planned_episode(self, req):
 
+        # Reset gripper
+        self.reset_srv()
+        while not self.gripper_closed:
+            self.rate.sleep()
+
         print('[collect_data] Rolling-out new planned actions...')
-        state_seq = self.rollout_srv.call(req)
+        #state_seq = self.rollout_srv.call(req)
+        A = np.array(req.actions).reshape(-1, 2)
 
-        self.texp.add_rollout_data() # Add rollout data to database
+        #self.texp.add_rollout_data() # Add rollout data to database
 
-        if not state_seq.success:
-            print('[collect_data] Rollout failed.')
-            return state_seq
+        #if not state_seq.success:
+        #    print('[collect_data] Rollout failed.')
+        #    return state_seq
 
         msg = Float32MultiArray()
-        Done = False
 
-        print('[collect_data] Roll-out finished, running random actions...')
+        #print('[collect_data] Roll-out finished, running random actions...')
+
+        state = np.array(self.obs_srv().state)
 
         # Start episode
+        n = 0
+        action = np.array([0.,0.])
+        self.record_srv()
         for ep_step in range(self.episode_length):
 
-            # Get observation and choose action
-            state = np.array(self.obs_srv().state)
-            action = self.choose_action(p = 0.6)
-
-            num_steps = np.random.randint(12,50)
-            
-            for _ in range( num_steps ):
-                tr = rospy.get_time()
-
-                msg.data = action
-                # self.pub_gripper_action.publish(msg)
-                suc = self.move_srv(action).success
-                rospy.sleep(0.2)
-                self.rate.sleep()
-
-                # Get observation
-                next_state = np.array(self.obs_srv().state)
-
-                if suc:
-                    fail = self.drop_srv().dropped # Check if dropped - end of episode
+            if n == 0:
+                if ep_step < A.shape[0]:
+                    action = A[ep_step]
+                    n = 1
                 else:
-                    # End episode if overload or angle limits reached
-                    rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
-                    fail = True
+                    action, n = self.choose_action(0.6)
 
-                self.texp.add(state, action, next_state, not suc or fail, rospy.get_time()-tr)
-                state = next_state
+            msg.data = action
+            self.pub_gripper_action.publish(msg)
+            suc = self.move_srv(action).success
+            n -= 1
 
-                if not suc or fail:
-                    Done = True
-                    break
+            # Get observation
+            next_state = np.array(self.obs_srv().state)
 
-            if Done:
+            if suc:
+                fail = self.drop # self.drop_srv().dropped # Check if dropped - end of episode
+            else:
+                # End episode if overload or angle limits reached
+                rospy.logerr('[collect_data] Failed to move gripper. Episode declared failed.')
+                fail = True
+
+            self.texp.add(state, action, next_state, not suc or fail)
+            state = np.copy(next_state)
+
+            if not suc or fail:
                 break
+
+            self.rate.sleep()
 
         print('[collect_data] End of episode (%d points so far).'%(self.texp.getSize()))
 
-        return state_seq
+        return {'states': [], 'actions_res': [], 'success': True}
 
     def choose_action(self, p = 0.5):
         if self.discrete_actions:
@@ -184,13 +187,13 @@ class collect_data():
                 else:
                     a = A[1]
 
-            if np.random.uniform() > 0.5:
-                if np.random.uniform() > 0.6:
-                    num_steps = np.random.randint(200)
+            if np.random.uniform() > 0.65:
+                if np.random.uniform() > 0.5:
+                    num_steps = np.random.randint(400)
                 else:
-                    num_steps = np.random.randint(80)
+                    num_steps = np.random.randint(160)
             else:
-                num_steps = np.random.randint(11,30)
+                num_steps = np.random.randint(15,65)
 
             return a, num_steps
         else:

@@ -2,10 +2,12 @@
 
 import rospy
 from std_srvs.srv import Empty, EmptyResponse
+from std_msgs.msg import Bool, String, Float32MultiArray
 from rollout_node.srv import rolloutReq, rolloutReqFile, plotReq, observation, IsDropped, TargetAngles
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+from rollout_node.srv import gets
 
 import sys
 sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
@@ -15,7 +17,9 @@ import var
 class rollout():
 
     states = []
+    actions = []
     plot_num = 0
+    drop = True
 
     def __init__(self):
         rospy.init_node('rollout_node', anonymous=True)
@@ -23,79 +27,71 @@ class rollout():
         rospy.Service('/rollout/rollout', rolloutReq, self.CallbackRollout)
         rospy.Service('/rollout/rollout_from_file', rolloutReqFile, self.CallbackRolloutFile)
         rospy.Service('/rollout/plot', plotReq, self.Plot)
+        rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
+        rospy.Subscriber('/hand_control/gripper_status', String, self.callbackGripperStatus)
+        self.action_pub = rospy.Publisher('/collect/gripper_action', Float32MultiArray, queue_size = 10)
 
         self.obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
         self.drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)
         self.move_srv = rospy.ServiceProxy('/hand_control/MoveGripper', TargetAngles)
         self.reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
 
+        self.trigger_srv = rospy.ServiceProxy('/rollout_recorder/trigger', Empty)
+        self.gets_srv = rospy.ServiceProxy('/rollout_recorder/get_states', gets)
+
         self.state_dim = var.state_dim_
         self.action_dim = var.state_action_dim_-var.state_dim_
         self.stepSize = var.stepSize_ # !!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        # if self.stepSize == 1:
-            # self.stepSize = 0
-
         print("[rollout] Ready to rollout...")
 
-        self.rate = rospy.Rate(15) # 15hz
-        while not rospy.is_shutdown():
-            # rospy.spin()
-            self.rate.sleep()
+        self.rate = rospy.Rate(2) 
+        # while not rospy.is_shutdown():
+        rospy.spin()
 
     def run_rollout(self, A):
         self.rollout_transition = []
 
         # Reset gripper
         self.reset_srv()
+        while not self.gripper_closed:
+            self.rate.sleep()
+        
         print("[rollout] Rolling-out...")
+
+        msg = Float32MultiArray()
 
         # Start episode
         success = True
-        S = []
-        for i in range(A.shape[0]):
-            # Get observation and choose action
-            state = np.array(self.obs_srv().state)
-            action = A[i,:]
-
-            S.append(state)
+        state = np.array(self.obs_srv().state)
+        S = [state]
+        self.trigger_srv()
+        for action in A:
             
-            suc = True
-            state_tmp = state
-            for _ in range(self.stepSize):
-                tr = rospy.get_time()
-                suct = self.move_srv(action).success
-
-                rospy.sleep(0.2) # For sim_data_discrete v5
-                # rospy.sleep(0.05) # For all other
-                self.rate.sleep()
-
-                next_state = np.array(self.obs_srv().state)
-                dr = self.drop_srv().dropped
-
-                self.rollout_transition += [(state_tmp, action, next_state, not suct or dr, rospy.get_time()-tr)]
-                state_tmp = next_state
-
-                if not suct:
-                    suc = False
-
-            # Get observation
+            msg.data = action
+            self.action_pub.publish(msg)
+            suc = self.move_srv(action).success
+            
             next_state = np.array(self.obs_srv().state)
 
             if suc:
-                fail = self.drop_srv().dropped # Check if dropped - end of episode
+                fail = self.drop # self.drop_srv().dropped # Check if dropped - end of episode
             else:
                 # End episode if overload or angle limits reached
                 rospy.logerr('[rollout] Failed to move gripper. Episode declared failed.')
                 fail = True
 
-            state = next_state
+            S.append(next_state)
+            self.rollout_transition += [(state, action, next_state, not suc or fail)]
+
+            state = np.copy(next_state)
 
             if not suc or fail:
-                print("[rollout] Fail")
-                S.append(state)
+                print("[rollout] Fail.")
                 success = False
                 break
+
+            self.rate.sleep()
 
         file_pi = open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
         pickle.dump(self.rollout_transition, file_pi)
@@ -103,15 +99,27 @@ class rollout():
 
         print("[rollout] Rollout done.")
 
-        return np.array(S), success
+        # return np.array(S), success
+        
+        SA = self.gets_srv()
+        self.states = SA.states
+        self.actions = SA.actions # Actions from recorder are different due to freqency difference
+        
+        return success
+
+    def callbackGripperStatus(self, msg):
+        self.gripper_closed = msg.data == "closed"
+
+    def callbackDrop(self, msg):
+        self.drop = msg.data
 
     def CallbackRollout(self, req):
         
-        actions = np.array(req.actions).reshape(-1, self.action_dim)
+        actions_nom = np.array(req.actions).reshape(-1, self.action_dim)
         success = True
-        self.states, success = self.run_rollout(actions)
+        success = self.run_rollout(actions_nom)
 
-        return {'states': self.states.reshape((-1,)), 'success' : success}
+        return {'states': self.states, 'actions_res': self.actions, 'success' : success}
 
     def CallbackRolloutFile(self, req):
 
@@ -119,7 +127,7 @@ class rollout():
 
         actions = np.loadtxt(file_name, delimiter=',', dtype=float)[:,:2]
         success = True
-        self.states, success = self.run_rollout(actions)
+        success = self.run_rollout(actions)
 
         return {'states': self.states.reshape((-1,)), 'success' : success}
 

@@ -1,7 +1,8 @@
 <launch>
 
-  <include file="$(find rollout_node)/launch/rollout.launch"></include>
-
+  <!-- <include file="$(find rollout_node)/launch/rollout.launch"></include> -->
+  <node pkg="rollout_node" name="hand_control_sim" type="hand_control_sim.py" output="screen"></node>
   <node pkg="collect_data" name="collect" type="collect_run.py" output="screen"/>
+  <node pkg="collect_data" name="recorder" type="recorder.py" output="screen"/>
 
 </launch>

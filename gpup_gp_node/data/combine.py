@@ -3,7 +3,7 @@
 import numpy as np 
 import pickle
 
-def combine(file1, file2, f):
+def combine(file1, file2, file3, f):
 
     print 'Loading ' + file1 + '...'
     with open(file1, 'rb') as filehandler:
@@ -15,7 +15,12 @@ def combine(file1, file2, f):
         M2 = pickle.load(filehandler)
     print('Loaded %d points.'%len(M2))
 
-    M = M1 + M2
+    print 'Loading ' + file3 + '...'
+    with open(file3, 'rb') as filehandler:
+        M3 = pickle.load(filehandler)
+    print('Loaded %d points.'%len(M3))
+
+    M = M1 + M2 + M3
 
     print len(M1), len(M2), len(M), len(M1)+len(M2)
 
@@ -25,10 +30,11 @@ def combine(file1, file2, f):
     print('Saved transition data of size %d.'%len(M))
     file_pi.close()
 
+f1 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13a_bu.obj'
+f2 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13b_bu.obj'
+f3 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13c_bu.obj'
+f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13.obj'
 
-f1 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v6a.obj'
-f2 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v6b.obj'
-f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v6.obj'
+combine(f1, f2, f3, f)
 
-combine(f1, f2, f)
 
