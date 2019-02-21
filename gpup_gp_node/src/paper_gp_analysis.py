@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '1'
+tr = '3'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -30,11 +30,11 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 ##########################################################################################################
 if tr == '3':
     # Rollout 1
-    A = np.concatenate( (np.array([[-1., -1.] for _ in range(int(150*1./stepSize))]), 
-            np.array([[-1.,  1.] for _ in range(int(100*1./stepSize))]), 
-            np.array([[ 1.,  0.] for _ in range(int(100*1./stepSize))]), 
-            np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]),
-            np.array([[-1.,  1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
+    A = np.concatenate( (np.array([[1., 1.] for _ in range(int(3*1./stepSize))]), 
+            np.array([[-1.,  1.] for _ in range(int(2*1./stepSize))]), 
+            np.array([[ 1.,  0.] for _ in range(int(4*1./stepSize))]), 
+            np.array([[ 1., -1.] for _ in range(int(5*1./stepSize))]),
+            np.array([[-1.,  1.] for _ in range(int(6*1./stepSize))]) ), axis=0 )
 if tr == '2':
     # Rollout 2
     A = np.concatenate( (np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
@@ -42,7 +42,6 @@ if tr == '2':
             np.array([[-1.,  1.] for _ in range(int(80*1./stepSize))]),
             np.array([[ 1.,  0.] for _ in range(int(70*1./stepSize))]),
             np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
-    # A = A[:160,:]    
 if tr == '1':
     A = np.array([[1., 1.] for _ in range(int(20*1./stepSize))]) 
 
@@ -54,7 +53,7 @@ rospy.init_node('verification_gazebo', anonymous=True)
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
 if 0:
-    Af = An.reshape((-1,))
+    Af = A.reshape((-1,))
     Pro = []
     for j in range(10):
         print("Rollout number " + str(j) + ".")
@@ -66,11 +65,11 @@ if 0:
         Pro.append(Sro)
         
         with open(path + 'ver_toy_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
-            pickle.dump([Pro, A], f)
+            pickle.dump(Pro, f)
 
 f = path + 'ver_toy_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
 with open(f + '.pkl') as f:  
-    Pro, _ = pickle.load(f) 
+    Pro = pickle.load(f) 
 
 
 # fig = plt.figure(0)
@@ -298,43 +297,43 @@ if 1:
 with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_inter, Ypred_bmean, stats, A = pickle.load(f)  
 
-# # Compare paths
-# d_gp = d_gpup = d_naive = d_mean = d = 0.
-# for i in range(A.shape[0]):
-#     if i < Smean.shape[0]-1:
-#         d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
-#     d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
-#     d_naive += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
-#     d_mean += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
-#     d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
-# d_gp = np.sqrt(d_gp/A.shape[0])
-# d_naive = np.sqrt(d_naive/A.shape[0])
-# d_mean = np.sqrt(d_mean/A.shape[0])
-# d_gpup = np.sqrt(d_gpup/A.shape[0])
+# Compare paths
+d_gp = d_gpup = d_naive = d_mean = d = 0.
+for i in range(A.shape[0]):
+    if i < Smean.shape[0]-1:
+        d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
+    d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
+    d_naive += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
+    d_mean += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
+    d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
+d_gp = np.sqrt(d_gp/A.shape[0])
+d_naive = np.sqrt(d_naive/A.shape[0])
+d_mean = np.sqrt(d_mean/A.shape[0])
+d_gpup = np.sqrt(d_gpup/A.shape[0])
 
-# print "-----------------------------------"
-# print "Path length: " + str(d)
-# print "-----------------------------------"
-# print "GP rmse: " + str(d_gp) + "mm"
-# print "Naive rmse: " + str(d_naive) + "mm"
-# print "mean rmse: " + str(d_mean) + "mm"
-# print "GPUP rmse: " + str(d_gpup) + "mm"
-# print "-----------------------------------"
-# print "GP runtime: " + str(stats[0][0]) + "sec."
-# print "GP Naive: " + str(stats[0][2]) + "sec."
-# print "GP mean: " + str(stats[0][1]) + "sec."
-# print "GPUP time: " + str(stats[0][3]) + "sec."
-# print "-----------------------------------"
-# print "GP probability: " + str(stats[1][0])
-# print "GP naive probability: " + str(stats[1][1])
-# print "GP mean probability: " + str(stats[1][2])
-# print "GPUP probability: " + str(stats[1][3])
-# print "-----------------------------------"
+print "-----------------------------------"
+print "Path length: " + str(d)
+print "-----------------------------------"
+print "GP rmse: " + str(d_gp) + "mm"
+print "Naive rmse: " + str(d_naive) + "mm"
+print "mean rmse: " + str(d_mean) + "mm"
+print "GPUP rmse: " + str(d_gpup) + "mm"
+print "-----------------------------------"
+print "GP runtime: " + str(stats[0][0]) + "sec."
+print "GP Naive: " + str(stats[0][2]) + "sec."
+print "GP mean: " + str(stats[0][1]) + "sec."
+print "GPUP time: " + str(stats[0][3]) + "sec."
+print "-----------------------------------"
+print "GP probability: " + str(stats[1][0])
+print "GP naive probability: " + str(stats[1][1])
+print "GP mean probability: " + str(stats[1][2])
+print "GPUP probability: " + str(stats[1][3])
+print "-----------------------------------"
 
 
 
 # plt.figure(2)
-plt.plot(Smean[:,0], Smean[:,1], '.-b', label='rollout mean')
+plt.plot(Smean[:,0], Smean[:,1], '.--b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,0], Ypred_mean_gp[:,1], '.-g', label='BPP mean')
 plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
 # plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')

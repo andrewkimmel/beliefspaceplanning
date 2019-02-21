@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import sys
 sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/toy_simulator/src/')
-import var as V
+import varz as V
 
 SIZE = V.SIZE 
 

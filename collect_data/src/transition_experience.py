@@ -8,7 +8,7 @@ from scipy import signal
 from sklearn.neighbors import KDTree #pip install -U scikit-learn
 import sys
 sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
-import var
+import varz
 
 recorder_data = True
 

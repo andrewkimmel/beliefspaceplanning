@@ -14,6 +14,9 @@ from spectralEmbed import spectralEmbed
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
 
+import sys
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/toy_simulator/src/')
+import varz as V
 
 # np.random.seed(10)
 
@@ -42,7 +45,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim, dr = 'diff')
         else:
-            self.K = 10
+            self.K = 40
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
@@ -219,6 +222,15 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         return S_next
 
+    def probability(self, state, a):
+        if state[0] < -V.B or state[0] > V.B:
+            return 0.0, 0
+
+        if state[1] < -0.5 or (state[1] > 0. and state[1] < 0.5):
+            return 1 - V.LOW_SUC, 0
+        else:
+            return 1 - V.HIGH_SUC, 0
+
     def batch_svm_check(self, S, a):
         failed_inx = []
         for i in range(S.shape[0]):
@@ -252,8 +264,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        failed_inx = []#self.batch_svm_check(S, a)
-        # node_probability = 1 - len(failed_inx)/S.shape[0]
+        failed_inx = self.batch_svm_check(S, a)
         node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
 
         # print node_probability
@@ -298,7 +309,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        p = 0#, _ = self.probability(s, a)
+        p, _ = self.probability(s, a)
         node_probability = 1 - p
 
         # Propagate

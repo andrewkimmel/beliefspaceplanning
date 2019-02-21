@@ -4,7 +4,7 @@ import numpy as np
 import time
 import random
 import matplotlib.pyplot as plt
-import var as V
+import varz as V
 
 class SquareEnv():
 
