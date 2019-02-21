@@ -35,15 +35,15 @@ class data_load(object):
         # plt.plot(Qtrain[:,0],Qtrain[:,1],'.')
         # plt.show()
 
-        is_start = 470# 30532 #1540#int(Q['is_start'])#100080
-        # while is_start < 200000:
-        #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
-        #         break
-        #     is_start += 1
-        # print is_start
-        is_end = is_start + 350#int(Q['is_end'])
-        self.Qtest = Qtrain[is_start:is_end, :]
-        Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
+        # is_start = 470# 30532 #1540#int(Q['is_start'])#100080
+        # # while is_start < 200000:
+        # #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
+        # #         break
+        # #     is_start += 1
+        # # print is_start
+        # is_end = is_start + 350#int(Q['is_end'])
+        # self.Qtest = Qtrain[is_start:is_end, :]
+        # Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
 
         # plt.plot(self.Qtest[:,0], self.Qtest[:,1],'.-k')
         # plt.plot(self.Qtest[0,0], self.Qtest[0,1],'o')
@@ -85,7 +85,7 @@ class data_load(object):
         self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
 
         print('[data_load] Loading data to kd-tree...')
-        if 0 and os.path.exists(self.path + 'kdtree' + self.postfix + '.obj'):
+        if os.path.exists(self.path + 'kdtree' + self.postfix + '.obj'):
             with open(self.path + 'kdtree' + self.postfix + '.obj', 'rb') as f: 
                 self.kdt = pickle.load(f)
         else:

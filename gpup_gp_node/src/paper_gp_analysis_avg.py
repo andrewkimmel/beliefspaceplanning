@@ -88,15 +88,7 @@ if tr == '1':
 [0.00000000000000000000,1.00000000000000000000],
 [-1.00000000000000000000,-1.00000000000000000000]])
 
-if tr=='4': 
-    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan.txt', delimiter=',', dtype=float)[:,:2]
 
-if tr=='5': 
-    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal1_run1_plan.txt', delimiter=',', dtype=float)[:,:2]
-      
-if tr=='6': 
-    A = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan.txt', delimiter=',', dtype=float)[:,:2]
-      
 ######################################## Roll-out ##################################################
 
 rospy.init_node('verification_gazebo', anonymous=True)
@@ -104,30 +96,26 @@ rate = rospy.Rate(15) # 15hz
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 0:
+if 1:
     Af = A.reshape((-1,))
     Pro = []
-    for j in range(100):
+    for j in range(1):
         print("Rollout number " + str(j) + ".")
         
-        Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
+        R = rollout_srv(Af)
+        Sro = np.array(R.states).reshape(-1,state_dim)
+        # A = np.array(R.actions_res).reshape(-1,2)
 
         Pro.append(Sro)
         
-        with open(path + 'ver_rollout_' + tr + '_v5_d6_m' + str(stepSize) + '.pkl', 'w') as f: 
+        with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
             pickle.dump(Pro, f)
 
-
-if tr=='4':
-    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan'
-elif tr=='5':
-    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal1_run1_plan'
-elif tr=='6':
-    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan'
-else:
-    f = path + 'ver_rollout_' + tr + '_v5_d6_m' + str(stepSize)
+f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
 with open(f + '.pkl') as f:  
     Pro = pickle.load(f) 
+
+
 # fig = plt.figure(0)
 # ax = fig.add_subplot(111)#, aspect='equal')
 S = []
@@ -146,7 +134,7 @@ sigma_start = np.std(np.array(S), 0) + np.array([0.,0.,1e-4,1e-4,0,0])
 
 Smean = []
 Sstd = []
-for i in range(A.shape[0]):
+for i in range(A.shape[0]+1):
     F = []
     for j in range(len(Pro)): 
         if Pro[j].shape[0] > i:

@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
-recorder_data = True
+recorder_data = False
 
 class transition_experience():
     path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -162,10 +162,10 @@ class transition_experience():
             ia = range(4,6) if mode == 1  else range(2,4) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
-                if not np.all(a == D[i:i+stepSize+1, ia]) or np.any(done[i:i+stepSize+1]):
+                if not np.all(a == D[i:i+stepSize, ia]) or np.any(done[i:i+stepSize]):
                     continue
 
-                Dnew.append( np.concatenate((D[i,:ia[0]], a, D[i+stepSize, ia[-1]+1:]), axis=0) )
+                Dnew.append( np.concatenate((D[i,:ia[0]], a, D[i+stepSize-1, ia[-1]+1:]), axis=0) )
 
             return np.array(Dnew)
 
@@ -231,7 +231,7 @@ class transition_experience():
             ia = range(4,6) if mode == 1 else range(4,6)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
-                if not np.all(a == D[i:i+stepSize+1, ia]):
+                if not np.all(a == D[i:i+stepSize, ia]):
                     continue
                 
                 if np.any(done[i:i+stepSize]):

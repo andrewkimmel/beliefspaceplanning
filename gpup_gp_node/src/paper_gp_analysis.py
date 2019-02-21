@@ -16,45 +16,80 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '3'
+tr = '1'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
-inter_srv = rospy.ServiceProxy('/inter/transitionOneParticle', one_transition)
 
 rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
 plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 
-##########################################################################################################
+#####################################################################################################
+
+if tr == '1':
+    # A = np.array([[-1., 1.] for _ in range(int(200*1./stepSize))])
+    A = np.array([[-1.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,0.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,0.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000]]) 
+
 if tr == '3':
-    # Rollout 1
-    An = np.concatenate( (np.array([[-1., -1.] for _ in range(int(150*1./stepSize))]), 
+    A = np.concatenate( (np.array([[-1., -1.] for _ in range(int(150*1./stepSize))]), 
             np.array([[-1.,  1.] for _ in range(int(100*1./stepSize))]), 
             np.array([[ 1.,  0.] for _ in range(int(100*1./stepSize))]), 
             np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]),
             np.array([[-1.,  1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
+
 if tr == '2':
-    # Rollout 2
-    An = np.concatenate( (np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
+    A = np.concatenate( (np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
             np.array([[-1., -1.] for _ in range(int(40*1./stepSize))]), 
             np.array([[-1.,  1.] for _ in range(int(80*1./stepSize))]),
             np.array([[ 1.,  0.] for _ in range(int(70*1./stepSize))]),
             np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
-    # A = A[:160,:]    
-if tr == '1':
-    An = np.array([[-1., 1.] for _ in range(int(200*1./stepSize))]) 
 
-if tr=='4': 
-    An = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan.txt', delimiter=',', dtype=float)[:,:2]
-
-if tr=='5': 
-    An = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal1_run1_plan.txt', delimiter=',', dtype=float)[:,:2]
-      
-if tr=='6': 
-    An = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan.txt', delimiter=',', dtype=float)[:,:2]
-      
 ######################################## Roll-out ##################################################
 
 
@@ -70,31 +105,23 @@ rospy.init_node('verification_gazebo', anonymous=True)
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
 if 0:
-    Af = An.reshape((-1,))
+    Af = A.reshape((-1,))
     Pro = []
     for j in range(1):
         print("Rollout number " + str(j) + ".")
         
         R = rollout_srv(Af)
         Sro = np.array(R.states).reshape(-1,state_dim)
-        A = np.array(R.actions_res).reshape(-1,2)
+        # A = np.array(R.actions_res).reshape(-1,2)
 
         Pro.append(Sro)
         
         with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
-            pickle.dump([Pro, A], f)
+            pickle.dump(Pro, f)
 
-
-if tr=='4':
-    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run3_plan'
-elif tr=='5':
-    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal1_run1_plan'
-elif tr=='6':
-    f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/robust/robust_particles_pc_goal7_run4_plan'
-else:
-    f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
+f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
 with open(f + '.pkl') as f:  
-    Pro, A = pickle.load(f) 
+    Pro = pickle.load(f) 
 
 
 # fig = plt.figure(0)
@@ -121,7 +148,7 @@ sigma_start = np.std(np.array(S), 0) + np.concatenate((np.array([0.,0.]), np.one
 
 Smean = []
 Sstd = []
-for i in range(A.shape[0]):
+for i in range(A.shape[0]+1):
     F = []
     for j in range(len(Pro)): 
         if Pro[j].shape[0] > i:
@@ -131,13 +158,12 @@ for i in range(A.shape[0]):
 Smean = np.array(Smean)
 Sstd = np.array(Sstd)
 
-print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
 
 # plt.show()
 # exit(1)
 
 if 1:   
-    Np = 100 # Number of particles
+    Np = 200 # Number of particles
 
     ######################################## GP propagation ##################################################
 
@@ -278,83 +304,50 @@ if 1:
 
     t_gpup /= A.shape[0]
 
-    ######################################## Interpolation propagation ###############################################
-
-    print "Running Interpolation."
-    Np = 1 # Number of particles
-    t_inter = 0
-
-    s = np.copy(s_start) + np.random.normal(0, sigma_start)
-    # s = np.tile(s, (Np,1)) + np.random.normal(0, sigma_start, (Np, state_dim))
-    Ypred_inter = s.reshape(1,state_dim)
-
-    print("Running (open loop) path...")
-    p_inter = 1
-    for i in range(0, A.shape[0]):
-        print("[inter] Step " + str(i) + " of " + str(A.shape[0]))
-        a = A[i,:]
-
-        # st = time.time()
-        # res = inter_srv(s.reshape(-1,1), a)
-        # t_inter += (time.time() - st) 
-
-        # if res.node_probability < p_inter:
-        #     p_inter = res.node_probability
-        # s_next = np.array(res.next_state)
-        # s = s_next
-
-        s_next = np.ones((1,state_dim))
-
-        Ypred_inter = np.append(Ypred_inter, s_next.reshape(1,state_dim), axis=0)
-
-    t_inter /= A.shape[0]
-
     ######################################## Save ###########################################################
 
     stats = np.array([[t_gp, t_naive, t_mean, t_gpup,], [p_gp, p_naive, p_mean, p_gpup]])
 
     with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f:
-        pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_inter, Ypred_bmean, stats, A], f)
+        pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A], f)
 
 ######################################## Plot ###########################################################
 
-
 with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
-    Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_inter, Ypred_bmean, stats, A = pickle.load(f)  
+    Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
-# # Compare paths
-# d_gp = d_gpup = d_naive = d_mean = d = 0.
-# for i in range(A.shape[0]):
-#     if i < Smean.shape[0]-1:
-#         d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
-#     d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
-#     d_naive += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
-#     d_mean += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
-#     d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
-# d_gp = np.sqrt(d_gp/A.shape[0])
-# d_naive = np.sqrt(d_naive/A.shape[0])
-# d_mean = np.sqrt(d_mean/A.shape[0])
-# d_gpup = np.sqrt(d_gpup/A.shape[0])
+# Compare paths
+d_gp = d_gpup = d_naive = d_mean = d = 0.
+for i in range(A.shape[0]):
+    if i < Smean.shape[0]-1:
+        d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
+    d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
+    d_naive += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
+    d_mean += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
+    d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
+d_gp = np.sqrt(d_gp/A.shape[0])
+d_naive = np.sqrt(d_naive/A.shape[0])
+d_mean = np.sqrt(d_mean/A.shape[0])
+d_gpup = np.sqrt(d_gpup/A.shape[0])
 
-# print "-----------------------------------"
-# print "Path length: " + str(d)
-# print "-----------------------------------"
-# print "GP rmse: " + str(d_gp) + "mm"
-# print "Naive rmse: " + str(d_naive) + "mm"
-# print "mean rmse: " + str(d_mean) + "mm"
-# print "GPUP rmse: " + str(d_gpup) + "mm"
-# print "-----------------------------------"
-# print "GP runtime: " + str(stats[0][0]) + "sec."
-# print "GP Naive: " + str(stats[0][2]) + "sec."
-# print "GP mean: " + str(stats[0][1]) + "sec."
-# print "GPUP time: " + str(stats[0][3]) + "sec."
-# print "-----------------------------------"
-# print "GP probability: " + str(stats[1][0])
-# print "GP naive probability: " + str(stats[1][1])
-# print "GP mean probability: " + str(stats[1][2])
-# print "GPUP probability: " + str(stats[1][3])
-# print "-----------------------------------"
-
+print "-----------------------------------"
+print "Path length: " + str(d)
+print "-----------------------------------"
+print "GP rmse: " + str(d_gp) + "mm"
+print "Naive rmse: " + str(d_naive) + "mm"
+print "mean rmse: " + str(d_mean) + "mm"
+print "GPUP rmse: " + str(d_gpup) + "mm"
+print "-----------------------------------"
+print "GP runtime: " + str(stats[0][0]) + "sec."
+print "GP Naive: " + str(stats[0][1]) + "sec."
+print "GP mean: " + str(stats[0][2]) + "sec."
+print "GPUP time: " + str(stats[0][3]) + "sec."
+print "-----------------------------------"
+print "GP probability: " + str(stats[1][0])
+print "GP naive probability: " + str(stats[1][1])
+print "GP mean probability: " + str(stats[1][2])
+print "GPUP probability: " + str(stats[1][3])
+print "-----------------------------------"
 
 if 0:
     fig = plt.figure(0)
@@ -366,6 +359,8 @@ if 0:
 
     prtc_mean, = ax.plot([], [], '*g')
 
+    prtc, = ax.plot([], [], '.k', markersize=1)
+
     # plt.xlim(np.min(Ypred_mean_gp, 0)[0]*0-5, np.max(Ypred_mean_gp, 0)[0]*1.0)
     # plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.99, np.max(Ypred_mean_gp, 0)[1]*1.01)
 
@@ -373,8 +368,9 @@ if 0:
         prtc_mean.set_data([], [])
         prtc_mean_line.set_data([], [])
         sm.set_data([], [])
+        prtc.set_data([], [])
 
-        return sm, prtc_mean, prtc_mean_line,
+        return sm, prtc_mean, prtc_mean_line, prtc,
 
     def animate(i):
 
@@ -383,7 +379,10 @@ if 0:
         prtc_mean.set_data(Ypred_mean_gp[i,0], Ypred_mean_gp[i,1])
         prtc_mean_line.set_data(Ypred_mean_gp[:i+1,0], Ypred_mean_gp[:i+1,1])
 
-        return sm, prtc_mean, prtc_mean_line,
+        S = Pgp[i]
+        prtc.set_data(S[:,0], S[:,1])
+
+        return sm, prtc_mean, prtc_mean_line, prtc,
 
     ani = animation.FuncAnimation(fig, animate, frames=len(Pgp), init_func=init, interval=300, repeat_delay=1000, blit=True)
 

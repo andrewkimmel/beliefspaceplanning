@@ -64,15 +64,26 @@ class rollout():
         # Start episode
         success = True
         state = np.array(self.obs_srv().state)
-        S = [state]
+        S = []
+        S.append(np.copy(state))
         self.trigger_srv()
-        for action in A:
+        stepSize = var.stepSize_
+        n = 0
+        i = 0
+        while 1:
+
+            if n == 0:
+                action = A[i,:]
+                i += 1
+                n = stepSize
             
             msg.data = action
             self.action_pub.publish(msg)
             suc = self.move_srv(action).success
+            n -= 1
             
             next_state = np.array(self.obs_srv().state)
+            
 
             if suc:
                 fail = self.drop # self.drop_srv().dropped # Check if dropped - end of episode
@@ -81,14 +92,21 @@ class rollout():
                 rospy.logerr('[rollout] Failed to move gripper. Episode declared failed.')
                 fail = True
 
-            S.append(next_state)
-            self.rollout_transition += [(state, action, next_state, not suc or fail)]
+            if n == 0:
+                # print len(S), len(self.rollout_transition)
+                S.append(np.copy(next_state))
+                self.rollout_transition += [(state, action, next_state, not suc or fail)]
 
             state = np.copy(next_state)
 
             if not suc or fail:
                 print("[rollout] Fail.")
                 success = False
+                break
+            
+            if i == A.shape[0] and n == 0:
+                print("[rollout] Complete.")
+                success = True
                 break
 
             self.rate.sleep()
@@ -99,13 +117,14 @@ class rollout():
 
         print("[rollout] Rollout done.")
 
-        # return np.array(S), success
-        
-        SA = self.gets_srv()
-        self.states = SA.states
-        self.actions = SA.actions # Actions from recorder are different due to freqency difference
-        
+        self.states = np.array(S).reshape((-1,))
         return success
+        
+        # SA = self.gets_srv()
+        # self.states = SA.states
+        # self.actions = SA.actions # Actions from recorder are different due to freqency difference
+        
+        # return success
 
     def callbackGripperStatus(self, msg):
         self.gripper_closed = msg.data == "closed"
