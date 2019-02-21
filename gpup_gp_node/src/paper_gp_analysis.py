@@ -29,7 +29,6 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 #####################################################################################################
 
 if tr == '1':
-    # A = np.array([[-1., 1.] for _ in range(int(200*1./stepSize))])
     A = np.array([[-1.00000000000000000000,1.00000000000000000000],
 [-1.00000000000000000000,0.00000000000000000000],
 [-1.00000000000000000000,-1.00000000000000000000],
@@ -90,6 +89,9 @@ if tr == '2':
             np.array([[ 1.,  0.] for _ in range(int(70*1./stepSize))]),
             np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
 
+if tr == '4':
+    A = np.array([[-1., 1.] for _ in range(int(200*1./stepSize))])
+
 ######################################## Roll-out ##################################################
 
 
@@ -102,13 +104,13 @@ if tr == '2':
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 0:
+if 1:
     Af = A.reshape((-1,))
     Pro = []
-    for j in range(1):
-        print("Rollout number " + str(j) + ".")
+    for j in range(20):
+        print("Rollout number " + str(j) + ' with path ' + tr + "...")
         
         R = rollout_srv(Af)
         Sro = np.array(R.states).reshape(-1,state_dim)
@@ -131,9 +133,8 @@ c = 0
 for j in range(len(Pro)): 
     Sro = Pro[j]
     # ax.plot(Sro[:,0], Sro[:,1], 'b')
-    # plt.plot(Sro[:,0], Sro[:,1], ':r')
+    plt.plot(Sro[:,0], Sro[:,1], '.-r')
     S.append(Sro[0,:state_dim])
-    print Sro.shape[0]
     if Sro.shape[0]>=A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
@@ -159,8 +160,9 @@ Smean = np.array(Smean)
 Sstd = np.array(Sstd)
 
 
-# plt.show()
-# exit(1)
+plt.title('path ' + tr)
+plt.show()
+exit(1)
 
 if 1:   
     Np = 200 # Number of particles
@@ -420,6 +422,9 @@ ix = [0, 1]
 
 plt.figure(2)
 ax1 = plt.subplot(1,2,1)
+for j in range(len(Pro)): 
+    Sro = Pro[j]
+    plt.plot(Sro[:,0], Sro[:,1], ':r')
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
 plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
@@ -427,6 +432,9 @@ plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
 plt.legend()
 
 ax2 = plt.subplot(1,2,2)
+for j in range(len(Pro)): 
+    Sro = Pro[j]
+    plt.plot(Sro[:,2], Sro[:,3], ':r')
 plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
 plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
