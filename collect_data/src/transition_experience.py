@@ -23,7 +23,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
+        self.file = 'toy_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -77,35 +77,29 @@ class transition_experience():
     def plot_data(self):
 
         states = np.array([item[0] for item in self.memory])
-        done = [item[3] for item in self.memory]
-
-        print states.shape
-
-        # For data from recorder
-        if recorder_data:
-            states = states[:, [0, 1, 2, 3, 4, 5]]
-            # states[:,:2] *= 1000 # m to mm
-
-        failed_states = states[done]
+        next_states = np.array([item[2] for item in self.memory])
+        done = np.array([item[3] for item in self.memory])
+        failed_states = next_states[done]
 
         plt.figure(1)
-        ax1 = plt.subplot(311)
-        #ax1.plot(states[:,0],states[:,1],'-k')
-        ax1.plot(states[:,0],states[:,1],'.y')
-        ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
-        ax1.set(title='Object position')
-        # plt.xlim(-100., 100.)
-        # plt.ylim(0., 150.)
-        
-        ax2 = plt.subplot(312)
-        ax2.plot(states[:,2],states[:,3],'.k')
-        ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
-        ax2.set(title='Actuator loads')
+        rectangle = plt.Rectangle((-1, -1), 0.2, 2, fc='w')
+        plt.gca().add_patch(rectangle)
+        rectangle = plt.Rectangle((0.8, -1), 0.2, 2, fc='w')
+        plt.gca().add_patch(rectangle)
+        rectangle = plt.Rectangle((-0.8, -1), 1.6, 0.5, fc='b')
+        plt.gca().add_patch(rectangle)
+        rectangle = plt.Rectangle((-0.8, -0.5), 1.6, 0.5, fc='m')
+        plt.gca().add_patch(rectangle)
+        rectangle = plt.Rectangle((-0.8, -0.), 1.6, 0.5, fc='g')
+        plt.gca().add_patch(rectangle)
+        rectangle = plt.Rectangle((-0.8, 0.5), 1.6, 0.5, fc='c')
+        plt.gca().add_patch(rectangle)
 
-        ax3 = plt.subplot(313)
-        ax3.plot(states[:,4],states[:,5],'.k')
-        ax3.plot(failed_states[:,4],failed_states[:,5],'.r')
-        ax3.set(title='Object velocity')
+        plt.plot(states[:,0],states[:,1],'.y')
+        plt.plot(failed_states[:,0],failed_states[:,1],'.r')
+        plt.title('Object position')
+        plt.xlim(-1., 1.)
+        plt.ylim(-1., 1.)
         
         plt.show()
 

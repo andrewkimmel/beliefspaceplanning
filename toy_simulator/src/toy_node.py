@@ -34,18 +34,19 @@ class toy_sim():
 
         rospy.init_node('toy_sim', anonymous=True)
 
-        rate = rospy.Rate(100)
+        self.rate = rospy.Rate(100)
         while not rospy.is_shutdown():
             msg.data = self.state
             pub_obj_pos.publish(msg)
 
             pub_drop.publish(self.dropped)
             # rospy.spin()
-            rate.sleep()
+            self.rate.sleep()
 
     def ResetGripper(self, msg):
         self.state = self.env.reset()
         self.dropped = False
+        self.rate.sleep()
 
         print('[toy_node] Gripper reset.')
 
