@@ -1,6 +1,0 @@
-<launch>
-
-  <node pkg="gp_sim_node" name="gp_transition_sim" type="gp_transition_sim.py" output="screen"/>
-  <node pkg="gp_sim_node" name="svm_sim" type="svm_sim.py" output="screen"/>
-
-</launch>

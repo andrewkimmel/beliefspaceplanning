@@ -1,4 +1,0 @@
-float32[] StateAction
----
-bool fail
-float32 probability
