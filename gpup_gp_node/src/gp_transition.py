@@ -28,13 +28,13 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         # Number of NN
         if useDiffusionMaps:
             dim = 2
-            self.K = 500
-            self.K_manifold = 50
-            self.df = DiffusionMap(sigma=5., embedding_dim=dim)
+            self.K = 1000
+            self.K_manifold = 100
+            self.df = DiffusionMap(sigma=10., embedding_dim=dim)
             # self.df = DiffusionMap(sigma=10, embedding_dim=dim, k = self.K)
             print('[gp_transition] Using diffusion maps with dimension %d.'%dim)
         else:
-            self.K = 20
+            self.K = 100
 
         svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
         data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K)
@@ -112,7 +112,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             ds_next[i] = mm
             std_next[i] = np.sqrt(np.diag(vv))
 
-        s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
+        s_next = sa[:self.state_dim] + ds_next#np.random.normal(ds_next, std_next)
 
         return s_next 
 
@@ -166,7 +166,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         # Check which particles failed
         failed_inx = self.batch_svm_check(S, a)
         # node_probability = 1 - len(failed_inx)/S.shape[0]
-        node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+        node_probability = 1.0# - float(len(failed_inx))/float(S.shape[0])
 
         # print node_probability
 

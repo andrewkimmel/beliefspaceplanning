@@ -47,7 +47,7 @@ class DiffusionMap():
         # D, V = np.linalg.eig(np.array(D0.A))#, which='LR')#, k=2+0*np.min(m-1, 10))#)
         D, V = eigs(D0, np.min((m-2, 10)), which='LR')#, #)
         
-        idx = np.flip(np.argsort(D.real))
+        idx = np.flipud(np.argsort(D.real))
         lambdas = D.real[idx]
         v = V.real[:,idx[:self.dim]]
 

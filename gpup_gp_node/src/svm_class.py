@@ -24,7 +24,7 @@ class svm_failure():
 
         # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
-        File = 't42_35_svm_data_' + self.mode + '_v0_d4_m1.obj' # <= File name here!!!!!
+        File = 't42_35_svm_data_' + self.mode + '_v4_d4_m1.obj' # <= File name here!!!!!
 
         print('Loading data from ' + File)
         with open(path + File, 'rb') as f: 

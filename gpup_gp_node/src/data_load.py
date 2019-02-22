@@ -4,6 +4,8 @@ from scipy.io import loadmat
 from sklearn.neighbors import KDTree 
 import os.path
 import pickle
+import matplotlib.pyplot as plt
+
 
 N_dillute = 700000 # Number of points to randomly select from data
 
@@ -12,7 +14,7 @@ class data_load(object):
 
     def __init__(self, simORreal = 't42_35', discreteORcont = 'discrete', K = 100):
         
-        self.postfix = '_v0_d4_m1'
+        self.postfix = '_v4_d4_m1'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -31,11 +33,16 @@ class data_load(object):
         print('[data_load] Loading data from "' + self.file + '"...' )
         Q = loadmat(self.path + self.file)
         Qtrain = Q['D']
-        is_start = 101180#int(Q['is_start'])#100080
-        is_end = is_start + 100#int(Q['is_end'])
+        is_start = 1500#int(Q['is_start'])#100080
+        is_end = is_start + 95#int(Q['is_end'])
 
         self.Qtest = Qtrain[is_start:is_end, :]
         Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
+
+        # plt.plot(self.Qtest[:,0], self.Qtest[:,1],'.-')
+        # plt.plot(self.Qtest[0,0], self.Qtest[0,1],'o')
+        # plt.show()
+        # exit(1)
 
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']

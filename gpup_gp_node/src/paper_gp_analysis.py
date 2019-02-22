@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.patches import Ellipse, Polygon
 import pickle
-from rollout_node.srv import rolloutReq
-from gp_sim_node.srv import sa_bool
+from rollout_t42.srv import rolloutReq
 import time
 from data_load import data_load
 
@@ -21,25 +20,67 @@ stepSize = 1
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
+rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
 
-# DL = data_load()
-# Smean = DL.Qtest[:,:4]
-# A = DL.Qtest[:,4:6]
-# 
+path = '/home/pracsys/catkin_ws/src/t42_control/rollout_t42/rolls/'
 
-Smean = A = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_traj.txt', delimiter=',')[:,:4]
-A = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_plan.txt', delimiter=',')[:,:2]
-R = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_roll.txt', delimiter=',')[:,:4]
+DL = data_load()
+Smean = R = DL.Qtest[:,:4]
+A = DL.Qtest[:,4:6]
+
+# Smean = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_traj.txt', delimiter=',')[:,:4]
+# A = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_plan.txt', delimiter=',')[:,:2]
+# R = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_roll.txt', delimiter=',')[:,:4]
+
+# A = np.tile(np.array([-1.,1]), (700,1))
+
+if 0:
+    Af = A.reshape((-1,))
+    Pro = []
+    for j in range(1):
+        print("Rollout number " + str(j) + ".")
+        
+        roll = rollout_srv(Af)
+        R = np.array(roll.states).reshape(-1,state_dim)
+        # A = np.array(roll.actions).reshape(-1,2)
+        suc = roll.success
+
+        # Pro.append(Sro)
+        
+        with open(path + 'rollout_' + tr + '_v' + str(4) + '_d' + str(state_dim) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
+            pickle.dump([R, suc], f)
+# with open(path + 'rollout_' + tr + '_v' + str(4) + '_d' + str(state_dim) + '_m' + str(stepSize) + '.pkl', 'r') as f:  
+#     R, _ = pickle.load(f) 
+
+def medfilter(x, W):
+    print('Smoothing data...')
+    w = int(W/2)
+    x_new = np.copy(x)
+    for i in range(0, x.shape[0]):
+        if i < w:
+            x_new[i] = np.mean(x[:i+w])
+        elif i > x.shape[0]-w:
+            x_new[i] = np.mean(x[i-w:])
+        else:
+            x_new[i] = np.mean(x[i-w:i+w])
+    return x_new
+
+# for i in range(R.shape[1]):
+#     R[:,i] = medfilter(R[:,i], 20)
 
 # s_start = Smean[0,:]
 s_start = R[0,:]
-s_start[2:] /= 1000.
 
-sigma_start = np.array([1.,1.,1.,1.])*1e-3
+sigma_start = np.array([1.,1.,1.,1.])*1e-5
+
+# print R[:,:2]
+# plt.plot(R[:,0], R[:,1], '.-k')
+# plt.plot(R[0,0], R[0,1], 'or')
+# plt.show()
+# exit(1)
 
 
 rospy.init_node('verification_t42', anonymous=True)
-rate = rospy.Rate(15) # 15hz
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
@@ -65,16 +106,19 @@ if 1:
         Pgp.append(S)
         a = A[i,:]
 
-        st = time.time()
-        res = gp_srv(S.reshape(-1,1), a)
-        t_gp += (time.time() - st) 
+        # st = time.time()
+        # res = gp_srv(S.reshape(-1,1), a)
+        # t_gp += (time.time() - st) 
 
-        S_next = np.array(res.next_states).reshape(-1,state_dim)
-        if res.node_probability < p_gp:
-            p_gp = res.node_probability
-        s_mean_next = np.mean(S_next, 0)
-        s_std_next = np.std(S_next, 0)
-        S = S_next
+        # S_next = np.array(res.next_states).reshape(-1,state_dim)
+        # if res.node_probability < p_gp:
+        #     p_gp = res.node_probability
+        # s_mean_next = np.mean(S_next, 0)
+        # s_std_next = np.std(S_next, 0)
+        # S = S_next
+
+        s_mean_next = np.array([0,0,0,0])
+        s_std_next = np.array([0,0,0,0])
 
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
@@ -146,13 +190,13 @@ if 1:
 
     stats = np.array([[t_gp, t_naive, t_mean], [p_gp, p_naive, p_mean]])
 
-    with open(path + 'ver_t42_pred_' + tr + '_v0_d4_m' + str(stepSize) + '.pkl', 'w') as f:
+    with open(path + 'ver_t42_pred_' + tr + '_v4_d4_m' + str(stepSize) + '.pkl', 'w') as f:
         pickle.dump([Ypred_mean_gp, Ypred_std_gp, Pgp, Ypred_naive, Ypred_bmean, stats, A], f)
 
 ######################################## Plot ###########################################################
 
 
-with open(path + 'ver_t42_pred_' + tr + '_v0_d4_m' + str(stepSize) + '.pkl') as f:  
+with open(path + 'ver_t42_pred_' + tr + '_v4_d4_m' + str(stepSize) + '.pkl') as f:  
     Ypred_mean_gp, Ypred_std_gp, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
 # Compare paths
@@ -278,28 +322,24 @@ ix = [0, 1]
 # ax2.plot(t, Ypred_bmean[:,1], '-m')
 
 plt.figure(2)
-
+ax1 = plt.subplot(1,2,1)
 try:
     plt.plot(R[:,ix[0]], R[:,ix[1]], '.-k', label='rollout')
 except:
     pass
-
-# plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='Plan')
-# X = np.concatenate((Smean[:,ix[0]]+Sstd[:,ix[0]], np.flip(Smean[:,ix[0]]-Sstd[:,ix[0]])), axis=0)
-# Y = np.concatenate((Smean[:,ix[1]]+Sstd[:,ix[1]], np.flip(Smean[:,ix[1]]-Sstd[:,ix[1]])), axis=0)
-# plt.fill( X, Y , alpha = 0.5 , color = 'b')
-
-plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP')
-# X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
-# Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
-# plt.fill( X, Y , alpha = 0.5 , color = 'r')
-# plt.plot(Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], '--r', label='BPP')
-# plt.plot(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], '--r', label='BPP')
+# plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP')
+plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-c', label='Naive')
 
 
-plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-c', label='Naive')
-# plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
+ax2 = plt.subplot(1,2,2)
+try:
+    plt.plot(R[:,ix[0]+2], R[:,ix[1]+2], '.-k', label='rollout')
+except:
+    pass
+# plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
+plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '.-c', label='Naive')
 plt.legend()
-plt.show()
 
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/path.png')
+plt.show()
 
