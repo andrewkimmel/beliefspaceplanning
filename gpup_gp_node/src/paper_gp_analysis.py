@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '2'
+tr = '4'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -104,9 +104,9 @@ if tr == '4':
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
-path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 1:
+if 0:
     Af = A.reshape((-1,))
     Pro = []
     for j in range(20):
@@ -114,7 +114,6 @@ if 1:
         
         R = rollout_srv(Af)
         Sro = np.array(R.states).reshape(-1,state_dim)
-        # A = np.array(R.actions_res).reshape(-1,2)
 
         Pro.append(Sro)
         
@@ -133,7 +132,7 @@ c = 0
 for j in range(len(Pro)): 
     Sro = Pro[j]
     # ax.plot(Sro[:,0], Sro[:,1], 'b')
-    plt.plot(Sro[:,0], Sro[:,1], '.-r')
+    # plt.plot(Sro[:,0], Sro[:,1], '.-r')
     S.append(Sro[0,:state_dim])
     if Sro.shape[0]>=A.shape[0]:
         c+= 1
@@ -160,9 +159,9 @@ Smean = np.array(Smean)
 Sstd = np.array(Sstd)
 
 
-plt.title('path ' + tr)
-plt.show()
-exit(1)
+# plt.title('path ' + tr)
+# plt.show()
+# exit(1)
 
 if 1:   
     Np = 200 # Number of particles
@@ -179,7 +178,7 @@ if 1:
     Ypred_std_gp = sigma_start.reshape(1,state_dim)
 
     Pgp = []; 
-    p_gp = 1
+    p_gp = 1.
     print("Running (open loop) path...")
     for i in range(0, A.shape[0]):
         print("[GP] Step " + str(i) + " of " + str(A.shape[0]))
@@ -204,7 +203,6 @@ if 1:
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
 
     t_gp /= A.shape[0]
-    
 
     ######################################## naive propagation ###############################################
 
@@ -213,11 +211,10 @@ if 1:
     t_naive = 0
 
     s = np.copy(s_start) + np.random.normal(0, sigma_start)
-    # s = np.tile(s, (Np,1)) + np.random.normal(0, sigma_start, (Np, state_dim))
     Ypred_naive = s.reshape(1,state_dim)
 
     print("Running (open loop) path...")
-    p_naive = 1
+    p_naive = 1.
     for i in range(0, A.shape[0]):
         print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
@@ -249,22 +246,22 @@ if 1:
     Ypred_bmean = s.reshape(1,state_dim)
 
     print("Running (open loop) path...")
-    p_mean = 1
+    p_mean = 1.
     for i in range(0, A.shape[0]):
         print("[Mean] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        # st = time.time()
-        # res = gp_srv(S.reshape(-1,1), a)
-        # t_mean += (time.time() - st) 
+        st = time.time()
+        res = gp_srv(S.reshape(-1,1), a)
+        t_mean += (time.time() - st) 
 
-        # if res.node_probability < p_mean:
-        #     p_mean = res.node_probability
-        # S_next = np.array(res.next_states).reshape(-1,state_dim)
-        # s_mean_next = np.mean(S_next, 0)
-        # S = np.tile(s_mean_next, (Np,1))
+        if res.node_probability < p_mean:
+            p_mean = res.node_probability
+        S_next = np.array(res.next_states).reshape(-1,state_dim)
+        s_mean_next = np.mean(S_next, 0)
+        S = np.tile(s_mean_next, (Np,1))
 
-        s_mean_next = np.ones((1,state_dim))
+        # s_mean_next = np.ones((1,state_dim))
 
         Ypred_bmean = np.append(Ypred_bmean, s_mean_next.reshape(1,state_dim), axis=0)
 
@@ -288,18 +285,18 @@ if 1:
         print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        # st = time.time()
-        # res = gpup_srv(s, sigma_x, a)
-        # t_gpup += (time.time() - st) 
+        st = time.time()
+        res = gpup_srv(s, sigma_x, a)
+        t_gpup += (time.time() - st) 
 
-        # if res.node_probability < p_gpup:
-        #     p_gpup = res.node_probability
-        # s_next = np.array(res.next_mean)
-        # sigma_next = np.array(res.next_std)
-        # s = s_next
-        # sigma_x = sigma_next
+        if res.node_probability < p_gpup:
+            p_gpup = res.node_probability
+        s_next = np.array(res.next_mean)
+        sigma_next = np.array(res.next_std)
+        s = s_next
+        sigma_x = sigma_next
 
-        s_next = sigma_next = np.ones((1,state_dim))
+        # s_next = sigma_next = np.ones((1,state_dim))
 
         Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
         Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)
@@ -424,7 +421,7 @@ plt.figure(2)
 ax1 = plt.subplot(1,2,1)
 for j in range(len(Pro)): 
     Sro = Pro[j]
-    plt.plot(Sro[:,0], Sro[:,1], ':r')
+    plt.plot(Sro[:,0], Sro[:,1], ':y')
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
 plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
@@ -434,7 +431,7 @@ plt.legend()
 ax2 = plt.subplot(1,2,2)
 for j in range(len(Pro)): 
     Sro = Pro[j]
-    plt.plot(Sro[:,2], Sro[:,3], ':r')
+    plt.plot(Sro[:,2], Sro[:,3], ':y')
 plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
 plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
@@ -576,7 +573,7 @@ plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
 #     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
 #     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png')
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png', dpi=300)
 plt.show()
 
 

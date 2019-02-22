@@ -10,7 +10,7 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -22,18 +22,18 @@ comp = 'pracsys'
 if rollout:
     rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
     rospy.init_node('run_rollout_set', anonymous=True)
-    rate = rospy.Rate(15) # 15hz
-    state_dim = 6
+    state_dim = 4
 
-    set_modes = ['mean_only4']
+    Set = '1'
+    set_modes = ['mean_only']
     # set_modes =['mean_only2', 'robust_plus2', 'naive2'] 
 
     for set_mode in set_modes:
-        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
-        files = glob.glob(path + "*.txt")
+        files = glob.glob(path + set_mode + "*.txt")
 
-        for i in range(len(files)-10):
+        for i in range(len(files)):
 
             action_file = files[i]
             if action_file.find('traj') > 0:
@@ -43,6 +43,8 @@ if rollout:
             print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
             A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
+            print A
+            exit(1)
 
             Af = A.reshape((-1,))
             Pro = []
@@ -61,42 +63,20 @@ if rollout:
 
 C = []
 # Goal centers - set 1
-C.append(np.array([[-5.043, 106.210], #Experiment 1
-    [-74.9059, 97.05], #Experiment 2
-    [-72,77], #Experiment 3
-    [65,83], #Experiment 4
-    [-46,77], #Experiment 5
-    [40,100], #Experiment 6
-    [-26,105], #Experiment 7
-    [20,103]])) #Experiment 8
-# Goal centers - set 2
-C.append(np.array([[-5.043, 106.210], #Experiment 0
-    [-74.9059, 97.05], #Experiment 1
-    [65,83], #Experiment 2
-    [40,100], #Experiment 3
-    [-26,105], #Experiment 4
-    [20,103]])) #Experiment 5
-# Goal centers - set 3 and 4 in 4
-C.append([])
-C.append(np.array([[-40, 100.210], #Experiment 0
-    [-60.9059, 90.05], #Experiment 1
-    [0,110], #Experiment 2
-    [77,90], #Experiment 3
-    [42,85], #Experiment 4
-    [20,127], #Experiment 5
-    [-22, 110.210], #Experiment 0
-    [-30.9059, 125.05], #Experiment 1
-    [-70,90],           #Experiment 2
-    [30,108],           #Experiment 3
-    [30,125],           #Experiment 4
-    [60,90],            #Experiment 5
-    [5,130],            #Experiment 6
-    [90,60]]))          #Experiment 7
+C.append(np.array([
+    [17, 117],
+    [75, 75],
+    [-83, 66],
+    [-52, 77],
+    [48, 114],
+    [-31, 100],
+    [5.4, 108],
+    [87, 65]]))
 
-r = 12
+r = 7
 
-set_num = 4
-set_modes = ['robust_plus'+str(set_num), 'naive'+str(set_num), 'mean_only'+str(set_num)]
+set_num = ''
+set_modes = ['robust_plus' + set_num, 'naive' + set_num, 'mean_only' + set_num]
 results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
 
 if not rollout and 0:
@@ -195,7 +175,7 @@ if not rollout and 0:
         
     # plt.show()
 
-if 1:
+if 0:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 

@@ -16,7 +16,7 @@ np.random.seed(10)
 
 simORreal = 'sim'
 discreteORcont = 'discrete'
-useDiffusionMaps = True
+useDiffusionMaps = False
 
 class Spin_gpup(data_load, svm_failure):
 
@@ -40,10 +40,7 @@ class Spin_gpup(data_load, svm_failure):
         rospy.init_node('gpup_transition', anonymous=True)
         print('[gpup_transition] Ready.')
 
-        rate = rospy.Rate(15) # 15hz
-        while not rospy.is_shutdown():
-            rospy.spin()
-            # rate.sleep()  
+        rospy.spin()
 
     def predict(self, s_mean, s_var):
         sa = s_mean.reshape(-1,1)
@@ -109,7 +106,7 @@ class Spin_gpup(data_load, svm_failure):
         return {'next_mean': s_mean_next, 'next_std': s_std_next}
 
     def svm_check(self, mean, std, a):
-        N = 100
+        N = 200
 
         S = np.random.normal(mean, std, size=(N, len(mean)))
 

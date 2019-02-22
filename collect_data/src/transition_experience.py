@@ -79,7 +79,19 @@ class transition_experience():
         states = np.array([item[0] for item in self.memory])
         done = [item[3] for item in self.memory]
 
-        print states.shape
+        # Start dist.
+        St = []
+        for i in range(states.shape[0]-1):
+            if done[i] and not done[i+1]:
+                St.append(states[i+1,:4])
+        St = np.array(St)
+        s_start = np.mean(St, 0)
+        s_std = np.std(St, 0)
+        print "start mean: ", s_start
+        print "start std.: ", s_std
+
+        print np.max(states, axis=0)
+        print np.min(states, axis=0)
 
         # For data from recorder
         if recorder_data:
@@ -89,7 +101,7 @@ class transition_experience():
         failed_states = states[done]
 
         plt.figure(1)
-        ax1 = plt.subplot(311)
+        ax1 = plt.subplot(211)
         #ax1.plot(states[:,0],states[:,1],'-k')
         ax1.plot(states[:,0],states[:,1],'.y')
         ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
@@ -97,15 +109,15 @@ class transition_experience():
         # plt.xlim(-100., 100.)
         # plt.ylim(0., 150.)
         
-        ax2 = plt.subplot(312)
+        ax2 = plt.subplot(212)
         ax2.plot(states[:,2],states[:,3],'.k')
         ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
         ax2.set(title='Actuator loads')
 
-        ax3 = plt.subplot(313)
-        ax3.plot(states[:,4],states[:,5],'.k')
-        ax3.plot(failed_states[:,4],failed_states[:,5],'.r')
-        ax3.set(title='Object velocity')
+        # ax3 = plt.subplot(313)
+        # ax3.plot(states[:,4],states[:,5],'.k')
+        # ax3.plot(failed_states[:,4],failed_states[:,5],'.r')
+        # ax3.set(title='Object velocity')
         
         plt.show()
 

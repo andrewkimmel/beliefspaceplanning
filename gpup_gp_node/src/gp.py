@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+'''
+Author: Avishai Sintov
+        Rutgers University
+        2018-2019
+'''
+
 import numpy as np
 from cov import Covariance
 import time
@@ -51,8 +57,6 @@ class GaussianProcess(object):
 
         return mean, variance
 
-
-
-if __name__ == '__main__':
-    G = data_load()
+# if __name__ == '__main__':
+#     G = data_load()
 

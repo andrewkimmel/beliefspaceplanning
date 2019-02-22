@@ -15,13 +15,13 @@ class data_load(object):
         self.Dillute = Dillute
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
-        self.path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.load()
         self.dr = dr
 
-        if os.path.exists(self.path + 'opt_data_discrete' + self.postfix + '.obj'):
-            with open(self.path + 'opt_data_discrete' + self.postfix + '.obj', 'rb') as f: 
+        if os.path.exists(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj'):
+            with open(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
                 _, self.theta_opt, self.opt_kdt = pickle.load(f)
             print('[data_load] Loaded hyper-parameters data from ' + self.file)
         else:
@@ -166,7 +166,7 @@ class data_load(object):
 
         self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
 
-        with open(self.path + 'opt_data_discrete' + self.postfix + '.obj', 'wb') as f: 
+        with open(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
             pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
         print('[data_load] Saved hyper-parameters data.')
 

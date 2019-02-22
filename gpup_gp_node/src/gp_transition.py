@@ -42,7 +42,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim, dr = 'diff')
         else:
-            self.K = 40
+            self.K = 100
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
@@ -250,7 +250,6 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         # Check which particles failed
         failed_inx = self.batch_svm_check(S, a)
-        # node_probability = 1 - len(failed_inx)/S.shape[0]
         node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
 
         # print node_probability

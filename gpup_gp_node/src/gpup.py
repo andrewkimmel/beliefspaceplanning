@@ -1,5 +1,8 @@
 
 '''
+Author: Avishai Sintov
+        Rutgers University
+        2018-2019
 Implementation based on:
 Agathe Girard PhD thesis: Approximate Methods for Propagation of Uncertainty with Gaussian Process Models
                           http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.66.1826&rep=rep1&type=pdf

@@ -75,9 +75,8 @@ from collect_data.srv import sparse_goal
 
 nodes =[
 "robust_particles_pc_svmHeuristic",
-"robust_particles_pp_pc_svmHeuristic",
-"naive_with_svm",
-"mean_only_particles",
+# "naive_with_svm",
+# "mean_only_particles",
 ]
 ## ROBUST PLUS GOALS part 1
 # goals = [
@@ -153,22 +152,25 @@ seed = [
 132096,
 131234,
 98964]
-## ROBUST PLUS GOALS part 4 - Avishai changed this
 
+
+## Set 1 - Don't delete!!!
 goals = [
-"-22, 110.210,  16,  16,  0.026,  0",
-"-30.9059, 125.05,  16,  16,  0.026,  0",
-"-70,90,  16,  16,  0.026,  0",
-"30,108,  16,  16,  0.026,  0",
-"30,125,  16,  16,  0.026,  0",
-"60,90,  16,  16,  0.026,  0",
-"5,130,  16,  16,  0.026,  0",
-"90,60,  16,  16,  0.026,  0",
+"17, 117,  16,  16",
+"75, 75,  16,  16",
+"-83, 66,  16,  16",
+"-52, 77,  16,  16",
+"48, 114,  16,  16",
+"-31, 100,  16,  16",
+"5.4, 108,  16,  16",
+"87, 65,  16,  16",
 ]
+
 GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
-PROBABILITY_CONSTRAINT = 0.6 #0.8
+PROBABILITY_CONSTRAINT = 0.5 #0.8
+SUCCESS_PROB_CONSTRAINT = 0.3
 FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
@@ -180,6 +182,7 @@ if __name__ == "__main__":
                 node_name = "node:="+ n + "_goal" + str(count) + "_run" + str(x)
                 goal_state = "goal_state:="+ g
                 total_particles = "total_particles:="
+                success_constraint ="minimum_success_prob:=" + str(SUCCESS_PROB_CONSTRAINT)
                 probability_constraint = "minimum_prob:="
                 mean_only="mean_only:="
                 if "robust_particles" in n:
@@ -208,9 +211,10 @@ if __name__ == "__main__":
                 if "_svmHeuristic" in n:
                     use_svm_prediction="use_svm_prediction:=true"
                     failure_constant="failure_constant:="+str(FAILURE_CONSTANT)
-                experiment_filename="experiment_filename:=experiment"+str(count)+".txt"
+                # experiment_filename="experiment_filename:=experiment"+str(count)+".txt"
+                experiment_filename="experiment_filename:="+n+".txt"
                 print node_name, goal_state, probability_constraint
                 goal_radius="goal_radius:=" + str(GOAL_RADIUS)
-                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", node_name, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, random_seed])
+                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", node_name, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, random_seed, success_constraint])
             count = count + 1
 

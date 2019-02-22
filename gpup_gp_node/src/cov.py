@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+'''
+Author: Avishai Sintov
+        Rutgers University
+        2018-2019
+'''
+
 import numpy as np
 from scipy.optimize import minimize
 from scipy.linalg import inv
