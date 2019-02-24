@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 node_name = "node:="+ n + "_goal" + str(count) + "_run" + str(x)
                 goal_state = "goal_state:="+ g
                 total_particles = "total_particles:="
-                probability_constraint = "minimum_prob:="
+                probability_constraint = "minimum_drop_prob:="
                 mean_only="mean_only:="
                 if "robust_particles" in n:
                     probability_constraint += str(PROBABILITY_CONSTRAINT)

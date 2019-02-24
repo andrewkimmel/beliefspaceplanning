@@ -15,7 +15,8 @@ from mean_shift import mean_shift
 import matplotlib.pyplot as plt
 
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/toy_simulator/src/')
+# sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/toy_simulator/src/')
+sys.path.insert(0, '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/toy_simulator/src/')
 import varz as V
 
 # np.random.seed(10)
