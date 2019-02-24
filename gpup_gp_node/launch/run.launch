@@ -1,7 +1,7 @@
 <launch>
 
   <node pkg="gpup_gp_node" name="gp_transition" type="gp_transition.py" output="screen"/>
-  <node pkg="gpup_gp_node" name="gpup_transition" type="gpup_transition.py" output="screen"/>
+  <!-- <node pkg="gpup_gp_node" name="gpup_transition" type="gpup_transition.py" output="screen"/> -->
   <!-- <node pkg="gpup_gp_node" name="inter_transition" type="inter_transition.py" output="screen"/> -->
 
 </launch>

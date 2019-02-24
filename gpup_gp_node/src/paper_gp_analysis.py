@@ -90,7 +90,7 @@ if tr == '2':
             np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
 
 if tr == '4':
-    A = np.array([[-1., 1.] for _ in range(int(200*1./stepSize))])
+    A = np.array([[1., -1.] for _ in range(int(400*1./stepSize))])
 
 ######################################## Roll-out ##################################################
 
@@ -109,7 +109,7 @@ path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results
 if 0:
     Af = A.reshape((-1,))
     Pro = []
-    for j in range(20):
+    for j in range(1):
         print("Rollout number " + str(j) + ' with path ' + tr + "...")
         
         R = rollout_srv(Af)
@@ -158,12 +158,14 @@ for i in range(A.shape[0]+1):
 Smean = np.array(Smean)
 Sstd = np.array(Sstd)
 
+Smean = Pro[0]
+
 
 # plt.title('path ' + tr)
 # plt.show()
 # exit(1)
 
-if 1:   
+if 0:   
     Np = 200 # Number of particles
 
     ######################################## GP propagation ##################################################
@@ -251,17 +253,17 @@ if 1:
         print("[Mean] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        st = time.time()
-        res = gp_srv(S.reshape(-1,1), a)
-        t_mean += (time.time() - st) 
+        # st = time.time()
+        # res = gp_srv(S.reshape(-1,1), a)
+        # t_mean += (time.time() - st) 
 
-        if res.node_probability < p_mean:
-            p_mean = res.node_probability
-        S_next = np.array(res.next_states).reshape(-1,state_dim)
-        s_mean_next = np.mean(S_next, 0)
-        S = np.tile(s_mean_next, (Np,1))
+        # if res.node_probability < p_mean:
+        #     p_mean = res.node_probability
+        # S_next = np.array(res.next_states).reshape(-1,state_dim)
+        # s_mean_next = np.mean(S_next, 0)
+        # S = np.tile(s_mean_next, (Np,1))
 
-        # s_mean_next = np.ones((1,state_dim))
+        s_mean_next = np.ones((1,state_dim))
 
         Ypred_bmean = np.append(Ypred_bmean, s_mean_next.reshape(1,state_dim), axis=0)
 
@@ -285,18 +287,18 @@ if 1:
         print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
         a = A[i,:]
 
-        st = time.time()
-        res = gpup_srv(s, sigma_x, a)
-        t_gpup += (time.time() - st) 
+        # st = time.time()
+        # res = gpup_srv(s, sigma_x, a)
+        # t_gpup += (time.time() - st) 
 
-        if res.node_probability < p_gpup:
-            p_gpup = res.node_probability
-        s_next = np.array(res.next_mean)
-        sigma_next = np.array(res.next_std)
-        s = s_next
-        sigma_x = sigma_next
+        # if res.node_probability < p_gpup:
+        #     p_gpup = res.node_probability
+        # s_next = np.array(res.next_mean)
+        # sigma_next = np.array(res.next_std)
+        # s = s_next
+        # sigma_x = sigma_next
 
-        # s_next = sigma_next = np.ones((1,state_dim))
+        s_next = sigma_next = np.ones((1,state_dim))
 
         Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
         Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)
@@ -316,37 +318,37 @@ with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(v
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
 # Compare paths
-d_gp = d_gpup = d_naive = d_mean = d = 0.
-for i in range(A.shape[0]):
-    if i < Smean.shape[0]-1:
-        d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
-    d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
-    d_naive += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
-    d_mean += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
-    d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
-d_gp = np.sqrt(d_gp/A.shape[0])
-d_naive = np.sqrt(d_naive/A.shape[0])
-d_mean = np.sqrt(d_mean/A.shape[0])
-d_gpup = np.sqrt(d_gpup/A.shape[0])
+# d_gp = d_gpup = d_naive = d_mean = d = 0.
+# for i in range(A.shape[0]):
+#     if i < Smean.shape[0]-1:
+#         d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
+#     d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
+#     d_naive += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
+#     d_mean += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
+#     d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
+# d_gp = np.sqrt(d_gp/A.shape[0])
+# d_naive = np.sqrt(d_naive/A.shape[0])
+# d_mean = np.sqrt(d_mean/A.shape[0])
+# d_gpup = np.sqrt(d_gpup/A.shape[0])
 
-print "-----------------------------------"
-print "Path length: " + str(d)
-print "-----------------------------------"
-print "GP rmse: " + str(d_gp) + "mm"
-print "Naive rmse: " + str(d_naive) + "mm"
-print "mean rmse: " + str(d_mean) + "mm"
-print "GPUP rmse: " + str(d_gpup) + "mm"
-print "-----------------------------------"
-print "GP runtime: " + str(stats[0][0]) + "sec."
-print "GP Naive: " + str(stats[0][1]) + "sec."
-print "GP mean: " + str(stats[0][2]) + "sec."
-print "GPUP time: " + str(stats[0][3]) + "sec."
-print "-----------------------------------"
-print "GP probability: " + str(stats[1][0])
-print "GP naive probability: " + str(stats[1][1])
-print "GP mean probability: " + str(stats[1][2])
-print "GPUP probability: " + str(stats[1][3])
-print "-----------------------------------"
+# print "-----------------------------------"
+# print "Path length: " + str(d)
+# print "-----------------------------------"
+# print "GP rmse: " + str(d_gp) + "mm"
+# print "Naive rmse: " + str(d_naive) + "mm"
+# print "mean rmse: " + str(d_mean) + "mm"
+# print "GPUP rmse: " + str(d_gpup) + "mm"
+# print "-----------------------------------"
+# print "GP runtime: " + str(stats[0][0]) + "sec."
+# print "GP Naive: " + str(stats[0][1]) + "sec."
+# print "GP mean: " + str(stats[0][2]) + "sec."
+# print "GPUP time: " + str(stats[0][3]) + "sec."
+# print "-----------------------------------"
+# print "GP probability: " + str(stats[1][0])
+# print "GP naive probability: " + str(stats[1][1])
+# print "GP mean probability: " + str(stats[1][2])
+# print "GPUP probability: " + str(stats[1][3])
+# print "-----------------------------------"
 
 if 0:
     fig = plt.figure(0)

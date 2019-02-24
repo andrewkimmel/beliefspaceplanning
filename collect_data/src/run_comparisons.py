@@ -169,8 +169,8 @@ goals = [
 GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
-PROBABILITY_CONSTRAINT = 0.5 #0.8
-SUCCESS_PROB_CONSTRAINT = 0.3
+PROBABILITY_CONSTRAINT = 0.7 #0.8
+SUCCESS_PROB_CONSTRAINT = 0.1
 FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
@@ -190,7 +190,7 @@ if __name__ == "__main__":
                     mean_only+="false"
                     total_particles += str(TOTAL_PARTICLES)
                 elif "naive_with_svm"in n:
-                    probability_constraint += "0.5"
+                    probability_constraint += "0.7"
                     total_particles += str(1)
                     mean_only+="false"
                 elif "mean_only_particles"in n:
@@ -215,6 +215,6 @@ if __name__ == "__main__":
                 experiment_filename="experiment_filename:="+n+".txt"
                 print node_name, goal_state, probability_constraint
                 goal_radius="goal_radius:=" + str(GOAL_RADIUS)
-                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", node_name, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, random_seed, success_constraint])
+                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", node_name, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint])
             count = count + 1
 
