@@ -15,18 +15,16 @@ rollout = 1
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
+Set = '1'
+set_modes = ['robust_particles_pc_svmHeuristic']
 
 ############################# Rollout ################################
 if rollout:
     rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
     rospy.init_node('run_rollout_set', anonymous=True)
     state_dim = 4
-
-    Set = '1'
-    set_modes = ['mean_only']
-    # set_modes =['mean_only2', 'robust_plus2', 'naive2'] 
 
     for set_mode in set_modes:
         path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
@@ -43,12 +41,10 @@ if rollout:
             print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
             A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
-            print A
-            exit(1)
 
             Af = A.reshape((-1,))
             Pro = []
-            for j in range(2):
+            for j in range(10):
                 print("Rollout number " + str(j) + ".")
                 
                 Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
