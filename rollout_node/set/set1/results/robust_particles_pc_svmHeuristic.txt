@@ -1,0 +1,13 @@
+robust_particles_pc_svmHeuristic_goal3_run1_plan: 100.0, 57.1428571429
+robust_particles_pc_svmHeuristic_goal0_run2_plan: 100.0, 100.0
+robust_particles_pc_svmHeuristic_goal5_run1_plan: 100.0, 44.4444444444
+robust_particles_pc_svmHeuristic_goal5_run0_plan: 100.0, 0.0
+robust_particles_pc_svmHeuristic_goal4_run1_plan: 100.0, 100.0
+robust_particles_pc_svmHeuristic_goal4_run0_plan: 100.0, 100.0
+robust_particles_pc_svmHeuristic_goal3_run2_plan: 100.0, 0.0
+robust_particles_pc_svmHeuristic_goal6_run1_plan: 100.0, 11.1111111111
+robust_particles_pc_svmHeuristic_goal0_run0_plan: 100.0, 100.0
+robust_particles_pc_svmHeuristic_goal0_run1_plan: 100.0, 100.0
+robust_particles_pc_svmHeuristic_goal6_run0_plan: 100.0, 44.4444444444
+robust_particles_pc_svmHeuristic_goal1_run0_plan: 100.0, 100.0
+robust_particles_pc_svmHeuristic_goal3_run0_plan: 100.0, 11.1111111111
