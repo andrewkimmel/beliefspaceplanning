@@ -10,13 +10,13 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 Set = '1'
 set_modes = ['robust_particles_pc_svmHeuristic']
 
@@ -57,9 +57,8 @@ if rollout:
 
 ############################# Plot ################################
 
-C = []
 # Goal centers - set 1
-C.append(np.array([
+C = np.array([
     [17, 117],
     [75, 75],
     [-83, 66],
@@ -67,12 +66,13 @@ C.append(np.array([
     [48, 114],
     [-31, 100],
     [5.4, 108],
-    [87, 65]]))
+    [87, 65]])
 
-r = 7
+rp = 7.
+r = 10.
 
 set_num = ''
-set_modes = ['robust_plus' + set_num, 'naive' + set_num, 'mean_only' + set_num]
+set_modes = ['robust_particles_pc_svmHeuristic', 'naive_with_svm', 'mean_only_particles']
 results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
 
 if not rollout and 0:
@@ -171,25 +171,25 @@ if not rollout and 0:
         
     # plt.show()
 
-if 0:
+if 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 
     fo  = open(results_path + 'set' + str(set_num) + '.txt', 'wt') 
 
-    for goal_num in range(len(C[set_num-1])):
-        ctr = C[set_num-1][goal_num]
+    for goal_num in range(C.shape[0]):
+        ctr = C[goal_num]
 
-        fo.write('\ngoal ' + str(goal_num) + ': ' + str(C[set_num-1][goal_num]) + '\n')
+        fo.write('\ngoal ' + str(goal_num) + ': ' + str(C[goal_num]) + '\n')
         
-        fig = plt.figure(figsize=(20,4))
+        fig = plt.figure(figsize=(20,7))
 
         a = 0
         for set_mode in set_modes:
 
-            path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
+            path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
-            files = glob.glob(path + "*.pkl")
+            files = glob.glob(path + set_mode + "*.pkl")
 
             found = False
             for k in range(len(files)):
@@ -203,15 +203,15 @@ if 0:
             n = len(fig.axes)
             for i in range(n):
                 fig.axes[i].change_geometry(1, n+1, i+1)
-            ax = fig.add_subplot(1, n+1, n+1)
-            # plt.plot(ctr[0], ctr[1], 'om')
+            ax = fig.add_subplot(1, n+1, n+1)#, aspect='equal')
+            plt.plot(ctr[0], ctr[1], 'om')
             goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
             ax.add_artist(goal)
-            goal_plan = plt.Circle((ctr[0], ctr[1]), 8, color='w')
+            goal_plan = plt.Circle((ctr[0], ctr[1]), rp, color='w')
             ax.add_artist(goal_plan)
-            # plt.ylim([80,130])
+            # plt.ylim([40,130])
             # plt.xlim([-100, 100])
-            
+
             if not found:
                 plt.title(set_mode + ", No plan")
                 fo.write(set_mode + ': No plan\n')
@@ -231,7 +231,7 @@ if 0:
                 Pro = pickle.load(f) 
 
             A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
-            maxR = A.shape[0] 
+            maxR = A.shape[0]+1
             maxX = np.max([x.shape[0] for x in Pro])
             
             c = np.sum([(1 if x.shape[0]==maxR else 0) for x in Pro])
@@ -259,8 +259,8 @@ if 0:
                 else:
                     plt.plot(S[:,0], S[:,1], 'r')
 
-                if S.shape[0] < maxR:
-                    plt.plot(S[-1,0], S[-1,1], 'oc')
+                # if S.shape[0] < maxR:
+                    # plt.plot(S[-1,0], S[-1,1], 'oc')
 
                 if np.linalg.norm(S[-1,:2]-ctr) <= r:
                     p += 1
@@ -269,9 +269,9 @@ if 0:
             plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
 
             plt.plot(Smean[:,0], Smean[:,1], '-b', linewidth=3.0, label='rollout mean')
-            X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
-            Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
-            plt.fill( X, Y , alpha = 0.5 , color = 'b')
+            # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
+            # Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
+            # plt.fill( X, Y , alpha = 0.5 , color = 'b')
             # plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
             # plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
             plt.title(set_mode + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%")
@@ -286,7 +286,8 @@ if 0:
                     break
 
             fo.write(set_mode + ': ' + str(c) + ', ' + str(p) + '\n')
-        plt.savefig(results_path + 'set' + str(set_num) + '_goal' + str(goal_num) + '.png')    
+        plt.savefig(results_path + 'set' + str(set_num) + '_goal' + str(goal_num) + '.png', dpi=300) 
+        # plt.show()   
     
     fo.write('\n\nPlanning success rate: \n')
     for k in list(PL.keys()):

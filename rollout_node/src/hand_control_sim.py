@@ -9,6 +9,8 @@ import math
 
 state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
 
+OBS = True
+
 class hand_control():
 
     finger_opening_position = np.array([0.005, 0.005])
@@ -168,12 +170,13 @@ class hand_control():
         return {'success': suc}
     
     def moveGripper(self, angles):
+
         if angles[0] > 0.7 or angles[1] > 0.7 or angles[0] < 0.003 or angles[1] < 0.003:
-            rospy.logerr('[RL] Desired angles out of bounds.')
+            rospy.logerr('[hand_control_sim] Desired angles out of bounds.')
             return False
 
         if abs(self.gripper_load[0]) > 120 or abs(self.gripper_load[1]) > 120:
-            rospy.logerr('[RL] Pre-overload.')
+            rospy.logerr('[hand_control_sim] Pre-overload.')
             return False
 
         self.move_servos_srv.call(angles)
