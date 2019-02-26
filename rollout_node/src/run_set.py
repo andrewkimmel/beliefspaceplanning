@@ -10,7 +10,11 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
+<<<<<<< HEAD
 rollout = True
+=======
+rollout = 0
+>>>>>>> ae155b8dca7180d13647eef8f2e6d9156e435d9c
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -42,11 +46,14 @@ if rollout:
                 continue
             pklfile = action_file[:-3] + 'pkl'
 
+<<<<<<< HEAD
             # To distribute rollout files between computers
             ja = pklfile.find('goal')+4
             if int(pklfile[ja]) <= 4:
                 continue
 
+=======
+>>>>>>> ae155b8dca7180d13647eef8f2e6d9156e435d9c
             print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
             A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
