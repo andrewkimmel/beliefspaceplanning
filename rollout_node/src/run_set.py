@@ -10,15 +10,15 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
 # comp = 'juntao'
 comp = 'pracsys'
-Set = '1'
-set_modes = ['mean_only_particles']#['robust_particles_pc_svmHeuristic'],naive_with_svm
+Set = '2'
+set_modes = ['naive_with_svm']#['robust_particles_pc_svmHeuristic'],naive_with_svm, mean_only_particles
 
 ############################# Rollout ################################
 if rollout:
@@ -30,13 +30,20 @@ if rollout:
         path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
         files = glob.glob(path + set_mode + "*.txt")
+        files_pkl = glob.glob(path + set_mode + "*.pkl")
 
         for i in range(len(files)):
 
             action_file = files[i]
             if action_file.find('traj') > 0:
                 continue
+            if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
+                print "O", action_file[:-3]
+                continue
             pklfile = action_file[:-3] + 'pkl'
+
+            print "V",  pklfile
+            continue
 
             print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
@@ -57,16 +64,33 @@ if rollout:
 
 ############################# Plot ################################
 
-# Goal centers - set 1
-C = np.array([
-    [17, 117],
-    [75, 75],
-    [-83, 66],
-    [-52, 77],
-    [48, 114],
-    [-31, 100],
-    [5.4, 108],
-    [87, 65]])
+if Set == '1':
+    # Goal centers - set 1
+    C = np.array([
+        [17, 117],
+        [75, 75],
+        [-83, 66],
+        [-52, 77],
+        [48, 114],
+        [-31, 100],
+        [5.4, 108],
+        [87, 65]])
+
+if Set == '2':
+    # Goal centers - set 1
+    C = np.array([
+        [-24, 115],
+        [58, 76],
+        [-56, 90],
+        [79, 76],
+        [-66, 97],
+        [-46, 77],
+        [-73, 63],
+        [60, 100],
+        [35, 106],
+        [27, 104]])
+
+    Obs = np.array([[42, 90, 15], [-45, 101, 8]])
 
 rp = 7.
 r = 10.
@@ -74,7 +98,7 @@ r = 10.
 set_num = Set
 set_modes = ['robust_particles_pc_svmHeuristic', 'naive_with_svm', 'mean_only_particles']
 
-if not rollout and 1:
+if not rollout and 0:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
     for set_mode in set_modes:
@@ -153,6 +177,13 @@ if not rollout and 1:
             ax.add_artist(goal)
             goal_plan = plt.Circle((ctr[0], ctr[1]), 8, color='w')
             ax.add_artist(goal_plan)
+
+            try:
+                for o in Obs:
+                    obs = plt.Circle(o[:2], o[2])#, zorder=10)
+                    ax.add_artist(obs)
+            except:
+                pass
 
             plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
 
@@ -244,7 +275,7 @@ if 0:
                     i += 1
 
             A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
-            maxR = A.shape[0]-1
+            maxR = A.shape[0]+1
             maxX = np.max([x.shape[0] for x in Pro])
             
             c = np.sum([(1 if x.shape[0]==maxR else 0) for x in Pro])
@@ -278,6 +309,13 @@ if 0:
                 if np.linalg.norm(S[-1,:2]-ctr) <= r:
                     p += 1
             p = float(p) / len(Pro)*100
+
+            try:
+                for o in Obs:
+                    obs = plt.Circle(o[:2], o[2])#, zorder=10)
+                    ax.add_artist(obs)
+            except:
+                pass
 
             plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
 
