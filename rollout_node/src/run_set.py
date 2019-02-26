@@ -63,7 +63,6 @@ if rollout:
 import sys
 sys.path.insert(0, '/home/' + comp + 'src/beliefspaceplanning/toy_simulator/src/')
 import varz as V
-SIZE = V.SIZE
 
     
 
@@ -142,13 +141,13 @@ if 1:
 
             # fig = plt.figure(k)
             fig, ax = plt.subplots()
-            rectangle = plt.Rectangle((-V.B, -1*V.SIZE), 2*V.B, V.SIZE/2, fc=('0.1'))
+            rectangle = plt.Rectangle((-V.B, -1*V.YSIZE), 2*V.B, V.YSIZE/2, fc=('0.1'))
             plt.gca().add_patch(rectangle)
-            rectangle = plt.Rectangle((-V.B, -0.5*V.SIZE), 2*V.B, V.SIZE/2, fc=('0.3'))
+            rectangle = plt.Rectangle((-V.B, -0.5*V.YSIZE), 2*V.B, V.YSIZE/2, fc=('0.3'))
             plt.gca().add_patch(rectangle)
-            rectangle = plt.Rectangle((-V.B, -0.), 2*V.B, V.SIZE/2, fc=('0.5'))
+            rectangle = plt.Rectangle((-V.B, -0.), 2*V.B, V.YSIZE/2, fc=('0.5'))
             plt.gca().add_patch(rectangle)
-            rectangle = plt.Rectangle((-V.B, 0.5*V.SIZE), 2*V.B, V.SIZE/2, fc=('0.7'))
+            rectangle = plt.Rectangle((-V.B, 0.5*V.YSIZE), 2*V.B, V.YSIZE/2, fc=('0.7'))
             plt.gca().add_patch(rectangle)
 
             p = 0
@@ -179,7 +178,7 @@ if 1:
             # plt.axis('equal')
 
             plt.axis('square')
-            plt.axis([-SIZE, SIZE, -SIZE, SIZE])
+            plt.axis([-V.XSIZE, V.XSIZE, -V.YSIZE, V.YSIZE])
             plt.xlabel('x')
             plt.ylabel('y')
 

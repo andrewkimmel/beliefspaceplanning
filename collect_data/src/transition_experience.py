@@ -7,13 +7,13 @@ from scipy.io import savemat
 from scipy import signal
 from sklearn.neighbors import KDTree #pip install -U scikit-learn
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
-import varz
+sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+import var
 
 recorder_data = True
 
 class transition_experience():
-    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
 
     def __init__(self, Load=True, discrete = False, postfix=''):
@@ -98,7 +98,7 @@ class transition_experience():
         plt.plot(states[:,0],states[:,1],'.y')
         plt.plot(failed_states[:,0],failed_states[:,1],'.r')
         plt.title('Object position')
-        plt.xlim(-1., 1.)
+        plt.xlim(-1.1, 1.1)
         plt.ylim(-1., 1.)
         
         plt.show()
