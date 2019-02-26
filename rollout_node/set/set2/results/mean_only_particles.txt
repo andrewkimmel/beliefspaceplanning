@@ -1,0 +1,10 @@
+mean_only_particles_goal5_run0_plan: 0.0, 0.0
+mean_only_particles_goal0_run1_plan: 100.0, 100.0
+mean_only_particles_goal4_run0_plan: 0.0, 0.0
+mean_only_particles_goal0_run0_plan: 100.0, 100.0
+mean_only_particles_goal3_run0_plan: 55.5555555556, 55.5555555556
+mean_only_particles_goal7_run0_plan: 100.0, 100.0
+mean_only_particles_goal6_run0_plan: 0.0, 0.0
+mean_only_particles_goal8_run0_plan: 100.0, 100.0
+mean_only_particles_goal1_run0_plan: 22.2222222222, 11.1111111111
+mean_only_particles_goal9_run0_plan: 100.0, 0.0
