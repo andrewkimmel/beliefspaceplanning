@@ -10,7 +10,8 @@ import pickle
 from rollout_node.srv import gets
 
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+# sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 
@@ -86,7 +87,8 @@ class rollout():
 
             self.rate.sleep()
 
-        file_pi = open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
+        # file_pi = open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
+        file_pi = open('/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/rollout_tmp.pkl', 'wb')
         pickle.dump(self.rollout_transition, file_pi)
         file_pi.close()
 
@@ -109,7 +111,7 @@ class rollout():
         actions_nom = np.array(req.actions).reshape(-1, self.action_dim)
         success = True
         success = self.run_rollout(actions_nom)
-
+        print self.states.shape, actions_nom.shape
         return {'states': self.states.reshape((-1,)), 'actions_res': self.actions, 'success' : success}
 
     def CallbackRolloutFile(self, req):

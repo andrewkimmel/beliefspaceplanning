@@ -15,8 +15,9 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+# comp = 'juntao/catkin_ws/'
+# comp = 'pracsys/catkin_ws/'
+comp = 'akimmel/repositories/pracsys/'
 Set = '1'
 K = 10 # Number of rollouts
 
@@ -26,12 +27,12 @@ set_modes = ['robust_particles_pc_svmHeuristic', 'mean_only_particles', 'naive_w
 if rollout:
     rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
     rospy.init_node('run_rollout_set', anonymous=True)
-    state_dim = 4
+    state_dim = 2
     
     for set_mode in set_modes:
-        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
+        path = '/home/' + comp + 'src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
-        files = glob.glob(path + set_mode + "*.txt")
+        files = glob.glob(path + set_mode + "*plan.txt")
 
         for i in range(len(files)):
 
@@ -60,25 +61,18 @@ if rollout:
 ############################# Plot ################################
 
 # Goal centers - set 1
-C = np.array([
-    [17, 117],
-    [75, 75],
-    [-83, 66],
-    [-52, 77],
-    [48, 114],
-    [-31, 100],
-    [5.4, 108],
-    [87, 65]])
+C = np.array(
+    [[0.9,-0.9]])
 
-r = 7
+r = 0.1
 
-results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results/'
+results_path = '/home/' + comp + 'src/beliefspaceplanning/rollout_node/set/results/'
 
-if 0:
-    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/results_goal/'
+if 1:
+    results_path = '/home/' + comp + 'src/beliefspaceplanning/rollout_node/set/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 
-    fo  = open(results_path + 'set' + str(set_num) + '.txt', 'wt') 
+    fo  = open(results_path + 'set' + Set + '.txt', 'wt') 
 
     for goal_num in range(C.shape[0]):
         ctr = C[goal_num]
@@ -189,7 +183,7 @@ if 0:
                     break
 
             fo.write(set_mode + ': ' + str(c) + ', ' + str(p) + '\n')
-        plt.savefig(results_path + 'set' + str(set_num) + '_goal' + str(goal_num) + '.png')    
+        plt.savefig(results_path + 'set' + Set + '_goal' + str(goal_num) + '.png')    
     
     fo.write('\n\nPlanning success rate: \n')
     for k in list(PL.keys()):

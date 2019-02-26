@@ -264,29 +264,40 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         S = np.array(req.states).reshape(-1, self.state_dim)
         a = np.array(req.action)
 
-        # Check which particles failed
-        failed_inx = self.batch_svm_check(S, a)
-        node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+        #If only one particle, perform single transition
+        if (len(S) == 1):
+            p, _ = self.probability(S[0,:], a)
+            node_probability = 1 - p
+            sa = np.concatenate((S[0,:], a), axis=0)
+            sa = self.normz( sa )    
+            sa_normz = self.one_predict(sa)
+            s_next = self.denormz( sa_normz )
 
-        # print node_probability
+            return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability}
+        else:
+            # Check which particles failed
+            failed_inx = self.batch_svm_check(S, a)
+            node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
 
-        # Remove failed particles by duplicating good ones
-        if len(failed_inx):
-            good_inx = np.delete( np.array(range(S.shape[0])), failed_inx )
-            if len(good_inx) == 0: # All particles failed
-                S_next = []
-                mean = [0,0]
-                return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability}
+            # print node_probability
 
-            dup_inx = np.random.choice(len(good_inx), size=len(failed_inx), replace=True)
-            S[failed_inx, :] = S[dup_inx,:]
+            # Remove failed particles by duplicating good ones
+            if len(failed_inx):
+                good_inx = np.delete( np.array(range(S.shape[0])), failed_inx )
+                if len(good_inx) == 0: # All particles failed
+                    S_next = []
+                    mean = [0,0]
+                    return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability}
 
-        # Propagate
-        S_next = self.batch_propa(S, a)
+                dup_inx = np.random.choice(len(good_inx), size=len(failed_inx), replace=True)
+                S[failed_inx, :] = S[dup_inx,:]
 
-        mean = self.get_mean_shift(S_next)
-        
-        return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability}
+            # Propagate
+            S_next = self.batch_propa(S, a)
+
+            mean = self.get_mean_shift(S_next)
+            
+            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability}
 
     # Predicts the next step by calling the GP class - repeats the same action 'n' times
     def GetTransitionRepeat(self, req):

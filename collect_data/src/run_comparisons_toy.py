@@ -71,8 +71,8 @@ seed = [
 ## ROBUST PLUS GOALS part 4 - Avishai changed this
 
 nodes =[
-# "robust_particles_pc_svmHeuristic",
-# "naive_with_svm",
+"robust_particles_pc_svmHeuristic",
+"naive_with_svm",
 "mean_only_particles",
 ]
 
@@ -82,19 +82,21 @@ goals = [
 # "0.9,0"
 ]
 
-starts = [
-"-.95, -.95",
-# "0,0",
-# "-.95, .95"
-]
+# starts = [
+# "-.9, -.9",
+# # "0,0",
+# # "-.95, .95"
+# ]
+
+s= "-.9,-.9"
 
 GOAL_RADIUS = .101
-TOTAL_PARTICLES = 1000
-# PROBABILITY_CONSTRAINT = 0.7
-PROBABILITY_CONSTRAINT = 0.85
+TOTAL_PARTICLES = 250
+PROBABILITY_CONSTRAINT = 0.7
+# PROBABILITY_CONSTRAINT = 0.85
 # PROBABILITY_CONSTRAINT = 0.6
 SUCCESS_PROBABILITY_CONSTRAINT = 0.3
-FAILURE_CONSTANT = 200.0
+FAILURE_CONSTANT = 10.0
 
 if __name__ == "__main__":
     for x in range(20):
@@ -104,7 +106,7 @@ if __name__ == "__main__":
                 random_seed = "random_seed:=" + str(seed[x])
                 node_name = "node:="+ n + "_goal" + str(count) + "_run" + str(x)
                 goal_state = "goal_state:="+ g
-                # start_state = "start_state:="+ s
+                start_state = "start_state:="+ s
                 total_particles = "total_particles:="
                 probability_constraint = "minimum_drop_prob:="
                 success_constraint = "minimum_success_prob:=" + str(SUCCESS_PROBABILITY_CONSTRAINT)
@@ -139,5 +141,5 @@ if __name__ == "__main__":
                 experiment_filename="experiment_filename:="+n+".txt"
                 print node_name, goal_state, probability_constraint
                 goal_radius="goal_radius:=" + str(GOAL_RADIUS)
-                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_toy_template.launch", node_name, goal_state, total_particles, probability_constraint, success_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, random_seed])
+                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_toy_template.launch", node_name, start_state, goal_state, total_particles, probability_constraint, success_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, random_seed])
             count = count + 1
