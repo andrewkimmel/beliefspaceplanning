@@ -10,7 +10,7 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -38,12 +38,8 @@ if rollout:
             if action_file.find('traj') > 0:
                 continue
             if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
-                print "O", action_file[:-3]
                 continue
             pklfile = action_file[:-3] + 'pkl'
-
-            print "V",  pklfile
-            continue
 
             print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
