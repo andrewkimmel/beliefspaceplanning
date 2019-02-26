@@ -10,15 +10,15 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = 0
+rollout = True
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
-Set = '1'
-set_modes = ['mean_only_particles']#['robust_particles_pc_svmHeuristic'],naive_with_svm
+comp = 'juntao'
+# comp = 'pracsys'
+Set = '2'
+set_modes = ['naive_with_svm']#['robust_particles_pc_svmHeuristic'],naive_with_svm, mean_only_particles
 
 ############################# Rollout ################################
 if rollout:
@@ -74,7 +74,7 @@ r = 10.
 set_num = Set
 set_modes = ['robust_particles_pc_svmHeuristic', 'naive_with_svm', 'mean_only_particles']
 
-if not rollout and 1:
+if not rollout and 0:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
     for set_mode in set_modes:

@@ -182,6 +182,7 @@ class hand_control():
         self.move_servos_srv.call(angles)
 
         if OBS and (np.linalg.norm(self.obj_pos-np.array([42, 90])) < 15. or np.linalg.norm(self.obj_pos-np.array([-45, 101])) < 8.):
+            print('[hand_control_sim] Collision.')
             return False
 
         return True
