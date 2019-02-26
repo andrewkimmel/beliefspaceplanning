@@ -15,8 +15,8 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao/catkin_ws/'
-comp = 'pracsys/catkin_ws/'
+comp = 'juntao/catkin_ws/'
+#comp = 'pracsys/catkin_ws/'
 # comp = 'akimmel/repositories/pracsys/'
 Set = '1'
 K = 10 # Number of rollouts
@@ -59,6 +59,13 @@ if rollout:
                         pickle.dump(Pro, f)
 
 ############################# Plot ################################
+
+import sys
+sys.path.insert(0, '/home/' + comp + 'src/beliefspaceplanning/toy_simulator/src/')
+import varz as V
+SIZE = V.SIZE
+
+    
 
 # Goal centers - set 1
 C = np.array(
@@ -135,6 +142,15 @@ if 1:
 
             # fig = plt.figure(k)
             fig, ax = plt.subplots()
+            rectangle = plt.Rectangle((-V.B, -1*V.SIZE), 2*V.B, V.SIZE/2, fc=('0.1'))
+            plt.gca().add_patch(rectangle)
+            rectangle = plt.Rectangle((-V.B, -0.5*V.SIZE), 2*V.B, V.SIZE/2, fc=('0.3'))
+            plt.gca().add_patch(rectangle)
+            rectangle = plt.Rectangle((-V.B, -0.), 2*V.B, V.SIZE/2, fc=('0.5'))
+            plt.gca().add_patch(rectangle)
+            rectangle = plt.Rectangle((-V.B, 0.5*V.SIZE), 2*V.B, V.SIZE/2, fc=('0.7'))
+            plt.gca().add_patch(rectangle)
+
             p = 0
             for S in Pro:
                 plt.plot(S[:,0], S[:,1], 'r')
@@ -146,13 +162,12 @@ if 1:
             p = float(p) / len(Pro)*100
             print("Reached goal success rate: " + str(p) + "%")
 
+
             plt.plot(ctr[0], ctr[1], 'om')
             goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
             ax.add_artist(goal)
-            goal_plan = plt.Circle((ctr[0], ctr[1]), 8, color='w')
-            ax.add_artist(goal_plan)
 
-            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
+            plt.plot(Straj[:,0], Straj[:,1], '-y', linewidth=3.5, label='Planned path')
 
             plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
             # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
@@ -161,7 +176,13 @@ if 1:
             # plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
             # plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
             plt.title(file_name + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%")
-            plt.axis('equal')
+            # plt.axis('equal')
+
+            plt.axis('square')
+            plt.axis([-SIZE, SIZE, -SIZE, SIZE])
+            plt.xlabel('x')
+            plt.ylabel('y')
+
 
             for i in range(len(pklfile)-1, 0, -1):
                 if pklfile[i] == '/':
@@ -169,10 +190,10 @@ if 1:
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png')
+            # plt.show()
 
         fo.close()
         
-    # plt.show()
 
 # Compare three methods
 if 0:
