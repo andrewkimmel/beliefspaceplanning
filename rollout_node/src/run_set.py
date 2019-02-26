@@ -16,8 +16,8 @@ rollout = 0
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
 # comp = 'juntao/catkin_ws/'
-# comp = 'pracsys/catkin_ws/'
-comp = 'akimmel/repositories/pracsys/'
+comp = 'pracsys/catkin_ws/'
+# comp = 'akimmel/repositories/pracsys/'
 Set = '1'
 K = 10 # Number of rollouts
 
@@ -66,10 +66,117 @@ C = np.array(
 
 r = 0.1
 
-results_path = '/home/' + comp + 'src/beliefspaceplanning/rollout_node/set/results/'
+path = '/home/' + comp + 'src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
+# Plot individual solutions
 if 1:
-    results_path = '/home/' + comp + 'src/beliefspaceplanning/rollout_node/set/results_goal/'
+    results_path = '/home/' + comp + 'src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
+
+    for set_mode in set_modes:
+
+        fo  = open(results_path + set_mode + '.txt', 'wt') 
+
+        files = glob.glob(path + "*.pkl")
+
+        for k in range(len(files)):
+
+            pklfile = files[k]
+            if pklfile.find(set_mode) < 0:
+                continue
+            ctr = C[int(pklfile[pklfile.find('goal')+4]), :] # Goal center
+            print ctr
+            # exit(1)
+
+            for j in range(len(pklfile)-1, 0, -1):
+                if pklfile[j] == '/':
+                    break
+            file_name = pklfile[j+1:-4]
+
+            trajfile = pklfile[:-8] + 'traj.txt'
+            Straj = np.loadtxt(trajfile, delimiter=',', dtype=float)[:,:2]
+
+            print('Plotting file number ' + str(k+1) + ': ' + file_name)
+            
+            with open(pklfile) as f:  
+                Pro = pickle.load(f)
+
+            i = 0
+            while i < len(Pro):
+                if Pro[i].shape[0] == 1:
+                    del Pro[i]
+                else:
+                    i += 1 
+
+            A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
+            maxR = A.shape[0]+1
+            maxX = np.max([x.shape[0] for x in Pro])
+            
+            c = np.sum([(1 if x.shape[0]==maxR else 0) for x in Pro])
+
+            # print maxR, maxX
+            # for s in Pro:
+            #     print s.shape
+            # print "-----"
+
+            Smean = []
+            Sstd = []
+            for i in range(min(maxR, maxX)):
+                F = []
+                for j in range(len(Pro)): 
+                    if Pro[j].shape[0] > i:
+                        F.append(Pro[j][i])
+                Smean.append( np.mean(np.array(F), axis=0) )
+                Sstd.append( np.std(np.array(F), axis=0) )
+            Smean = np.array(Smean)
+            Sstd = np.array(Sstd)
+            
+            c = float(c) / len(Pro)*100
+            print("Finished episode success rate: " + str(c) + "%")
+
+            # fig = plt.figure(k)
+            fig, ax = plt.subplots()
+            p = 0
+            for S in Pro:
+                plt.plot(S[:,0], S[:,1], 'r')
+                if S.shape[0] < maxR:
+                    plt.plot(S[-1,0], S[-1,1], 'oc')
+
+                if np.linalg.norm(S[-1,:2]-ctr) <= r:
+                    p += 1
+            p = float(p) / len(Pro)*100
+            print("Reached goal success rate: " + str(p) + "%")
+
+            plt.plot(ctr[0], ctr[1], 'om')
+            goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
+            ax.add_artist(goal)
+            goal_plan = plt.Circle((ctr[0], ctr[1]), 8, color='w')
+            ax.add_artist(goal_plan)
+
+            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
+
+            plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
+            # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
+            # Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
+            # plt.fill( X, Y , alpha = 0.5 , color = 'b')
+            # plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
+            # plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
+            plt.title(file_name + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%")
+            plt.axis('equal')
+
+            for i in range(len(pklfile)-1, 0, -1):
+                if pklfile[i] == '/':
+                    break
+
+            fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
+            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png')
+
+        fo.close()
+        
+    # plt.show()
+
+# Compare three methods
+if 0:
+    results_path = '/home/' + comp + 'src/beliefspaceplanning/rollout_node/set/set' + Set + '/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 
     fo  = open(results_path + 'set' + Set + '.txt', 'wt') 
@@ -84,8 +191,6 @@ if 1:
         a = 0
         for set_mode in set_modes:
 
-            path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + Set + '/'
-
             files = glob.glob(path + set_mode + '*.pkl')
 
             found = False
@@ -96,6 +201,7 @@ if 1:
                 if int(ja) == goal_num:
                     found = True
                     break
+
 
             n = len(fig.axes)
             for i in range(n):
