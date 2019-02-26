@@ -8,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import var
 
+OBS = True
 
 class svm_failure():
 
@@ -44,6 +45,8 @@ class svm_failure():
         print 'SVM ready with %d classes: '%len(self.clf.classes_) + str(self.clf.classes_)
 
     def probability(self, s, a):
+        if OBS and self.obstacle_check(s):
+            return 1., True
 
         sa = np.concatenate((s,a), axis=0).reshape(1,-1)
 
@@ -53,4 +56,14 @@ class svm_failure():
         p = self.clf.predict_proba(sa)[0][1]
 
         return p, self.clf.predict(sa)
+
+    def obstacle_check(self, s):
+        # (42, 90), 15
+        # (-45, 101), 8
+
+        if np.linalg.norm(s[:2]-np.array([42, 90])) < 15. or np.linalg.norm(s[:2]-np.array([-45, 101])) < 8.:
+            return True
+        else:
+            return False
+
 

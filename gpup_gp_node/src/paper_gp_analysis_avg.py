@@ -148,7 +148,7 @@ Sstd = np.array(Sstd)
 # plt.show()
 # exit(1)
 
-if 1:
+if 0:
     D = []
     for l in range(20):
         Np = 200 # Number of particles

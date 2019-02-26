@@ -74,9 +74,9 @@ from collect_data.srv import sparse_goal
 # ]
 
 nodes =[
-#"robust_particles_pc_svmHeuristic", # Avishai: I removed the set for rollout
+# "robust_particles_pc_svmHeuristic", # Avishai: I removed the set for rollout
 "naive_with_svm",
-"mean_only_particles",
+# "mean_only_particles",
 ]
 ## ROBUST PLUS GOALS part 1
 # goals = [
@@ -155,16 +155,31 @@ seed = [
 
 
 ## Set 1 - Don't delete!!!
+# goals = [
+# "17, 117,  16,  16",
+# "75, 75,  16,  16",
+# "-83, 66,  16,  16",
+# "-52, 77,  16,  16",
+# "48, 114,  16,  16",
+# "-31, 100,  16,  16",
+# "5.4, 108,  16,  16",
+# "87, 65,  16,  16",
+# ]
+
+## Set 2 - Don't delete!!!
 goals = [
-"17, 117,  16,  16",
-"75, 75,  16,  16",
-"-83, 66,  16,  16",
-"-52, 77,  16,  16",
-"48, 114,  16,  16",
-"-31, 100,  16,  16",
-"5.4, 108,  16,  16",
-"87, 65,  16,  16",
+"-24, 115,  16,  16",
+" 58, 76,  16,  16",
+"-56, 90,  16,  16",
+" 79, 76,  16,  16",
+"-66, 97,  16,  16",
+"-46, 77,  16,  16",
+"-73, 63,  16,  16",
+" 60, 100,  16,  16",
+" 35, 106,  16,  16",
+" 27, 104,  16,  16",
 ]
+
 
 GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
