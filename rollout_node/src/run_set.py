@@ -19,7 +19,7 @@ comp = 'juntao'
 # comp = 'pracsys'
 
 Set = '1'
-set_modes = ['mean_only_particles']#['robust_particles_pc_svmHeuristic'],naive_with_svm, mean_only_particles
+set_modes = ['naive_with_svm']#['robust_particles_pc_svmHeuristic'],naive_with_svm, mean_only_particles
 
 ############################# Rollout ################################
 if rollout:
