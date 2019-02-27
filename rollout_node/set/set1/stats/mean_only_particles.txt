@@ -9,3 +9,31 @@
 /mean_only_particles_goal8_run0,0.360244,33.7019,0,0,9
 /mean_only_particles_goal9_run0,346.072,170.257,0,0,11152
 /mean_only_particles_goal0_run1,1.35192,21.2847,0,0,8
+/mean_only_particles_goal1_run1,192.806,192.789,0,0,10050
+/mean_only_particles_goal2_run1, 0.0, 0.0, 0.0, 0.0, 14672
+/mean_only_particles_goal3_run1,1.46701,92.3346,0,0,3416
+/mean_only_particles_goal4_run1, 0.0, 0.0, 0.0, 0.0, 15397
+/mean_only_particles_goal5_run1,436.039,161.131,0,0,4464
+/mean_only_particles_goal6_run1, 0.0, 0.0, 0.0, 0.0, 14643
+/mean_only_particles_goal7_run1,0.642762,61.5236,0,0,16
+/mean_only_particles_goal8_run1,0.364557,33.7215,0,0,9
+/mean_only_particles_goal9_run1,125.67,154.921,0,0,10139
+/mean_only_particles_goal0_run2,1.96694,21.1477,0,0,8
+/mean_only_particles_goal1_run2,588.048,194.887,0,0,7206
+/mean_only_particles_goal2_run2, 0.0, 0.0, 0.0, 0.0, 15653
+/mean_only_particles_goal3_run2,1.32829,91.4741,0,0,3344
+/mean_only_particles_goal4_run2, 0.0, 0.0, 0.0, 0.0, 15434
+/mean_only_particles_goal5_run2, 0.0, 0.0, 0.0, 0.0, 14706
+/mean_only_particles_goal6_run2,421.068,188.9,0,0,7570
+/mean_only_particles_goal7_run2,0.637226,61.4941,0,0,16
+/mean_only_particles_goal8_run2,0.371352,33.6918,0,0,9
+/mean_only_particles_goal9_run2,285.872,157.396,0,0,10232
+/mean_only_particles_goal0_run3,1.26994,30.5762,0,0,7
+/mean_only_particles_goal1_run3,217.038,193.279,0,0,11083
+/mean_only_particles_goal2_run3, 0.0, 0.0, 0.0, 0.0, 14625
+/mean_only_particles_goal3_run3,0.961714,90.2764,0,0,1470
+/mean_only_particles_goal4_run3, 0.0, 0.0, 0.0, 0.0, 15175
+/mean_only_particles_goal5_run3,500.359,159.22,0,0,4424
+/mean_only_particles_goal6_run3, 0.0, 0.0, 0.0, 0.0, 15180
+/mean_only_particles_goal7_run3,0.635483,61.5626,0,0,16
+/mean_only_particles_goal8_run3,0.369524,33.6509,0,0,9
