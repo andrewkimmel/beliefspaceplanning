@@ -10,13 +10,13 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = True
+rollout = False
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 Set = '1'
 set_modes = ['naive_with_svm']#['robust_particles_pc_svmHeuristic'],naive_with_svm, mean_only_particles
@@ -67,19 +67,19 @@ if rollout:
 
 ############################# Plot ################################
 
-if Set == '1':
-    # Goal centers - set 1
-    C = np.array([
-        [17, 117],
-        [75, 75],
-        [-83, 66],
-        [-52, 77],
-        [48, 114],
-        [-31, 100],
-        [5.4, 108],
-        [87, 65]])
+# if Set == '1':
+#     # Goal centers - set 1
+#     C = np.array([
+#         [17, 117],
+#         [75, 75],
+#         [-83, 66],
+#         [-52, 77],
+#         [48, 114],
+#         [-31, 100],
+#         [5.4, 108],
+#         [87, 65]])
 
-if Set == '2':
+if Set == '1':
     # Goal centers - set 1
     C = np.array([
         [-24, 115],
@@ -101,7 +101,7 @@ r = 10.
 set_num = Set
 set_modes = ['robust_particles_pc_svmHeuristic', 'naive_with_svm', 'mean_only_particles']
 
-if not rollout and 0:
+if not rollout and 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
     for set_mode in set_modes:
@@ -210,7 +210,7 @@ if not rollout and 0:
         
     # plt.show()
 
-if 0:
+if 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 

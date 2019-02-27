@@ -1,0 +1,56 @@
+
+goal 0: [-24 115]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 100.0, 100.0
+mean_only_particles: 100.0, 100.0
+
+goal 1: [58 76]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 100.0, 0.0
+mean_only_particles: 100.0, 100.0
+
+goal 2: [-56  90]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 0.0, 0.0
+mean_only_particles: No plan
+
+goal 3: [79 76]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 100.0, 100.0
+mean_only_particles: 100.0, 100.0
+
+goal 4: [-66  97]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 44.4444444444, 44.4444444444
+mean_only_particles: No plan
+
+goal 5: [-46  77]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 0.0, 0.0
+mean_only_particles: No plan
+
+goal 6: [-73  63]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 0.0, 0.0
+mean_only_particles: 0.0, 0.0
+
+goal 7: [ 60 100]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 100.0, 100.0
+mean_only_particles: 100.0, 100.0
+
+goal 8: [ 35 106]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 100.0, 100.0
+mean_only_particles: 100.0, 100.0
+
+goal 9: [ 27 104]
+robust_particles_pc_svmHeuristic: No plan
+naive_with_svm: 100.0, 0.0
+mean_only_particles: 55.5555555556, 0.0
+
+
+Planning success rate: 
+robust_particles_pc_svmHeuristic: 0.0
+mean_only_particles: 53.8461538462
+naive_with_svm: 76.9230769231
