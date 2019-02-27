@@ -16,7 +16,7 @@ class SquareEnv():
 
     def reset(self):
         # self.state = np.random.uniform(-self.size, self.size, 2) # Start from a random position
-        self.state = np.array([-0.95,-0.95]) + np.random.normal(0, V.START_STD, 2) 
+        self.state = np.array([-0.9,-0.9]) + np.random.normal(0, V.START_STD, 2) 
         self.fail = False
 
         # self.visited_states = np.copy(self.state.reshape(1,2))
