@@ -121,7 +121,7 @@ class hand_control():
             self.moveGripper(self.finger_closing_position)
             rospy.sleep(0.7)
             self.move_lift_srv.call()
-            rospy.sleep(1.0)
+            rospy.sleep(2.0)
             ratein.sleep()
             if self.object_grasped:# and self.lift_s, self.obj_veltatus:
                 if self.wait2initialGrasp():
@@ -181,7 +181,7 @@ class hand_control():
 
         self.move_servos_srv.call(angles)
 
-        if OBS and (np.linalg.norm(self.obj_pos-np.array([42, 90])) < 15. or np.linalg.norm(self.obj_pos-np.array([-45, 101])) < 8.):
+        if OBS and (np.linalg.norm(self.obj_pos-np.array([42, 90])) < 13.04 or np.linalg.norm(self.obj_pos-np.array([-45, 101])) < 8.):
             print('[hand_control_sim] Collision.')
             return False
 

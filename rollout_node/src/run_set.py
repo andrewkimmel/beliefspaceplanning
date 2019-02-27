@@ -10,17 +10,13 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-<<<<<<< HEAD
-rollout = True
-=======
-rollout = 0
->>>>>>> ae155b8dca7180d13647eef8f2e6d9156e435d9c
+rollout = False
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 Set = '2'
 set_modes = ['naive_with_svm']#['robust_particles_pc_svmHeuristic'],naive_with_svm, mean_only_particles
@@ -46,14 +42,6 @@ if rollout:
                 continue
             pklfile = action_file[:-3] + 'pkl'
 
-<<<<<<< HEAD
-            # To distribute rollout files between computers
-            ja = pklfile.find('goal')+4
-            if int(pklfile[ja]) <= 4:
-                continue
-
-=======
->>>>>>> ae155b8dca7180d13647eef8f2e6d9156e435d9c
             print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
             A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
@@ -99,7 +87,7 @@ if Set == '2':
         [35, 106],
         [27, 104]])
 
-    Obs = np.array([[42, 90, 15], [-45, 101, 8]])
+    Obs = np.array([[42, 90, 13.63], [-45, 101, 8]])
 
 rp = 7.
 r = 10.
@@ -107,7 +95,7 @@ r = 10.
 set_num = Set
 set_modes = ['robust_particles_pc_svmHeuristic', 'naive_with_svm', 'mean_only_particles']
 
-if not rollout and 0:
+if not rollout and 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
     for set_mode in set_modes:
@@ -216,7 +204,7 @@ if not rollout and 0:
         
     # plt.show()
 
-if 0:
+if 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 

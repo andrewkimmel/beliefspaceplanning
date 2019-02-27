@@ -61,7 +61,7 @@ class svm_failure():
         # (42, 90), 15
         # (-45, 101), 8
 
-        if np.linalg.norm(s[:2]-np.array([42, 90])) < 15. or np.linalg.norm(s[:2]-np.array([-45, 101])) < 8.:
+        if np.linalg.norm(s[:2]-np.array([42, 90])) < 1.15*13.04 or np.linalg.norm(s[:2]-np.array([-45, 101])) < 1.15*8.:
             return True
         else:
             return False

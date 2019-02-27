@@ -20,6 +20,7 @@ class rollout():
     actions = []
     plot_num = 0
     drop = True
+    obj_pos = np.array([0., 0.])
 
     def __init__(self):
         rospy.init_node('rollout_node', anonymous=True)
@@ -29,6 +30,7 @@ class rollout():
         rospy.Service('/rollout/plot', plotReq, self.Plot)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
         rospy.Subscriber('/hand_control/gripper_status', String, self.callbackGripperStatus)
+        rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
         self.action_pub = rospy.Publisher('/collect/gripper_action', Float32MultiArray, queue_size = 10)
 
         self.obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
@@ -53,9 +55,14 @@ class rollout():
         self.rollout_transition = []
 
         # Reset gripper
-        self.reset_srv()
-        while not self.gripper_closed:
-            self.rate.sleep()
+        while 1:
+            self.reset_srv()
+            while not self.gripper_closed:
+                self.rate.sleep()
+
+            # Verify starting state
+            if np.abs(self.obj_pos[0]-3.30313851e-02) < 0.01831497*2. and np.abs(self.obj_pos[1]-1.18306790e+02) < 0.10822673*2.:
+                break
         
         print("[rollout] Rolling-out...")
 
@@ -131,6 +138,10 @@ class rollout():
 
     def callbackDrop(self, msg):
         self.drop = msg.data
+
+    def callbackObj(self, msg):
+        Obj_pos = np.array(msg.data)
+        self.obj_pos = Obj_pos[:2] * 1000
 
     def CallbackRollout(self, req):
         

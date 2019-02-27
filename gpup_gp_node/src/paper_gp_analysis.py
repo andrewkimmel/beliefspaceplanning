@@ -165,8 +165,8 @@ Smean = Pro[0]
 # plt.show()
 # exit(1)
 
-if 0:   
-    Np = 200 # Number of particles
+if 1:   
+    Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
 
