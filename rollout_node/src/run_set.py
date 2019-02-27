@@ -18,7 +18,7 @@ rollout = False
 # comp = 'juntao'
 comp = 'pracsys'
 
-Set = '2'
+Set = '1'
 set_modes = ['naive_with_svm']#['robust_particles_pc_svmHeuristic'],naive_with_svm, mean_only_particles
 
 ############################# Rollout ################################
@@ -41,6 +41,12 @@ if rollout:
             if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
                 continue
             pklfile = action_file[:-3] + 'pkl'
+
+
+            # To distribute rollout files between computers
+            # ja = pklfile.find('goal')+4
+            # if int(pklfile[ja]) <= 4:
+            #     continue
 
             print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
