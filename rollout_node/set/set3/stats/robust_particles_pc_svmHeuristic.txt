@@ -1,0 +1,5 @@
+/robust_particles_pc_svmHeuristic_goal0_run0, 0.0, 0.0, 0.0, 0.0, 2464
+/robust_particles_pc_svmHeuristic_goal1_run0,34.7867,66.1125,0,0,1068
+/robust_particles_pc_svmHeuristic_goal2_run0,400.818,152.311,0,0,1693
+/robust_particles_pc_svmHeuristic_goal3_run0,67.1545,79.1132,0,0,813
+/robust_particles_pc_svmHeuristic_goal4_run0,4.40372,17.7114,0,0,8

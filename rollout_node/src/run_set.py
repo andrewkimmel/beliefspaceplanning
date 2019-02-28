@@ -10,13 +10,13 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = True
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 Set = '3'
 set_modes = ['robust_particles_pc_svmHeuristic','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
@@ -64,9 +64,8 @@ if rollout:
 
                     Pro.append(Sro)
 
-                    if not (j % 2):
-                        with open(pklfile, 'w') as f: 
-                            pickle.dump(Pro, f)
+                    with open(pklfile, 'w') as f: 
+                        pickle.dump(Pro, f)
 
 ############################# Plot ################################
 
@@ -82,8 +81,8 @@ if rollout:
 #         [5.4, 108],
 #         [87, 65]])
 
-if Set == '1':
-    # Goal centers - set 1
+if Set == '1' or Set == '2':
+    # Goal centers
     C = np.array([
         [-24, 115],
         [58, 76],
@@ -97,6 +96,21 @@ if Set == '1':
         [27, 104]])
 
     Obs = np.array([[42, 90, 12], [-45, 101, 7]])
+
+if Set == '3' or Set == '4':
+    # Goal centers
+    C = np.array([
+        [43, 101],
+        [-40, 111],
+        [56, 108],
+        [-22, 107],
+        [22, 116],
+        [-52, 98],
+        [36, 122],
+        [-32, 125],
+        [-18, 120]])
+
+    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
 rp = 7.
 r = 10.

@@ -187,7 +187,7 @@ seed = [
 
 ## Set 3 & 4 - Don't delete!!!
 goals = [
-"43, 101,  16,  16",
+# "43, 101,  16,  16",
 "-40, 111,  16,  16",
 "56, 108,  16,  16",
 "-22, 107,  16,  16",
@@ -197,7 +197,6 @@ goals = [
 "-32, 125,  16,  16",
 "-18, 120,  16,  16",
 ]
-
 
 NUM_RUNS = 3
 
@@ -211,7 +210,7 @@ FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
     for x in range(3):
-        count = 0
+        count = 1
         for g in goals:
             for n in nodes:
                 random_seed = "random_seed:=" + str(seed[x])
