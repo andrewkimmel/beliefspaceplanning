@@ -9,8 +9,6 @@ import math
 
 state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
 
-OBS = True
-
 class hand_control():
 
     finger_opening_position = np.array([0.005, 0.005])
@@ -30,6 +28,7 @@ class hand_control():
     obj_vel = [0.,0.]
     R = []
     count = 1
+    OBS = True
 
     gripper_status = 'open'
 
@@ -181,7 +180,11 @@ class hand_control():
 
         self.move_servos_srv.call(angles)
 
-        if OBS and (np.linalg.norm(self.obj_pos-np.array([42, 90])) < 13.04 or np.linalg.norm(self.obj_pos-np.array([-45, 101])) < 8.):
+        # Obs1 = np.array([42, 90, 12.])
+        # Obs2 = np.array([-45, 101, 7.])
+        Obs1 = np.array([33, 110, 4.]) # Right
+        Obs2 = np.array([-27, 118, 2.5]) # Left
+        if self.OBS and (np.linalg.norm(self.obj_pos-Obs1[:2]) < Obs1[2] or np.linalg.norm(self.obj_pos-Obs2[:2]) < Obs2[2]):
             print('[hand_control_sim] Collision.')
             return False
 

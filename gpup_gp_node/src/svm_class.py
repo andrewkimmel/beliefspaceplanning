@@ -8,11 +8,10 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import var
 
-OBS = True
-
 class svm_failure():
 
     r = 0.1
+    OBS = True
 
     def __init__(self, discrete = True):
 
@@ -45,7 +44,7 @@ class svm_failure():
         print 'SVM ready with %d classes: '%len(self.clf.classes_) + str(self.clf.classes_)
 
     def probability(self, s, a):
-        if OBS and self.obstacle_check(s):
+        if self.OBS and self.obstacle_check(s):
             return 1., True
 
         sa = np.concatenate((s,a), axis=0).reshape(1,-1)
@@ -58,10 +57,14 @@ class svm_failure():
         return p, self.clf.predict(sa)
 
     def obstacle_check(self, s):
-        # (42, 90), 15
-        # (-45, 101), 8
+        # Obs1 = np.array([42, 90, 12.])
+        # Obs2 = np.array([-45, 101, 7.])
+        # f = 1.15 # inflate
+        Obs1 = np.array([33, 110, 4.]) # Right
+        Obs2 = np.array([-27, 118, 2.5]) # Left
+        f = 1.5 # inflate
 
-        if np.linalg.norm(s[:2]-np.array([42, 90])) < 1.15*13.04 or np.linalg.norm(s[:2]-np.array([-45, 101])) < 1.15*8.:
+        if np.linalg.norm(s[:2]-Obs1[:2]) < f * Obs1[2] or np.linalg.norm(s[:2]-Obs2[:2]) < f * Obs2[2]:
             return True
         else:
             return False
