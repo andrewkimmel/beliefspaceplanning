@@ -10,7 +10,7 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = False
+rollout = True
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -19,7 +19,7 @@ rollout = False
 comp = 'pracsys'
 
 Set = '1'
-set_modes = ['naive_with_svm']#['robust_particles_pc_svmHeuristic'],naive_with_svm, mean_only_particles
+set_modes = ['naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 
 ############################# Rollout ################################
 if rollout:
@@ -27,43 +27,43 @@ if rollout:
     rospy.init_node('run_rollout_set', anonymous=True)
     state_dim = 4
 
-    for set_mode in set_modes:
-        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
+    while 1:
+        for set_mode in set_modes:
+            path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
-        files = glob.glob(path + set_mode + "*.txt")
-        files_pkl = glob.glob(path + set_mode + "*.pkl")
+            files = glob.glob(path + set_mode + "*.txt")
+            files_pkl = glob.glob(path + set_mode + "*.pkl")
 
-        for i in range(len(files)):
+            for i in range(len(files)):
 
-            action_file = files[i]
-            if action_file.find('traj') > 0:
-                continue
-            if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
-                continue
-            pklfile = action_file[:-3] + 'pkl'
+                action_file = files[i]
+                if action_file.find('traj') > 0:
+                    continue
+                if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
+                    continue
+                pklfile = action_file[:-3] + 'pkl'
 
+                # To distribute rollout files between computers
+                # ja = pklfile.find('goal')+4
+                # if int(pklfile[ja]) <= 4:
+                #     continue
 
-            # To distribute rollout files between computers
-            # ja = pklfile.find('goal')+4
-            # if int(pklfile[ja]) <= 4:
-            #     continue
+                print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
-            print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
+                A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
 
-            A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
+                Af = A.reshape((-1,))
+                Pro = []
+                for j in range(10):
+                    print("Rollout number " + str(j) + ".")
+                    
+                    Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
 
-            Af = A.reshape((-1,))
-            Pro = []
-            for j in range(10):
-                print("Rollout number " + str(j) + ".")
-                
-                Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
+                    Pro.append(Sro)
 
-                Pro.append(Sro)
-
-                if not (j % 2):
-                    with open(pklfile, 'w') as f: 
-                        pickle.dump(Pro, f)
+                    if not (j % 2):
+                        with open(pklfile, 'w') as f: 
+                            pickle.dump(Pro, f)
 
 ############################# Plot ################################
 
@@ -210,7 +210,7 @@ if not rollout and 1:
         
     # plt.show()
 
-if 1:
+if not rollout and 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 
