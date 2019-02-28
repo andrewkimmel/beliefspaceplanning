@@ -11,7 +11,7 @@ import var
 class svm_failure():
 
     r = 0.1
-    OBS = True
+    OBS = False
 
     def __init__(self, discrete = True):
 
@@ -24,7 +24,7 @@ class svm_failure():
     def load_data(self):
 
         # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
-        path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         File = 'svm_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_) + '.obj' # <= File name here!!!!!
 
         print('Loading data from ' + File)
@@ -64,5 +64,3 @@ class svm_failure():
             return True
         else:
             return False
-
-

@@ -28,7 +28,7 @@ class hand_control():
     obj_vel = [0.,0.]
     R = []
     count = 1
-    OBS = True
+    OBS = False
 
     gripper_status = 'open'
 

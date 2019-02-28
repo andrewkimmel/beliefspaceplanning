@@ -1,0 +1,13 @@
+/robust_particles_pc_svmHeuristic_goal0_run0,1.48123,24.0772,0,0,11
+/robust_particles_pc_svmHeuristic_goal0_run0,7.03554,23.1888,0,0,11
+/robust_particles_pc_svmHeuristic_goal1_run0,297.389,134.313,0,0,933
+/robust_particles_pc_svmHeuristic_goal2_run0,320.718,92.1213,0,0,519
+/robust_particles_pc_svmHeuristic_goal3_run0,412.7,172.714,0,0,1957
+/robust_particles_pc_svmHeuristic_goal4_run0, 0.0, 0.0, 0.0, 0.0, 3470
+/robust_particles_pc_svmHeuristic_goal5_run0,180.75,140.648,0,0,1890
+/robust_particles_pc_svmHeuristic_goal6_run0, 0.0, 0.0, 0.0, 0.0, 3253
+/robust_particles_pc_svmHeuristic_goal7_run0, 0.0, 0.0, 0.0, 0.0, 3164
+/robust_particles_pc_svmHeuristic_goal8_run0,84.7354,95.7482,0,0,1060
+/robust_particles_pc_svmHeuristic_goal9_run0,14.202,48.8895,0,0,678
+/robust_particles_pc_svmHeuristic_goal10_run0,59.2032,93.8514,0,0,1165
+/robust_particles_pc_svmHeuristic_goal11_run0,59.1499,62.507,0,0,1402

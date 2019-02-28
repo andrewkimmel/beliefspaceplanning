@@ -196,7 +196,7 @@ SUCCESS_PROB_CONSTRAINT = 0.2
 FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
-    for x in range(NUM_RUNS):
+    for x in range(3):
         count = 0
         for g in goals:
             for n in nodes:

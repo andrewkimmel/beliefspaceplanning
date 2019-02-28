@@ -10,16 +10,16 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 
-rollout = True
+rollout = False
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
-Set = '1'
-set_modes = ['naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+Set = '2'
+set_modes = ['robust_particles_pc_svmHeuristic','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 
 ############################# Rollout ################################
 if rollout:
@@ -33,6 +33,9 @@ if rollout:
 
             files = glob.glob(path + set_mode + "*.txt")
             files_pkl = glob.glob(path + set_mode + "*.pkl")
+
+            if len(files) == 0:
+                continue
 
             for i in range(len(files)):
 
@@ -79,21 +82,23 @@ if rollout:
 #         [5.4, 108],
 #         [87, 65]])
 
+# if Set == '1':
+# Goal centers - set 1 and 2
+C = np.array([
+    [-24, 115],
+    [58, 76],
+    [-56, 90],
+    [79, 76],
+    [-66, 97],
+    [-46, 77],
+    [-73, 63],
+    [60, 100],
+    [35, 106],
+    [27, 104]])
 if Set == '1':
-    # Goal centers - set 1
-    C = np.array([
-        [-24, 115],
-        [58, 76],
-        [-56, 90],
-        [79, 76],
-        [-66, 97],
-        [-46, 77],
-        [-73, 63],
-        [60, 100],
-        [35, 106],
-        [27, 104]])
+    Obs = np.array([4[2, 90, 12], [-45, 101, 7]])
 
-    Obs = np.array([[42, 90, 13.63], [-45, 101, 8]])
+
 
 rp = 7.
 r = 10.
@@ -210,7 +215,7 @@ if not rollout and 1:
         
     # plt.show()
 
-if not rollout and 1:
+if not rollout and 0:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 
