@@ -18,8 +18,8 @@ rollout = True
 # comp = 'juntao'
 comp = 'pracsys'
 
-Set = '1'
-set_modes = ['naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+Set = '3'
+set_modes = ['robust_particles_pc_svmHeuristic','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 
 ############################# Rollout ################################
 if rollout:
@@ -33,6 +33,9 @@ if rollout:
 
             files = glob.glob(path + set_mode + "*.txt")
             files_pkl = glob.glob(path + set_mode + "*.pkl")
+
+            if len(files) == 0:
+                continue
 
             for i in range(len(files)):
 
@@ -54,7 +57,7 @@ if rollout:
 
                 Af = A.reshape((-1,))
                 Pro = []
-                for j in range(10):
+                for j in range(5):
                     print("Rollout number " + str(j) + ".")
                     
                     Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
@@ -93,7 +96,7 @@ if Set == '1':
         [35, 106],
         [27, 104]])
 
-    Obs = np.array([[42, 90, 13.63], [-45, 101, 8]])
+    Obs = np.array([[42, 90, 12], [-45, 101, 7]])
 
 rp = 7.
 r = 10.
@@ -210,7 +213,7 @@ if not rollout and 1:
         
     # plt.show()
 
-if not rollout and 1:
+if not rollout and 0:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results_goal/'
     PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
 
