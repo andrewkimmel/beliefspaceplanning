@@ -20,3 +20,9 @@
 /robust_particles_pc_svmHeuristic_goal9_run1,181.903,86.1786,0,0,2221
 /robust_particles_pc_svmHeuristic_goal0_run2,21.9273,35.8822,0,0,14
 /robust_particles_pc_svmHeuristic_goal1_run2,538.478,168.406,0,0,3481
+/robust_particles_pc_svmHeuristic_goal2_run2, 0.0, 0.0, 0.0, 0.0, 5559
+/robust_particles_pc_svmHeuristic_goal3_run2,172.91,117.862,0,0,1883
+/robust_particles_pc_svmHeuristic_goal4_run2, 0.0, 0.0, 0.0, 0.0, 5335
+/robust_particles_pc_svmHeuristic_goal5_run2, 0.0, 0.0, 0.0, 0.0, 5018
+/robust_particles_pc_svmHeuristic_goal6_run2, 0.0, 0.0, 0.0, 0.0, 4617
+/robust_particles_pc_svmHeuristic_goal7_run2,147.569,104.043,0,0,131
