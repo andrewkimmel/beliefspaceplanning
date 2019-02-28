@@ -1,0 +1,29 @@
+/robust_particles_pc_svmHeuristic_goal0_run0,2.05935,21.3448,0,0,10
+/robust_particles_pc_svmHeuristic_goal1_run0, 0.0, 0.0, 0.0, 0.0, 2755
+/robust_particles_pc_svmHeuristic_goal2_run0, 0.0, 0.0, 0.0, 0.0, 3066
+/robust_particles_pc_svmHeuristic_goal3_run0,364.216,120.032,0,0,752
+/robust_particles_pc_svmHeuristic_goal4_run0, 0.0, 0.0, 0.0, 0.0, 3330
+/robust_particles_pc_svmHeuristic_goal5_run0, 0.0, 0.0, 0.0, 0.0, 3200
+/robust_particles_pc_svmHeuristic_goal6_run0, 0.0, 0.0, 0.0, 0.0, 2892
+/robust_particles_pc_svmHeuristic_goal7_run0, 0.0, 0.0, 0.0, 0.0, 2916
+/robust_particles_pc_svmHeuristic_goal8_run0,169.851,105.165,0,0,673
+/robust_particles_pc_svmHeuristic_goal9_run0,34.2797,99.8472,0,0,711
+/robust_particles_pc_svmHeuristic_goal10_run0,30.887,84.7258,0,0,1347
+/robust_particles_pc_svmHeuristic_goal11_run0, 0.0, 0.0, 0.0, 0.0, 3168
+/robust_particles_pc_svmHeuristic_goal12_run0,18.2157,55.1482,0,0,869
+/robust_particles_pc_svmHeuristic_goal13_run0,35.0915,93.9425,0,0,845
+/robust_particles_pc_svmHeuristic_goal0_run1,3.59177,27.172,0,0,9
+/robust_particles_pc_svmHeuristic_goal1_run1,503.397,123.635,0,0,1142
+/robust_particles_pc_svmHeuristic_goal2_run1, 0.0, 0.0, 0.0, 0.0, 2825
+/robust_particles_pc_svmHeuristic_goal3_run1,255.809,142.691,0,0,929
+/robust_particles_pc_svmHeuristic_goal4_run1, 0.0, 0.0, 0.0, 0.0, 3404
+/robust_particles_pc_svmHeuristic_goal5_run1,308.883,191.942,0,0,2243
+/robust_particles_pc_svmHeuristic_goal6_run1,448.016,171.788,0,0,1684
+/robust_particles_pc_svmHeuristic_goal7_run1, 0.0, 0.0, 0.0, 0.0, 3144
+/robust_particles_pc_svmHeuristic_goal8_run1,87.7786,97.81,0,0,1179
+/robust_particles_pc_svmHeuristic_goal9_run1,9.50959,42.2953,0,0,700
+/robust_particles_pc_svmHeuristic_goal10_run1,47.4793,80.1082,0,0,1707
+/robust_particles_pc_svmHeuristic_goal11_run1,48.6033,62.5717,0,0,1107
+/robust_particles_pc_svmHeuristic_goal12_run1,30.3701,53.0669,0,0,713
+/robust_particles_pc_svmHeuristic_goal13_run1,83.7413,102.413,0,0,1428
+/robust_particles_pc_svmHeuristic_goal0_run2,5.59252,30.3256,0,0,504
