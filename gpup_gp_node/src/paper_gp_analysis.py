@@ -11,12 +11,14 @@ import pickle
 from rollout_t42.srv import rolloutReq
 import time
 from data_load import data_load
+import var
 
 # np.random.seed(10)
 
-state_dim = 4
-tr = '1'
-stepSize = 1
+state_dim = var.state_dim_
+tr = '2'
+stepSize = var.stepSize_
+version = var.data_version_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
@@ -24,15 +26,32 @@ rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
 
 path = '/home/pracsys/catkin_ws/src/t42_control/rollout_t42/rolls/'
 
-DL = data_load()
-Smean = R = DL.Qtest[:,:4]
-A = DL.Qtest[:,4:6]
+# DL = data_load(simORreal = 't42_35', K = 10)
+# Smean = R = DL.Qtest[:,:4]
+# A = DL.Qtest[:,4:6]
 
 # Smean = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_traj.txt', delimiter=',')[:,:4]
 # A = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_plan.txt', delimiter=',')[:,:2]
 # R = np.loadtxt('/home/pracsys/catkin_ws/src/t42_control/hand_control/plans/robust_particles_pc_svmHeuristic_goal1_run0_roll.txt', delimiter=',')[:,:4]
 
-# A = np.tile(np.array([-1.,1]), (700,1))
+if tr == '1':
+    A = np.tile(np.array([1.,-1.]), (600*1./stepSize,1))
+if tr == '2':
+    A = np.concatenate( (np.array([[1.,  -1.] for _ in range(int(140*1./stepSize))]), 
+            np.array([[ -1., 1.] for _ in range(int(120*1./stepSize))]),
+            np.array([[1., -1.] for _ in range(int(120*1./stepSize))]) ), axis=0 )
+if tr == '3':
+    A = np.concatenate( (np.array([[1.,  -1.] for _ in range(int(200*1./stepSize))]), 
+            np.array([[1.,  1.] for _ in range(int(110*1./stepSize))]), 
+            np.array([[ -1., 1.] for _ in range(int(250*1./stepSize))]),
+            np.array([[0., 1.] for _ in range(int(150*1./stepSize))]) ), axis=0 )
+if tr == '4':
+    A = np.concatenate( (np.array([[-1.,  1.] for _ in range(int(450*1./stepSize))]), 
+            np.array([[1.,  1.] for _ in range(int(110*1./stepSize))]), 
+            np.array([[ 1., -1.] for _ in range(int(300*1./stepSize))]),
+            np.array([[ -1., -1.] for _ in range(int(50*1./stepSize))]),
+            np.array([[-1., 1.] for _ in range(int(150*1./stepSize))]) ), axis=0 )
+
 
 if 0:
     Af = A.reshape((-1,))
@@ -42,18 +61,16 @@ if 0:
         
         roll = rollout_srv(Af)
         R = np.array(roll.states).reshape(-1,state_dim)
-        # A = np.array(roll.actions).reshape(-1,2)
         suc = roll.success
 
         # Pro.append(Sro)
         
-        with open(path + 'rollout_' + tr + '_v' + str(4) + '_d' + str(state_dim) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
+        with open(path + 'rollout_' + tr + '_v' + str(version) + '_d' + str(state_dim) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
             pickle.dump([R, suc], f)
-# with open(path + 'rollout_' + tr + '_v' + str(4) + '_d' + str(state_dim) + '_m' + str(stepSize) + '.pkl', 'r') as f:  
-#     R, _ = pickle.load(f) 
+with open(path + 'rollout_' + tr + '_v' + str(version) + '_d' + str(state_dim) + '_m' + str(stepSize) + '.pkl', 'r') as f:  
+    R, _ = pickle.load(f) 
 
 def medfilter(x, W):
-    print('Smoothing data...')
     w = int(W/2)
     x_new = np.copy(x)
     for i in range(0, x.shape[0]):
@@ -65,11 +82,19 @@ def medfilter(x, W):
             x_new[i] = np.mean(x[i-w:i+w])
     return x_new
 
-# for i in range(R.shape[1]):
-#     R[:,i] = medfilter(R[:,i], 20)
+print('Smoothing data...')
+for i in range(4):
+    R[:,i] = medfilter(R[:,i], 20)
+# for i in range(2,4):
+#     R[:,i] = medfilter(R[:,i], 40)
+
+# from scipy.io import savemat
+# savemat(path + 'test_t42_v4_d4_m1.mat', {'S': R, 'A': A})
+# exit(1)
 
 # s_start = Smean[0,:]
 s_start = R[0,:]
+# A = A[50:,:]
 
 sigma_start = np.array([1.,1.,1.,1.])*1e-5
 
@@ -106,19 +131,19 @@ if 1:
         Pgp.append(S)
         a = A[i,:]
 
-        # st = time.time()
-        # res = gp_srv(S.reshape(-1,1), a)
-        # t_gp += (time.time() - st) 
+        st = time.time()
+        res = gp_srv(S.reshape(-1,1), a)
+        t_gp += (time.time() - st) 
 
-        # S_next = np.array(res.next_states).reshape(-1,state_dim)
-        # if res.node_probability < p_gp:
-        #     p_gp = res.node_probability
-        # s_mean_next = np.mean(S_next, 0)
-        # s_std_next = np.std(S_next, 0)
-        # S = S_next
+        S_next = np.array(res.next_states).reshape(-1,state_dim)
+        if res.node_probability < p_gp:
+            p_gp = res.node_probability
+        s_mean_next = np.mean(S_next, 0)
+        s_std_next = np.std(S_next, 0)
+        S = S_next
 
-        s_mean_next = np.array([0,0,0,0])
-        s_std_next = np.array([0,0,0,0])
+        # s_mean_next = np.array([0,0,0,0])
+        # s_std_next = np.array([0,0,0,0])
 
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
@@ -190,13 +215,13 @@ if 1:
 
     stats = np.array([[t_gp, t_naive, t_mean], [p_gp, p_naive, p_mean]])
 
-    with open(path + 'ver_t42_pred_' + tr + '_v4_d4_m' + str(stepSize) + '.pkl', 'w') as f:
+    with open(path + 'ver_t42_pred_' + tr + '_v' + str(version) + '_d' + str(state_dim) + '_m' + str(stepSize) + '.pkl', 'w') as f:
         pickle.dump([Ypred_mean_gp, Ypred_std_gp, Pgp, Ypred_naive, Ypred_bmean, stats, A], f)
 
 ######################################## Plot ###########################################################
 
 
-with open(path + 'ver_t42_pred_' + tr + '_v4_d4_m' + str(stepSize) + '.pkl') as f:  
+with open(path + 'ver_t42_pred_' + tr + '_v' + str(version) + '_d' + str(state_dim) + '_m' + str(stepSize) + '.pkl') as f:  
     Ypred_mean_gp, Ypred_std_gp, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
 # Compare paths
@@ -327,8 +352,9 @@ try:
     plt.plot(R[:,ix[0]], R[:,ix[1]], '.-k', label='rollout')
 except:
     pass
-# plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP')
+plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP')
 plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-c', label='Naive')
+plt.axis('equal')
 
 
 ax2 = plt.subplot(1,2,2)
@@ -336,10 +362,10 @@ try:
     plt.plot(R[:,ix[0]+2], R[:,ix[1]+2], '.-k', label='rollout')
 except:
     pass
-# plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
+plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
 plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '.-c', label='Naive')
-plt.legend()
+plt.legend(loc='best')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/path.png')
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/path' + str(np.random.randint(100000)) + '.png', dpi=300)
 plt.show()
 

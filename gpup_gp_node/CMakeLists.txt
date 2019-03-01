@@ -61,6 +61,8 @@ add_service_files(
   batch_transition_repeat.srv
   gpup_transition_repeat.srv
   one_transition.srv
+  batchSVM.srv
+  setk.srv
 )
 
 ## Generate actions in the 'action' folder
