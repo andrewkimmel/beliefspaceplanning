@@ -257,6 +257,10 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             sa = self.normz(sa)
             sa_normz = self.one_predict(sa)
             s_next = self.denormz(sa_normz)
+
+             if self.OBS and self.obstacle_check(s_next):
+                 node_probability = 0.0
+
             return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability}
         else:       
 
