@@ -89,7 +89,6 @@ class rollout():
             n -= 1
             
             next_state = np.array(self.obs_srv().state)
-            
 
             if suc:
                 fail = self.drop # self.drop_srv().dropped # Check if dropped - end of episode
@@ -98,7 +97,7 @@ class rollout():
                 rospy.logerr('[rollout] Failed to move gripper. Episode declared failed.')
                 fail = True
 
-            if n == 0:
+            if n == 0 or (not suc or fail):
                 # print len(S), len(self.rollout_transition)
                 S.append(np.copy(next_state))
                 self.rollout_transition += [(state, action, next_state, not suc or fail)]

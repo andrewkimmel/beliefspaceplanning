@@ -18,8 +18,8 @@ rollout = 0
 # comp = 'juntao'
 comp = 'pracsys'
 
-Set = '3'
-set_modes = ['robust_particles_pc_svmHeuristic','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+Set = '5'
+set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 
 ############################# Rollout ################################
@@ -58,7 +58,7 @@ if rollout:
 
                 Af = A.reshape((-1,))
                 Pro = []
-                for j in range(5):
+                for j in range(10):
                     print("Rollout number " + str(j) + ".")
                     
                     Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
@@ -99,27 +99,40 @@ if Set == '1' or Set == '2':
     if Set == '1':
         Obs = np.array([[42, 90, 12], [-45, 101, 7]])
 
-if Set == '3' or Set == '4':
+if Set == '3':
     # Goal centers
     C = np.array([
-        [43, 101],
-        [-40, 111],
-        [56, 108],
-        [-22, 107],
-        [22, 116],
-        [-52, 98],
-        [36, 122],
-        [-32, 125],
-        [-18, 120]])
+        [40, 95],
+        [50, 111],
+        [25, 98],
+        [-32, 104]])
 
-    if Set == '3':
-        Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
+    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
+
+if Set == '4':
+    # Goal centers
+    C = np.array([
+        [-37, 119],
+        [-33, 102],
+        [-22, 129],
+        [-52, 112],
+        [67, 80],
+        [-63, 91]])
+
+    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
+
+if Set == '5':
+    # Goal centers
+    C = np.array([
+        [50, 111]])
+
+    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
 rp = 7.
 r = 10.
 
 set_num = Set
-set_modes = ['robust_particles_pc_svmHeuristic', 'naive_with_svm', 'mean_only_particles']
+set_modes = ['robust_particles_pc', 'naive_with_svm']#, 'mean_only_particles']
 
 if not rollout and 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
@@ -154,6 +167,11 @@ if not rollout and 1:
             with open(pklfile) as f:  
                 Pro = pickle.load(f)
 
+            # if file_name == 'robust_particles_pc_goal1_run1_plan':
+            #     for s in Pro:
+            #         print s
+            #         raw_input()
+
             i = 0
             while i < len(Pro):
                 if Pro[i].shape[0] == 1:
@@ -186,7 +204,7 @@ if not rollout and 1:
             fig, ax = plt.subplots()
             p = 0
             for S in Pro:
-                plt.plot(S[:,0], S[:,1], 'r')
+                plt.plot(S[:,0], S[:,1], '.-r')
                 if S.shape[0] < maxR:
                     plt.plot(S[-1,0], S[-1,1], 'oc')
 
@@ -210,7 +228,7 @@ if not rollout and 1:
 
             plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
 
-            plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
+            plt.plot(Smean[:,0], Smean[:,1], '.-b', label='rollout mean')
             # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
             # Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
             # plt.fill( X, Y , alpha = 0.5 , color = 'b')

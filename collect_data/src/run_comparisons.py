@@ -76,7 +76,7 @@ from collect_data.srv import sparse_goal
 nodes =[
 # "robust_particles_pc_svmHeuristic", 
 "robust_particles_pc", 
-"naive_with_svm",
+# "naive_with_svm",
 # "mean_only_particles",
 ]
 ## ROBUST PLUS GOALS part 1
@@ -186,16 +186,28 @@ seed = [
 # ]
 
 ## Set 3 - Don't delete!!!
-goals = [
-"40, 95,  16,  16",
-"50, 111,  16,  16",
-"25, 98,  16,  16",
-"-32, 104,  16,  16",
-]
 # goals = [
-# "43, 101,  16,  16",
-# "-40, 111,  16,  16",
+# "40, 95,  16,  16",
+# "50, 111,  16,  16",
+# "25, 98,  16,  16",
+# "-32, 104,  16,  16",
 # ]
+
+## Set 4 - Don't delete!!!
+# goals = [
+# "-37, 119,  16,  16",
+# "-33, 102,  16,  16",
+# "-22, 129,  16,  16",
+# "-52, 112,  16,  16",
+# "67, 80,  16,  16",
+# "-63, 91,  16,  16",
+# ]
+
+## Set 5 - Don't delete!!!
+goals = [
+"50, 111,  16,  16",
+]
+
 
 
 NUM_RUNS = 2
@@ -203,13 +215,13 @@ NUM_RUNS = 2
 GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
-PROBABILITY_CONSTRAINT = 0.7 #0.8
+PROBABILITY_CONSTRAINT = 0.6 #0.8
 # SUCCESS_PROB_CONSTRAINT = 0.1
 SUCCESS_PROB_CONSTRAINT = 0.5
 FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
-    for x in range(2):
+    for x in range(1):
         count = 0
         for g in goals:
             for n in nodes:
