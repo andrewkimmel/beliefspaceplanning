@@ -20,6 +20,7 @@ comp = 'pracsys'
 
 Set = '3'
 set_modes = ['robust_particles_pc_svmHeuristic','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+# set_modes = ['naive_with_svm']
 
 ############################# Rollout ################################
 if rollout:
@@ -86,16 +87,17 @@ if Set == '1' or Set == '2':
     C = np.array([
         [-24, 115],
         [58, 76],
-        [-56, 90],
+        [-56, 90],36.23284149169921875000,110.15370
         [79, 76],
-        [-66, 97],
+        [-66, 97],36.23284149169921875000,110.15370
         [-46, 77],
         [-73, 63],
         [60, 100],
         [35, 106],
         [27, 104]])
 
-    Obs = np.array([[42, 90, 12], [-45, 101, 7]])
+    if Set == '1':
+        Obs = np.array([[42, 90, 12], [-45, 101, 7]])
 
 if Set == '3' or Set == '4':
     # Goal centers
@@ -110,7 +112,8 @@ if Set == '3' or Set == '4':
         [-32, 125],
         [-18, 120]])
 
-    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
+    if Set == '3':
+        Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
 rp = 7.
 r = 10.

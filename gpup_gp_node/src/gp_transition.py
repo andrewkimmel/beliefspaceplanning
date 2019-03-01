@@ -24,7 +24,10 @@ probability_threshold = 0.65
 plotRegData = False
 diffORspec = 'spec'
 
+
 class Spin_gp(data_load, mean_shift, svm_failure):
+
+    OBS = True
 
     def __init__(self):
         # Number of NN
@@ -42,7 +45,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim, dr = 'diff')
         else:
-            self.K = 100
+            self.K = 50
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
@@ -271,15 +274,58 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                     mean = [0,0]
                     return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability}
 
-                dup_inx = np.random.choice(len(good_inx), size=len(failed_inx), replace=True)
+                dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                 S[failed_inx, :] = S[dup_inx,:]
 
             # Propagate
             S_next = self.batch_propa(S, a)
 
+            if self.OBS:
+                # print "Checking obstacles..."
+                failed_inx = []
+                good_inx = []
+                for i in range(S_next.shape[0]):
+                    if self.obstacle_check(S_next[i,:]):
+                        failed_inx.append(i)
+                node_probability2 = 1.0 - float(len(failed_inx))/float(S.shape[0])
+                node_probability = min(node_probability, node_probability2)
+
+                if len(failed_inx):
+                    good_inx = np.delete( np.array(range(S_next.shape[0])), failed_inx )
+                    if len(good_inx) == 0: # All particles failed
+                        S_next = []
+                        mean = [0,0]
+                        return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability}
+
+                    dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
+                    S_next[failed_inx, :] = S_next[dup_inx,:]
+
+            for s in S_next:
+                if np.linalg.norm(s[:2]-np.array([33,110])) < 1.5*4:
+                    print "r ",  s
+                if np.linalg.norm(s[:2]-np.array([-27,118])) < 1.5*2.5:
+                    print "l ", s
+
             mean = self.get_mean_shift(S_next)
             
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability}
+
+    def obstacle_check(self, s):
+        # Obs1 = np.array([42, 90, 12.])
+        # Obs2 = np.array([-45, 101, 7.])
+        # f = 1.15 # inflate
+        Obs1 = np.array([33, 110, 4.]) # Right
+        Obs2 = np.array([-27, 118, 2.5]) # Left
+        f = 1.5 # inflate
+
+        if np.linalg.norm(s[:2]-Obs1[:2]) <= f * Obs1[2]:
+            # print "right obstacle collision"
+            return True
+        elif np.linalg.norm(s[:2]-Obs2[:2]) <= f * Obs2[2]:
+            # print "left obstacle collision", s[:2], Obs2[:2]
+            return True
+        else:
+            return False
 
     # Predicts the next step by calling the GP class - repeats the same action 'n' times
     def GetTransitionRepeat(self, req):
