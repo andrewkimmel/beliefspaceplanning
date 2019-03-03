@@ -1,0 +1,11 @@
+acrobot:
+  # Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+
+  # Controllers ---------------------------------------
+  joint1_controller:
+    type: effort_controllers/JointEffortController 
+    joint: joint1
+    pid: {p: 100.0, i: 0.01, d: 10.0}
