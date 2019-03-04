@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 # np.random.seed(10)
 
-simORreal = 'sim'
+simORreal = 'acrobot'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 probability_threshold = 0.65

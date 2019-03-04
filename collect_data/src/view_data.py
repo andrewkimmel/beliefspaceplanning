@@ -8,13 +8,11 @@ import os.path
 import matplotlib.pyplot as plt
 from transition_experience import *
 
-
 def main():
-    texp = transition_experience(discrete=True, postfix='')
+    texp = transition_experience(discrete=True, postfix='_bu') #_bu
 
-    # texp.save_to_file()
-    # texp.process_transition_data(stepSize = 10, plot = False, mode = 1)
-    # texp.process_svm(stepSize = 10, mode = 1)
+    texp.process_transition_data(stepSize = 1, plot = True)
+    texp.process_svm(stepSize = 1)
 
     texp.plot_data()
 

@@ -78,8 +78,9 @@ class my_joint_state_publisher():
                 self.joint_angles[1] = np.pi - b[1]
             else:
                 self.joint_angles[1] = -(np.pi + b[1])
-            
-            self.joint_angles[1] = self.joint_angles[1] - np.pi if self.joint_angles[1] > 0 else self.joint_angles[1] + np.pi
+
+            self.joint_angles[0] = -(np.pi - self.joint_angles[0]) if self.joint_angles[0] >= 0 else np.pi + self.joint_angles[0]
+            self.joint_angles[1] = self.joint_angles[1] - np.pi if self.joint_angles[1] >= 0 else self.joint_angles[1] + np.pi
 
             # Apply mean filter to joint velocities with windowSize
             self.joint_vels = np.array([dq_1, (dq_2 - dq_1)])

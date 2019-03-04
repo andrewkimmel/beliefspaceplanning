@@ -14,18 +14,19 @@ class data_load(object):
         
         self.Dillute = Dillute
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
+        self.prefix =  simORreal + '_'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.load()
         self.dr = dr
 
-        if os.path.exists(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj'):
-            with open(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
+        if os.path.exists(self.path + self.prefix + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj'):
+            with open(self.path + self.prefix + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
                 _, self.theta_opt, self.opt_kdt = pickle.load(f)
             print('[data_load] Loaded hyper-parameters data from ' + self.file)
         else:
-            self.precompute_hyperp(K, K_manifold, sigma, dim)
+            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal)
 
     def load(self):
 
@@ -35,15 +36,15 @@ class data_load(object):
         # plt.plot(Qtrain[:,0],Qtrain[:,1],'.')
         # plt.show()
 
-        # is_start = 3000# 30532 #1540#int(Q['is_start'])#100080
-        # # while is_start < 200000:
-        # #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
-        # #         break
-        # #     is_start += 1
-        # # print is_start
-        # is_end = is_start + 100#int(Q['is_end'])
-        # self.Qtest = Qtrain[is_start:is_end, :]
-        # Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
+        is_start = 3050# 30532 #1540#int(Q['is_start'])#100080
+        # while is_start < 200000:
+        #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
+        #         break
+        #     is_start += 1
+        # print is_start
+        is_end = is_start + 20#int(Q['is_end'])
+        self.Qtest = Qtrain[is_start:is_end, :]
+        Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
 
         # plt.plot(self.Qtest[:,0], self.Qtest[:,1],'.-k')
         # plt.plot(self.Qtest[0,0], self.Qtest[0,1],'o')
@@ -85,12 +86,12 @@ class data_load(object):
         self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
 
         print('[data_load] Loading data to kd-tree...')
-        if os.path.exists(self.path + 'kdtree' + self.postfix + '.obj'):
-            with open(self.path + 'kdtree' + self.postfix + '.obj', 'rb') as f: 
+        if os.path.exists(self.path + self.prefix + 'kdtree' + self.postfix + '.obj'):
+            with open(self.path + self.prefix + 'kdtree' + self.postfix + '.obj', 'rb') as f: 
                 self.kdt = pickle.load(f)
         else:
             self.kdt = KDTree(self.Xtrain, leaf_size=100, metric='euclidean')
-            with open(self.path + 'kdtree' + self.postfix + '.obj', 'wb') as f:
+            with open(self.path + self.prefix + 'kdtree' + self.postfix + '.obj', 'wb') as f:
                 pickle.dump(self.kdt, f)
         print('[data_load] kd-tree ready.')
 
@@ -122,7 +123,7 @@ class data_load(object):
             X[:,i] = X[:,i]*(self.x_max_X[i]-self.x_min_X[i]) + self.x_min_X[i]
         return X
 
-    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1):
+    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1,  simORreal = 'sim'):
         print('[data_load] Pre-computing GP hyper-parameters data.')
 
         if K_manifold > 0:
@@ -166,7 +167,7 @@ class data_load(object):
 
         self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
 
-        with open(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
+        with open(self.path + self.prefix + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
             pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
         print('[data_load] Saved hyper-parameters data.')
 

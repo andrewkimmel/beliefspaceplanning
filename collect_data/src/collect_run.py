@@ -34,7 +34,7 @@ class collect_data():
         self.drop_srv = rospy.ServiceProxy('/acrobot_control/IsObjDropped', IsDropped)
         self.move_srv = rospy.ServiceProxy('/acrobot_control/MoveGripper', TargetAngles)
         self.reset_srv = rospy.ServiceProxy('/acrobot_control/ResetGripper', Empty)
-        # self.record_srv = rospy.ServiceProxy('/actor/trigger', Empty)
+        self.record_srv = rospy.ServiceProxy('/actor/trigger', Empty)
         self.recorder_save_srv = rospy.ServiceProxy('/actor/save', Empty)
         
         rospy.sleep(1.)
@@ -67,7 +67,7 @@ class collect_data():
         # Start episode
         n = 0
         action = np.array([0.])
-        # self.record_srv()
+        self.record_srv()
         for ep_step in range(self.episode_length):
 
             if n == 0:
@@ -115,7 +115,7 @@ class collect_data():
         # Start episode
         n = 0
         action = np.array([0.])
-        # self.record_srv()
+        self.record_srv()
         for ep_step in range(self.episode_length):
 
             if n == 0:

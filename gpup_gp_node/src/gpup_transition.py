@@ -14,7 +14,7 @@ from dr_diffusionmaps import DiffusionMap
 
 np.random.seed(10)
 
-simORreal = 'sim'
+simORreal = 'acrobot'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 

@@ -95,12 +95,13 @@ if tr == '4':
 ######################################## Roll-out ##################################################
 
 
-# from data_load import data_load
-# dl = data_load(Dillute=4000)
-# Dtest = dl.Qtest
-# A = Dtest[:,state_dim:state_dim+2]
-# Pro = []
-# Pro.append(Dtest[:,:state_dim])
+from data_load import data_load
+dl = data_load(Dillute=0, simORreal = 'acrobot', K = 50)
+Dtest = dl.Qtest
+A = Dtest[:,state_dim]
+Pro = []
+Pro.append(Dtest[:,:state_dim])
+
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
@@ -121,8 +122,8 @@ if 0:
             pickle.dump(Pro, f)
 
 f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
-with open(f + '.pkl') as f:  
-    Pro = pickle.load(f) 
+# with open(f + '.pkl') as f:  
+#     Pro = pickle.load(f) 
 
 
 # fig = plt.figure(0)
@@ -160,10 +161,8 @@ Sstd = np.array(Sstd)
 
 Smean = Pro[0]
 
-
 # plt.title('path ' + tr)
 # plt.show()
-# exit(1)
 
 if 1:   
     Np = 100 # Number of particles
@@ -185,7 +184,7 @@ if 1:
     for i in range(0, A.shape[0]):
         print("[GP] Step " + str(i) + " of " + str(A.shape[0]))
         Pgp.append(S)
-        a = A[i,:]
+        a = np.array([A[i]])
 
         st = time.time()
         res = gp_srv(S.reshape(-1,1), a)
@@ -219,7 +218,7 @@ if 1:
     p_naive = 1.
     for i in range(0, A.shape[0]):
         print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
-        a = A[i,:]
+        a = np.array([A[i]])
 
         st = time.time()
         res = naive_srv(s.reshape(-1,1), a)
@@ -251,7 +250,7 @@ if 1:
     p_mean = 1.
     for i in range(0, A.shape[0]):
         print("[Mean] Step " + str(i) + " of " + str(A.shape[0]))
-        a = A[i,:]
+        a = np.array([A[i]])
 
         # st = time.time()
         # res = gp_srv(S.reshape(-1,1), a)
@@ -285,7 +284,7 @@ if 1:
     p_gpup = 1
     for i in range(0, A.shape[0]):
         print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
-        a = A[i,:]
+        a = np.array([A[i]])
 
         # st = time.time()
         # res = gpup_srv(s, sigma_x, a)
@@ -389,7 +388,7 @@ if 0:
 
 t = range(A.shape[0]+1)
 
-ix = [0, 1]
+
 
 # plt.figure(1)
 # ax1 = plt.subplot(3,1,1)
@@ -419,25 +418,27 @@ ix = [0, 1]
 # ax3.plot(t[:-1], np.abs(Smean[:,ix[1]]-Ypred_mean_gp[1:,ix[1]]), '-r', label='error_y')
 # plt.legend()
 
+ix = [0, 2]
 plt.figure(2)
 ax1 = plt.subplot(1,2,1)
 for j in range(len(Pro)): 
     Sro = Pro[j]
-    plt.plot(Sro[:,0], Sro[:,1], ':y')
+    plt.plot(Sro[:,ix[0]], Sro[:,ix[1]], ':y')
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
+plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.-k', label='Naive')
 # plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')
 plt.legend()
 
+ix = [1, 3]
 ax2 = plt.subplot(1,2,2)
 for j in range(len(Pro)): 
     Sro = Pro[j]
-    plt.plot(Sro[:,2], Sro[:,3], ':y')
-plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
-plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
-plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
-# plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], ':y', label='Inter')
+    plt.plot(Sro[:,ix[0]], Sro[:,ix[1]], ':y')
+plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
+plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
+plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '--k', label='Naive')
+# plt.plot(Ypred_inter[:,ix[0]], Ypred_inter[:,ix[1]], ':y', label='Inter')
 
 # if tr == '1':
 
