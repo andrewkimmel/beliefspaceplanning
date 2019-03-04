@@ -6,9 +6,8 @@
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
 	output="screen" ns="/acrobot" args="joint1_controller"/>
 
-  <!-- convert joint states to TF transforms for rviz, etc
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
-	respawn="false" output="screen">
-    <remap from="/joint_states" to="/acrobot/joint_states" />
-  </node> -->
+  <node pkg="acrobot_controllers" type="acrobot_node.py" name="acrobot_node" output="screen"></node>
+  
+  <node pkg="acrobot_controllers" type="my_joint_state_publisher.py" name="my_joint_state_publisher" output="screen"></node>
+
 </launch>
