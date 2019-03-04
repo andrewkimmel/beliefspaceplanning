@@ -25,8 +25,8 @@ class SimAcrobotNode():
     act_vel = np.array([0,0]) # left_proximal, left_distal, right_proximal, right_distal
     # ref_angles = np.array([0.,0.,0.,0.,0.,0.]) # spring reference angle left_proximal, left_distal, right_proximal, right_distal   
 
-    dc = 0.5
-    max_load = 5.
+    dc = 0.1
+    max_load = 2.
     
     def __init__(self):
         rospy.init_node('SimAcrobotNode', anonymous=True)
@@ -46,11 +46,11 @@ class SimAcrobotNode():
         while not rospy.is_shutdown():
 
             d = self.set_damping_matrix()
-            self.act_torque = self.act_load - d * self.act_vel[0] # Damping does not work well because of numerical errors
+            self.act_torque = self.act_load*self.max_load - d * self.act_vel[0] # Damping does not work well because of numerical errors
 
-            self.pub_j1.publish(self.act_torque*self.max_load)
+            self.pub_j1.publish(self.act_torque)
             
-            msg.data = self.act_torque
+            msg.data = self.act_load
             self.gripper_load_pub.publish(msg)
             
             rate.sleep()

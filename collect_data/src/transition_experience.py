@@ -23,7 +23,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
+        self.file = 'acrobot_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -93,45 +93,22 @@ class transition_experience():
         print np.max(states, axis=0)
         print np.min(states, axis=0)
 
-        # For data from recorder
-        if recorder_data:
-            states = states[:, [0, 1, 2, 3, 4, 5]]
-            # states[:,:2] *= 1000 # m to mm
-
         failed_states = states[done]
-
-        # Obs1 = np.array([42, 90, 12.])
-        # Obs2 = np.array([-45, 101, 7.])
-        Obs1 = np.array([33, 110, 4.]) # Right
-        Obs2 = np.array([-27, 118, 2.5]) # Left
 
         plt.figure(1)
         ax1 = plt.subplot(211)
         ax1.set_aspect('equal')
-        #ax1.plot(states[:,0],states[:,1],'-k')
-        ax1.plot(states[:,0],states[:,1],'.y')
+        ax1.plot(states[:,0],states[:,1],'-k')
+        # ax1.plot(states[:,0],states[:,1],'.y')
         ax1.plot(failed_states[:,0],failed_states[:,1],'.r')
-        ax1.set(title='Object position')
-        obs1 = plt.Circle((Obs1[0], Obs1[1]), 1.5*Obs1[2], zorder=9, color='g')
-        ax1.add_artist(obs1)
-        obs1 = plt.Circle((Obs1[0], Obs1[1]), Obs1[2], zorder=10, color='b')
-        ax1.add_artist(obs1)
-        obs2 = plt.Circle((Obs2[0], Obs2[1]), 1.5*Obs2[2], zorder=9, color='g')
-        ax1.add_artist(obs2)
-        obs2 = plt.Circle((Obs2[0], Obs2[1]), Obs2[2], zorder=10, color='b')
-        ax1.add_artist(obs2)
-        plt.xlim(-100., 100.)
-        plt.ylim(40., 140.)
+        ax1.set(title='Angles')
+        # plt.xlim(-100., 100.)
+        # plt.ylim(40., 140.)
         
         ax2 = plt.subplot(212)
         ax2.plot(states[:,2],states[:,3],'.k')
         ax2.plot(failed_states[:,2],failed_states[:,3],'.r')
-        ax2.set(title='Actuator loads')
-
-        # ax3 = plt.subplot(313)
-        # ax3.plot(states[:,4],states[:,5],'.k')
-        # ax3.plot(failed_states[:,4],failed_states[:,5],'.r')
-        # ax3.set(title='Object velocity')
+        ax2.set(title='Velocities')
         
         plt.show()
 
