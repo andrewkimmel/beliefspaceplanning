@@ -50,8 +50,6 @@ class acrobot_control():
         if ( self.joint_states_prev[0] * self.joint_states[0] < 0 and np.abs(self.joint_states[0]) > f ) or ( self.joint_states_prev[1] * self.joint_states[1] < 0 and np.abs(self.joint_states[1]) > f ) :
             self.pi_cross = True
 
-        # print self.pi_cross
-
         self.pi_cross_pub.publish(self.pi_cross)
         self.rate.sleep()
 

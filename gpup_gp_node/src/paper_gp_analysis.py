@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '2'
+tr = '4'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -29,88 +29,50 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 #####################################################################################################
 
 if tr == '1':
-    A = np.array([[-1.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,0.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,0.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[0.00000000000000000000,1.00000000000000000000],
-[-1.00000000000000000000,-1.00000000000000000000]]) 
-
-if tr == '3':
-    A = np.concatenate( (np.array([[-1., -1.] for _ in range(int(150*1./stepSize))]), 
-            np.array([[-1.,  1.] for _ in range(int(100*1./stepSize))]), 
-            np.array([[ 1.,  0.] for _ in range(int(100*1./stepSize))]), 
-            np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]),
-            np.array([[-1.,  1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
+    A = np.concatenate( (np.array([[-0.3] for _ in range(int(20*1./stepSize))]), 
+            np.array([[-0.] for _ in range(int(10*1./stepSize))]), 
+            np.array([[0.3] for _ in range(int(40*1./stepSize))]) ), axis=0 )
 
 if tr == '2':
-    A = np.concatenate( (np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
-            np.array([[-1., -1.] for _ in range(int(40*1./stepSize))]), 
-            np.array([[-1.,  1.] for _ in range(int(80*1./stepSize))]),
-            np.array([[ 1.,  0.] for _ in range(int(70*1./stepSize))]),
-            np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
+    A = np.concatenate( (np.array([[0.3] for _ in range(int(10*1./stepSize))]), 
+            np.array([[-0.7] for _ in range(int(10*1./stepSize))]),
+            np.array([[0.0] for _ in range(int(30*1./stepSize))]),  
+            np.array([[0.7] for _ in range(int(4*1./stepSize))]), 
+            np.array([[0.] for _ in range(int(10*1./stepSize))]) ), axis=0 )
+
+if tr == '3':
+    A = np.concatenate( (np.array([[0.3] for _ in range(int(10*1./stepSize))]), 
+            np.array([[-0.3] for _ in range(int(11*1./stepSize))]),
+            np.array([[0.3] for _ in range(int(12*1./stepSize))]),  
+            np.array([[-0.3] for _ in range(int(7*1./stepSize))]), 
+            np.array([[0.] for _ in range(int(10*1./stepSize))]) ), axis=0 )
 
 if tr == '4':
-    A = np.array([[1., -1.] for _ in range(int(400*1./stepSize))])
+    A = np.concatenate( (np.array([[0.3] for _ in range(int(5*1./stepSize))]), 
+            np.array([[-0.] for _ in range(int(6*1./stepSize))]),
+            np.array([[0.7] for _ in range(int(12*1./stepSize))]),  
+            np.array([[-0.7] for _ in range(int(10*1./stepSize))]), 
+            np.array([[0.] for _ in range(int(20*1./stepSize))]) ), axis=0 )
 
 ######################################## Roll-out ##################################################
 
 
-from data_load import data_load
-dl = data_load(Dillute=0, simORreal = 'acrobot', K = 50)
-Dtest = dl.Qtest
-A = Dtest[:,state_dim]
-Pro = []
-Pro.append(Dtest[:,:state_dim])
+# from data_load import data_load
+# dl = data_load(Dillute=0, simORreal = 'acrobot', K = 5)
+# Dtest = dl.Qtest
+# A = Dtest[:,state_dim]
+# Pro = []
+# Pro.append(Dtest[:,:state_dim])
 
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 0:
+if 1:
     Af = A.reshape((-1,))
     Pro = []
-    for j in range(1):
+    for j in range(10):
         print("Rollout number " + str(j) + ' with path ' + tr + "...")
         
         R = rollout_srv(Af)
@@ -122,8 +84,8 @@ if 0:
             pickle.dump(Pro, f)
 
 f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
-# with open(f + '.pkl') as f:  
-#     Pro = pickle.load(f) 
+with open(f + '.pkl') as f:  
+    Pro = pickle.load(f) 
 
 
 # fig = plt.figure(0)
@@ -143,13 +105,11 @@ sigma_start = np.std(np.array(S), 0) + np.concatenate((np.array([0.,0.]), np.one
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
 
-# from scipy.io import savemat
-# savemat(path + 'test_v12_d4_m1.mat', {'S': Pro[0], 'A': A })
-# exit(1)
+ms = max([s.shape[0] for s in Pro])
 
 Smean = []
 Sstd = []
-for i in range(A.shape[0]+1):
+for i in range(ms):
     F = []
     for j in range(len(Pro)): 
         if Pro[j].shape[0] > i:
@@ -159,10 +119,9 @@ for i in range(A.shape[0]+1):
 Smean = np.array(Smean)
 Sstd = np.array(Sstd)
 
-Smean = Pro[0]
-
 # plt.title('path ' + tr)
 # plt.show()
+# exit(1)
 
 if 1:   
     Np = 100 # Number of particles
@@ -317,37 +276,37 @@ with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(v
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
 # Compare paths
-d_gp = d_gpup = d_naive = d_mean = d = 0.
-for i in range(A.shape[0]):
-    if i < Smean.shape[0]-1:
-        d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
-    d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
-    d_naive += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
-    d_mean += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
-    d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
-d_gp = np.sqrt(d_gp/A.shape[0])
-d_naive = np.sqrt(d_naive/A.shape[0])
-d_mean = np.sqrt(d_mean/A.shape[0])
-d_gpup = np.sqrt(d_gpup/A.shape[0])
+# d_gp = d_gpup = d_naive = d_mean = d = 0.
+# for i in range(A.shape[0]):
+#     if i < Smean.shape[0]-1:
+#         d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
+#     d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
+#     d_naive += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
+#     d_mean += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
+#     d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
+# d_gp = np.sqrt(d_gp/A.shape[0])
+# d_naive = np.sqrt(d_naive/A.shape[0])
+# d_mean = np.sqrt(d_mean/A.shape[0])
+# d_gpup = np.sqrt(d_gpup/A.shape[0])
 
-print "-----------------------------------"
-print "Path length: " + str(d)
-print "-----------------------------------"
-print "GP rmse: " + str(d_gp) + "mm"
-print "Naive rmse: " + str(d_naive) + "mm"
-print "mean rmse: " + str(d_mean) + "mm"
-print "GPUP rmse: " + str(d_gpup) + "mm"
-print "-----------------------------------"
-print "GP runtime: " + str(stats[0][0]) + "sec."
-print "GP Naive: " + str(stats[0][1]) + "sec."
-print "GP mean: " + str(stats[0][2]) + "sec."
-print "GPUP time: " + str(stats[0][3]) + "sec."
-print "-----------------------------------"
-print "GP probability: " + str(stats[1][0])
-print "GP naive probability: " + str(stats[1][1])
-print "GP mean probability: " + str(stats[1][2])
-print "GPUP probability: " + str(stats[1][3])
-print "-----------------------------------"
+# print "-----------------------------------"
+# print "Path length: " + str(d)
+# print "-----------------------------------"
+# print "GP rmse: " + str(d_gp) + "mm"
+# print "Naive rmse: " + str(d_naive) + "mm"
+# print "mean rmse: " + str(d_mean) + "mm"
+# print "GPUP rmse: " + str(d_gpup) + "mm"
+# print "-----------------------------------"
+# print "GP runtime: " + str(stats[0][0]) + "sec."
+# print "GP Naive: " + str(stats[0][1]) + "sec."
+# print "GP mean: " + str(stats[0][2]) + "sec."
+# print "GPUP time: " + str(stats[0][3]) + "sec."
+# print "-----------------------------------"
+# print "GP probability: " + str(stats[1][0])
+# print "GP naive probability: " + str(stats[1][1])
+# print "GP mean probability: " + str(stats[1][2])
+# print "GPUP probability: " + str(stats[1][3])
+# print "-----------------------------------"
 
 if 0:
     fig = plt.figure(0)
@@ -388,193 +347,45 @@ if 0:
 
 t = range(A.shape[0]+1)
 
+plt.figure(1)
+for i in range(1,5):
+    ax = plt.subplot(2,2,i)
+
+    ax.plot(t[:len(Smean[:,i-1])], Smean[:,i-1], '-b', label='rollout mean')
+    for Sro in Pro: 
+        plt.plot(t[:len(Sro[:,i-1])], Sro[:,i-1], ':y')
+    # ax.fill_between(t[:-1], Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[0]]-Sstd[:,ix[0]], facecolor='blue', alpha=0.5, label='rollout std.')
+    ax.plot(t, Ypred_mean_gp[:,i-1], '-r', label='BPP mean')
+    ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='red', alpha=0.5, label='BGP std.')
+    # ax.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
+    # ax.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
+    ax.plot(t, Ypred_naive[:,i-1], '-k', label='Naive')
+    # ax.plot(t, Ypred_bmean[:,0], '-m', label='Batch mean')
+    ax.legend()
+    plt.title('Path ' + tr)
 
 
-# plt.figure(1)
-# ax1 = plt.subplot(3,1,1)
-# ax1.plot(t[:-1], Smean[:,ix[0]], '-b', label='rollout mean')
-# ax1.fill_between(t[:-1], Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[0]]-Sstd[:,ix[0]], facecolor='blue', alpha=0.5, label='rollout std.')
-# # ax1.plot(t, Ypred_mean_gp[:,ix[0]], '-r', label='BPP mean')
-# # ax1.fill_between(t, Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], facecolor='red', alpha=0.5, label='BGP std.')
-# # ax1.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
-# # ax1.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
-# ax1.plot(t, Ypred_naive[:,0], '-k', label='Naive')
-# # ax1.plot(t, Ypred_bmean[:,0], '-m', label='Batch mean')
-# ax1.legend()
-# plt.title('Path ' + tr)
-
-# ax2 = plt.subplot(3,1,2)
-# ax2.plot(t[:-1], Smean[:,ix[1]], '-b')
-# ax2.fill_between(t[:-1], Smean[:,ix[1]]+Sstd[:,ix[1]], Smean[:,ix[1]]-Sstd[:,ix[1]], facecolor='blue', alpha=0.5)
-# # ax2.plot(t, Ypred_mean_gp[:,ix[1]], '-r')
-# # ax2.fill_between(t, Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], facecolor='red', alpha=0.5)
-# # ax2.plot(t, Ypred_mean_gpup[:,1], '--c')
-# # ax2.fill_between(t, Ypred_mean_gpup[:,1]+Ypred_std_gpup[:,1], Ypred_mean_gpup[:,1]-Ypred_std_gpup[:,1], facecolor='cyan', alpha=0.5)
-# ax2.plot(t, Ypred_naive[:,1], '-k')
-# # ax2.plot(t, Ypred_bmean[:,1], '-m')
-
-# ax3 = plt.subplot(3,1,3)
-# ax3.plot(t[:-1], np.abs(Smean[:,ix[0]]-Ypred_mean_gp[1:,ix[0]]), '-b', label='error_x')
-# ax3.plot(t[:-1], np.abs(Smean[:,ix[1]]-Ypred_mean_gp[1:,ix[1]]), '-r', label='error_y')
-# plt.legend()
-
-ix = [0, 2]
 plt.figure(2)
 ax1 = plt.subplot(1,2,1)
-for j in range(len(Pro)): 
-    Sro = Pro[j]
+ix = [0, 2]
+for Sro in Pro: 
     plt.plot(Sro[:,ix[0]], Sro[:,ix[1]], ':y')
+plt.plot(Pro[0][:,ix[0]], Pro[0][:,ix[1]], ':y', label='rollouts')
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
 plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.-k', label='Naive')
-# plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')
+# plt.plot(Ypred_bmean[:,ix[0]], Ypred_bmean[:,ix[1]], '.-k', label='Mean')
 plt.legend()
 
-ix = [1, 3]
 ax2 = plt.subplot(1,2,2)
-for j in range(len(Pro)): 
-    Sro = Pro[j]
+ix = [1, 3]
+for Sro in Pro: 
     plt.plot(Sro[:,ix[0]], Sro[:,ix[1]], ':y')
-plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
-plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
-plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '--k', label='Naive')
-# plt.plot(Ypred_inter[:,ix[0]], Ypred_inter[:,ix[1]], ':y', label='Inter')
-
-# if tr == '1':
-
-#     plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
-#     # X = np.concatenate((Smean[:,ix[0]]+Sstd[:,ix[0]], np.flip(Smean[:,ix[0]]-Sstd[:,ix[0]])), axis=0)
-#     # Y = np.concatenate((Smean[:,ix[1]]+Sstd[:,ix[1]], np.flip(Smean[:,ix[1]]-Sstd[:,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'b')
-
-#     plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-#     X = np.concatenate((Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], np.flip(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]])), axis=0)
-#     Y = np.concatenate((Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], np.flip(Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'r')
-
-#     # plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
-#     # X = np.concatenate((Ypred_mean_gpup[:,ix[0]]+Ypred_std_gpup[:,ix[0]], np.flip(Ypred_mean_gpup[:,ix[0]]-Ypred_std_gpup[:,ix[0]])), axis=0)
-#     # Y = np.concatenate((Ypred_mean_gpup[:,ix[1]]+Ypred_std_gpup[:,ix[1]], np.flip(Ypred_mean_gpup[:,ix[1]]-Ypred_std_gpup[:,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'c')
-
-#     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
-#     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
-#     plt.legend()
-
-# if tr == '2':
-#     ax1 = plt.subplot(1,2,1)
-#     plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
-#     # t = 16
-#     # X = np.concatenate((Smean[:t,ix[0]]+Sstd[:t,ix[0]], np.flip(Smean[:t,ix[0]]-Sstd[:t,ix[0]])), axis=0)
-#     # Y = np.concatenate((Smean[:t,ix[1]]+Sstd[:t,ix[1]], np.flip(Smean[:t,ix[1]]-Sstd[:t,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'b')
-#     # t1 = t+10
-#     # X = np.concatenate((Smean[t:t1,ix[0]]+Sstd[t:t1,ix[0]], np.flip(Smean[t:t1,ix[0]]-Sstd[t:t1,ix[0]])), axis=0)
-#     # Y = np.concatenate((Smean[t:t1,ix[1]]+Sstd[t:t1,ix[1]], np.flip(Smean[t:t1,ix[1]]-Sstd[t:t1,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'b')
-#     # t2 = Smean.shape[0]
-#     # X = np.concatenate((Smean[t1-1:t2,ix[0]]+Sstd[t1-1:t2,ix[0]], np.flip(Smean[t1-1:t2,ix[0]]+Sstd[t1-1:t2,ix[0]])), axis=0)
-#     # Y = np.concatenate((Smean[t1-1:t2,ix[1]]+Sstd[t1-1:t2,ix[1]], np.flip(Smean[t1-1:t2,ix[1]]-Sstd[t1-1:t2,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'b')
-#     # # plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
-#     # # plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
-
-#     # plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
-#     # t = 15
-#     # X = np.concatenate((Ypred_mean_gp[:t,ix[0]]+Ypred_std_gp[:t,ix[0]], np.flip(Ypred_mean_gp[:t,ix[0]]-Ypred_std_gp[:t,ix[0]])), axis=0)
-#     # Y = np.concatenate((Ypred_mean_gp[:t,ix[1]]+Ypred_std_gp[:t,ix[1]], np.flip(Ypred_mean_gp[:t,ix[1]]-Ypred_std_gp[:t,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'r')
-#     # t1 = t+9
-#     # X = np.concatenate((Ypred_mean_gp[t:t1,ix[0]]+Ypred_std_gp[t:t1,ix[0]], np.flip(Ypred_mean_gp[t:t1,ix[0]]-Ypred_std_gp[t:t1,ix[0]])), axis=0)
-#     # Y = np.concatenate((Ypred_mean_gp[t:t1,ix[1]]+Ypred_std_gp[t:t1,ix[1]], np.flip(Ypred_mean_gp[t:t1,ix[1]]-Ypred_std_gp[t:t1,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'r')
-#     # t2 = Ypred_mean_gp.shape[0]
-#     # X = np.concatenate((Ypred_mean_gp[t1-1:t2,ix[0]]+Ypred_std_gp[t1-1:t2,ix[0]], np.flip(Ypred_mean_gp[t1-1:t2,ix[0]]-Ypred_std_gp[t1-1:t2,ix[0]])), axis=0)
-#     # Y = np.concatenate((Ypred_mean_gp[t1-1:t2,ix[1]]+Ypred_std_gp[t1-1:t2,ix[1]], np.flip(Ypred_mean_gp[t1-1:t2,ix[1]]-Ypred_std_gp[t1-1:t2,ix[1]])), axis=0)
-#     # plt.fill( X, Y , alpha = 0.5 , color = 'r')
-#     # # plt.plot(Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], '--r', label='rollout mean')
-#     # # plt.plot(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], '--r', label='rollout mean')
-
-#     # # plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
-#     # # X = np.concatenate((Ypred_mean_gpup[:,ix[0]]+Ypred_std_gpup[:,ix[0]], np.flip(Ypred_mean_gpup[:,ix[0]]-Ypred_std_gpup[:,ix[0]])), axis=0)
-#     # # Y = np.concatenate((Ypred_mean_gpup[:,ix[1]]+Ypred_std_gpup[:,ix[1]], np.flip(Ypred_mean_gpup[:,ix[1]]-Ypred_std_gpup[:,ix[1]])), axis=0)
-#     # # plt.fill( X, Y , alpha = 0.5 , color = 'c')
-
-#     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
-#     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
-
-#     ax2 = plt.subplot(1,2,2)
-#     plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
-#     plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
-
-# if tr == '35':
-
-#     plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
-#     t = 27
-#     X = np.concatenate((Smean[:t,ix[0]]+Sstd[:t,ix[0]], np.flip(Smean[:t,ix[0]]-Sstd[:t,ix[0]])), axis=0)
-#     Y = np.concatenate((Smean[:t,ix[1]]+Sstd[:t,ix[1]], np.flip(Smean[:t,ix[1]]-Sstd[:t,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'b')
-#     t1 = t+17
-#     X = np.concatenate((Smean[t:t1,ix[0]]+Sstd[t:t1,ix[0]], np.flip(Smean[t:t1,ix[0]]-Sstd[t:t1,ix[0]])), axis=0)
-#     Y = np.concatenate((Smean[t:t1,ix[1]]+Sstd[t:t1,ix[1]], np.flip(Smean[t:t1,ix[1]]-Sstd[t:t1,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'b')
-#     t2 = Smean.shape[0]
-#     X = np.concatenate((Smean[t1-1:t2,ix[0]]+Sstd[t1-1:t2,ix[0]], np.flip(Smean[t1-1:t2,ix[0]]-Sstd[t1-1:t2,ix[0]])), axis=0)
-#     Y = np.concatenate((Smean[t1-1:t2,ix[1]]+Sstd[t1-1:t2,ix[1]], np.flip(Smean[t1-1:t2,ix[1]]-Sstd[t1-1:t2,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'b')
-#     # plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
-#     # plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
-
-#     plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
-#     t = 26
-#     X = np.concatenate((Ypred_mean_gp[:t,ix[0]]+Ypred_std_gp[:t,ix[0]], np.flip(Ypred_mean_gp[:t,ix[0]]-Ypred_std_gp[:t,ix[0]])), axis=0)
-#     Y = np.concatenate((Ypred_mean_gp[:t,ix[1]]+Ypred_std_gp[:t,ix[1]], np.flip(Ypred_mean_gp[:t,ix[1]]-Ypred_std_gp[:t,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'r')
-#     t1 = t+17
-#     X = np.concatenate((Ypred_mean_gp[t:t1,ix[0]]+Ypred_std_gp[t:t1,ix[0]], np.flip(Ypred_mean_gp[t:t1,ix[0]]-Ypred_std_gp[t:t1,ix[0]])), axis=0)
-#     Y = np.concatenate((Ypred_mean_gp[t:t1,ix[1]]+Ypred_std_gp[t:t1,ix[1]], np.flip(Ypred_mean_gp[t:t1,ix[1]]-Ypred_std_gp[t:t1,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'r')
-#     t2 = Ypred_mean_gp.shape[0]
-#     X = np.concatenate((Ypred_mean_gp[t1-1:t2,ix[0]]+Ypred_std_gp[t1-1:t2,ix[0]], np.flip(Ypred_mean_gp[t1-1:t2,ix[0]]-Ypred_std_gp[t1-1:t2,ix[0]])), axis=0)
-#     Y = np.concatenate((Ypred_mean_gp[t1-1:t2,ix[1]]+Ypred_std_gp[t1-1:t2,ix[1]], np.flip(Ypred_mean_gp[t1-1:t2,ix[1]]-Ypred_std_gp[t1-1:t2,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'r')
-#     # plt.plot(Ypred_mean_gp[:,ix[0]]+Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]+Ypred_std_gp[:,ix[1]], '--r', label='rollout mean')
-#     # plt.plot(Ypred_mean_gp[:,ix[0]]-Ypred_std_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]]-Ypred_std_gp[:,ix[1]], '--r', label='rollout mean')
-
-#     plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
-#     t = 26
-#     X = np.concatenate((Ypred_mean_gpup[:t,ix[0]]+Ypred_std_gpup[:t,ix[0]], np.flip(Ypred_mean_gpup[:t,ix[0]]-Ypred_std_gp[:t,ix[0]])), axis=0)
-#     Y = np.concatenate((Ypred_mean_gpup[:t,ix[1]]+Ypred_std_gpup[:t,ix[1]], np.flip(Ypred_mean_gpup[:t,ix[1]]-Ypred_std_gp[:t,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'c')
-#     t1 = t+17
-#     X = np.concatenate((Ypred_mean_gpup[t:t1,ix[0]]+Ypred_std_gpup[t:t1,ix[0]], np.flip(Ypred_mean_gpup[t:t1,ix[0]]-Ypred_std_gpup[t:t1,ix[0]])), axis=0)
-#     Y = np.concatenate((Ypred_mean_gpup[t:t1,ix[1]]+Ypred_std_gpup[t:t1,ix[1]], np.flip(Ypred_mean_gpup[t:t1,ix[1]]-Ypred_std_gpup[t:t1,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'c')
-#     t2 = Ypred_mean_gp.shape[0]
-#     X = np.concatenate((Ypred_mean_gpup[t1-1:t2,ix[0]]+Ypred_std_gpup[t1-1:t2,ix[0]], np.flip(Ypred_mean_gpup[t1-1:t2,ix[0]]-Ypred_std_gpup[t1-1:t2,ix[0]])), axis=0)
-#     Y = np.concatenate((Ypred_mean_gpup[t1-1:t2,ix[1]]+Ypred_std_gpup[t1-1:t2,ix[1]], np.flip(Ypred_mean_gpup[t1-1:t2,ix[1]]-Ypred_std_gpup[t1-1:t2,ix[1]])), axis=0)
-#     plt.fill( X, Y , alpha = 0.5 , color = 'c')
-#     # plt.plot(Ypred_mean_gpup[:,ix[0]]+Ypred_std_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]]+Ypred_std_gpup[:,ix[1]], '--c', label='rollout mean')
-#     # plt.plot(Ypred_mean_gpup[:,ix[0]]-Ypred_std_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]]-Ypred_std_gpup[:,ix[1]], '--c', label='rollout mean')
-
-#     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
-#     plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
-
-#     ix = [0, 10, 20, 30, 42, 48]
-#     for i in range(len(ix)):
-#         plt.plot(Pgp[ix[i]][:,0], Pgp[ix[i]][:,1], '.k')
-
-# if tr == '3' or tr == '4' or tr == '5' or tr == '6':
-#     plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '-b', label='rollout mean')
-#     # plt.plot(Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[1]]+Sstd[:,ix[1]], '--b', label='rollout mean')
-#     # plt.plot(Smean[:,ix[0]]-Sstd[:,ix[0]], Smean[:,ix[1]]-Sstd[:,ix[1]], '--b', label='rollout mean')
-
-#     # plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '-r', label='BPP mean')
-
-#     # plt.plot(Ypred_mean_gpup[:,ix[0]], Ypred_mean_gpup[:,ix[1]], '-c', label='GPUP mean')
-    
-#     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
-#     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
+plt.plot(Pro[0][:,ix[0]], Pro[0][:,ix[1]], ':y', label='rollouts')
+plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
+plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
+plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.--k', label='Naive')
+# plt.plot(Ypred_bmean[:,ix[0]], Ypred_bmean[:,ix[1]], '.-k', label='Mean')
 
 plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png', dpi=300)
 plt.show()
