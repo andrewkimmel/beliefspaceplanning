@@ -21,8 +21,10 @@ simORreal = 'sim'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 probability_threshold = 0.65
-plotRegData = False
+plotRegData = True
 diffORspec = 'spec'
+
+cO = 0
 
 
 class Spin_gp(data_load, mean_shift, svm_failure):
@@ -112,10 +114,10 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
 
-        if plotRegData:
-            if np.random.uniform() < 0.1:
+        if plotRegData and False:
+            if np.random.uniform() < 1:
                 ia = [0, 1]
-                ax = plt.subplot(131)
+                ax = plt.subplot(121)
                 ax.plot(sa[ia[0]], sa[ia[1]], 'og')
                 ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
                 ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
@@ -124,7 +126,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
                 plt.title('Position')
                 ia = [2, 3]
-                ax = plt.subplot(132)
+                ax = plt.subplot(122)
                 ax.plot(sa[ia[0]], sa[ia[1]], 'og')
                 ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
                 ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
@@ -132,16 +134,8 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
                 ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
                 plt.title('Load')
-                ia = [4, 5]
-                ax = plt.subplot(133)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Velocity')
-                plt.show()
+                plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp3/pic_' + str(rospy.get_time()) + '.png', dpi = 300)
+                # plt.show()
 
         return S_next 
 
@@ -164,6 +158,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
 
         if plotRegData:
+            global cO
             # fig = plt.gcf()
             # fig.set_size_inches(24,15)
             # fig.set_figheight(15)
@@ -186,18 +181,10 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 ax.plot([sa[ia[0]], s_next[ia[0]]], [sa[ia[1]], s_next[ia[1]]], '-y')
                 # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
                 plt.title('Load - DF')
-                # ia = [4, 5]
-                # ax = plt.subplot(133)
-                # ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                # ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                # ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                # ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                # ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                # plt.title('Velocity')
-                # plt.show()
-                plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/pic_' + str(rospy.get_time()) + '.png')
+                plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp3/pic_' + str(cO) + '.png')
                 plt.clf()
+
+                cO += 1
 
         return s_next 
 

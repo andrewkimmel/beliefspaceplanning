@@ -204,7 +204,7 @@ if not rollout and 1:
             fig, ax = plt.subplots()
             p = 0
             for S in Pro:
-                plt.plot(S[:,0], S[:,1], '.-r')
+                plt.plot(S[:,0], S[:,1], '.--r')
                 if S.shape[0] < maxR:
                     plt.plot(S[-1,0], S[-1,1], 'oc')
 
@@ -243,6 +243,7 @@ if not rollout and 1:
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png')
+            plt.show()
 
         fo.close()
         
@@ -325,9 +326,9 @@ if not rollout and 0:
             Sstd = []
             for i in range(min(maxR, maxX)):
                 F = []
-                for j in range(len(Pro)): 
-                    if Pro[j].shape[0] > i:
-                        F.append(Pro[j][i])
+                for S in Pro: 
+                    if S.shape[0] > i:
+                        F.append(S[i])
                 Smean.append( np.mean(np.array(F), axis=0) )
                 Sstd.append( np.std(np.array(F), axis=0) )
             Smean = np.array(Smean)
@@ -339,10 +340,10 @@ if not rollout and 0:
             t = True
             for S in Pro:
                 if t:
-                    plt.plot(S[:,0], S[:,1], 'r', label='rollouts')
+                    plt.plot(S[:,0], S[:,1], '--r', label='rollouts')
                     t = False
                 else:
-                    plt.plot(S[:,0], S[:,1], 'r')
+                    plt.plot(S[:,0], S[:,1], '--r')
 
                 if S.shape[0] < maxR:
                     plt.plot(S[-1,0], S[-1,1], 'oc')
