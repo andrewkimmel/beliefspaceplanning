@@ -76,7 +76,11 @@ class transition_experience():
 
     def plot_data(self):
 
-        states = np.array([item[0] for item in self.memory])
+        if var.data_version_ == 13 and len(self.memory) < 5e5: # v13d only recorder position and load
+            states = np.array([item[0] for item in self.memory])
+            next_states = np.array([item[2] for item in self.memory])
+        else:
+            states = np.array([item[0][:4] for item in self.memory])
         done = [item[3] for item in self.memory]
 
         # Start dist.
@@ -199,9 +203,13 @@ class transition_experience():
         is_start = 1
         is_end = 277
 
-        states = np.array([item[0] for item in self.memory])
+        if var.data_version_ == 13 and len(self.memory) < 5e5: # v13d only recorder position and load
+            states = np.array([item[0] for item in self.memory])
+            next_states = np.array([item[2] for item in self.memory])
+        else:
+            states = np.array([item[0][:4] for item in self.memory])
+            next_states = np.array([item[2][:4] for item in self.memory])
         actions = np.array([item[1] for item in self.memory])
-        next_states = np.array([item[2] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
         # For data from recorder
@@ -272,7 +280,10 @@ class transition_experience():
         from sklearn import svm
         from sklearn.preprocessing import StandardScaler
 
-        states = np.array([item[0] for item in self.memory])
+        if var.data_version_ == 13 and len(self.memory) < 5e5: 
+            states = np.array([item[0] for item in self.memory])
+        else:
+            states = np.array([item[0][:4] for item in self.memory])
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 

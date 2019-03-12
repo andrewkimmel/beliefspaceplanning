@@ -28,9 +28,9 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
 # 1
-f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set5/robust_particles_pc_goal0_run0_plan'
-action_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set5/robust_particles_pc_goal0_run0_plan.txt'
-planned_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set5/robust_particles_pc_goal0_run0_traj.txt'
+# f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set5/robust_particles_pc_goal0_run0_plan'
+# action_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set5/robust_particles_pc_goal0_run0_plan.txt'
+# planned_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set5/robust_particles_pc_goal0_run0_traj.txt'
 
 # 2
 # f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/naive_with_svm_goal4_run0_plan'
@@ -38,15 +38,22 @@ planned_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set
 # planned_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/naive_with_svm_goal4_run0_traj.txt'
 
 # 3
-# f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/robust_particles_pc_goal4_run0_plan'
-# action_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/robust_particles_pc_goal4_run0_plan.txt'
-# planned_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/robust_particles_pc_goal4_run0_traj.txt'
+f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/robust_particles_pc_goal4_run0_plan'
+action_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/robust_particles_pc_goal4_run0_plan.txt'
+planned_file = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/robust_particles_pc_goal4_run0_traj.txt'
 
 
 with open(f + '.pkl') as f:  
     Pro = pickle.load(f) 
 
 A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
+
+if stepSize == 1:
+    Af = []
+    for a in A:
+        for i in range(10):
+            Af.append(a)
+    A = np.array(Af)
 
 Splan = np.loadtxt(planned_file, delimiter=',', dtype=float)
 

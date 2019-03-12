@@ -14,6 +14,9 @@ from spectralEmbed import spectralEmbed
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
 
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+
 
 # np.random.seed(10)
 
@@ -21,7 +24,7 @@ simORreal = 'sim'
 discreteORcont = 'discrete'
 useDiffusionMaps = False
 probability_threshold = 0.65
-plotRegData = True
+plotRegData = False
 diffORspec = 'spec'
 
 cO = 0
@@ -29,7 +32,7 @@ cO = 0
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
-    OBS = True
+    OBS = False
 
     def __init__(self):
         # Number of NN
@@ -188,6 +191,29 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         return s_next 
 
+    def one_predictSK(self, sa):
+        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
+        X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+
+        if useDiffusionMaps:
+            X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
+
+        kernel = C(1.0, (1e-3, 1e3)) * RBF(10, (1e-2, 1e2))
+
+        ds_next = np.zeros((self.state_dim,))
+        std_next = np.zeros((self.state_dim,))
+        for i in range(self.state_dim):
+            gp_est = GaussianProcessRegressor(kernel = kernel, n_restarts_optimizer=9)
+            gp_est.fit(X_nn[:,:self.state_dim], Y_nn[:,i])
+            mm, ss = gp_est.predict(sa[:self.state_dim].reshape(1,-1), return_std=True)
+            ds_next[i] = mm
+            std_next[i] = ss
+
+        s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
+
+        return s_next 
+
     def reduction(self, sa, X, Y):
         if diffORspec == 'diff':
             inx = self.df.ReducedClosestSetIndices(sa, X, k_manifold = self.K_manifold)
@@ -250,10 +276,10 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
             return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability}
         else:       
-
+            
             # Check which particles failed
             failed_inx = self.batch_svm_check(S, a)
-            node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+            node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0]) if S.shape[0] > 0 else 0.0
 
             # print node_probability
 
@@ -318,11 +344,11 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                     dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                     S_next[failed_inx, :] = S_next[dup_inx,:]
 
-            for s in S_next:
-                if np.linalg.norm(s[:2]-np.array([33,110])) < 1.5*4:
-                    print "r ",  s
-                if np.linalg.norm(s[:2]-np.array([-27,118])) < 1.5*2.5:
-                    print "l ", s
+                for s in S_next:
+                    if np.linalg.norm(s[:2]-np.array([33,110])) < 1.5*4:
+                        print "r ",  s
+                    if np.linalg.norm(s[:2]-np.array([-27,118])) < 1.5*2.5:
+                        print "l ", s
 
             mean = self.get_mean_shift(S_next)
             
