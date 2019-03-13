@@ -169,7 +169,7 @@ class transition_experience():
         def clean(D, done, mode):
             print('[transition_experience] Cleaning data...')
 
-            jj = range(10, 12)
+            jj = range(14, 16)
             i = 0
             inx = []
             while i < D.shape[0]:
@@ -180,7 +180,7 @@ class transition_experience():
 
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
-            ia = range(8,10) 
+            ia = range(12,14) 
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize, ia]) or np.any(done[i:i+stepSize]):
@@ -192,9 +192,6 @@ class transition_experience():
 
         def add_vel(S, done):
             
-            def second_order_backward(s_0, s_1, s_2):
-                return s_0 - 2*s_1 + s_2
-
             i_s = 0; i_k = 1
             DS = []
             while i_k < S.shape[0]:
@@ -203,17 +200,17 @@ class transition_experience():
                 
                 for i in range(i_s, i_k + 1):
                     if i==i_s:
-                        ds = second_order_backward(S[i_s], S[i_s], S[i_s])
+                        ds = np.concatenate((S[i_s], S[i_s], S[i_s]), axis=0)
                     elif i==i_s+1:
-                        ds = second_order_backward(S[i_s], S[i_s-1], S[i_s-1])
+                        ds = np.concatenate((S[i_s], S[i_s-1], S[i_s-1]), axis=0)
                     else:
-                        ds = second_order_backward(S[i], S[i-1], S[i-2])
+                        ds = np.concatenate((S[i], S[i-1], S[i-2]), axis=0)
                     DS.append(ds)
                 
                 i_s = i_k + 1
                 i_k += 2
             
-            return np.concatenate((S, DS), axis=1)
+            return np.array(DS)
                 
         print('[transition_experience] Saving transition data...')
         is_start = 1
@@ -250,7 +247,6 @@ class transition_experience():
 
         # D = D[np.random.choice(D.shape[0], int(0.6*D.shape[0]), replace=False),:] # Dillute
         self.D = D
-
 
         savemat(self.path + 'sim_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
         print "Saved mat file with " + str(D.shape[0]) + " transition points."
