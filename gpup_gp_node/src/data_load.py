@@ -42,8 +42,10 @@ class data_load(object):
         # #     is_start += 1
         # # print is_start
         # is_end = is_start + 100#int(Q['is_end'])
-        # self.Qtest = Qtrain[is_start:is_end, :]
-        # Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
+        # inx = np.random.choice(Qtrain.shape[0], 1000, replace=False)
+        # self.Qtest = Qtrain[inx, :]
+        # # Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
+        # Qtrain = np.delete(Qtrain, inx, 0)
 
         # plt.plot(self.Qtest[:,0], self.Qtest[:,1],'.-k')
         # plt.plot(self.Qtest[0,0], self.Qtest[0,1],'o')

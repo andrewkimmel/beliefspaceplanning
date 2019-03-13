@@ -3,3 +3,4 @@ float32[] action
 ---
 float32[] next_state
 float32 node_probability
+float32[] std

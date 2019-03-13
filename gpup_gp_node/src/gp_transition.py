@@ -156,6 +156,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
             mm, vv = gp_est.predict(sa[:self.state_dim])
             ds_next[i] = mm
+            # vv = [[0.0]] if np.abs(vv) < 1e-15 else vv
             std_next[i] = np.sqrt(np.diag(vv))
 
         s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
@@ -189,7 +190,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
                 cO += 1
 
-        return s_next 
+        return s_next, std_next
 
     def one_predictSK(self, sa):
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
@@ -399,10 +400,11 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         # Propagate
         sa = np.concatenate((s, a), axis=0)
         sa = self.normz( sa )    
-        sa_normz = self.one_predict(sa)
+        sa_normz, std_normz = self.one_predict(sa)
         s_next = self.denormz( sa_normz )
+        std = self.denormz_change(std_normz)
 
-        return {'next_state': s_next, 'node_probability': node_probability}
+        return {'next_state': s_next, 'node_probability': node_probability, 'std': std}
 
 if __name__ == '__main__':
     try:
