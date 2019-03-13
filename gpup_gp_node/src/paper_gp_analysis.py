@@ -117,10 +117,10 @@ if 0:
 
         Pro.append(Sro)
         
-        with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
+        with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_-4) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
             pickle.dump(Pro, f)
 
-f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
+f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_-4) + '_m' + str(stepSize)
 with open(f + '.pkl') as f:  
     Pro = pickle.load(f) 
 
@@ -137,7 +137,9 @@ for j in range(len(Pro)):
     if Sro.shape[0]>=A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-sigma_start = np.std(np.array(S), 0) + np.concatenate((np.array([0.,0.]), np.ones((state_dim-2,))*1e-3), axis=0)
+s_start = np.concatenate((s_start, np.array([0,0,0,0])), axis=0)
+sigma_start = np.std(np.array(S), 0) + np.concatenate((np.array([0.,0.]), np.ones((state_dim-2-4,))*1e-3), axis=0)
+sigma_start = np.concatenate((sigma_start, np.array([0,0,0,0])), axis=0)
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)

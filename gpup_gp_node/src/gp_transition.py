@@ -279,8 +279,8 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         else:       
             
             # Check which particles failed
-            failed_inx = self.batch_svm_check(S, a)
-            node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0]) if S.shape[0] > 0 else 0.0
+            failed_inx = []#self.batch_svm_check(S[:,:4], a) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            node_probability = (1.0 - float(len(failed_inx))/float(S.shape[0])) if S.shape[0] > 0 else 0.0
 
             # print node_probability
 
@@ -394,7 +394,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        p, _ = self.probability(s, a)
+        p, _ = self.probability(s[:4], a)
         node_probability = 1 - p
 
         # Propagate
