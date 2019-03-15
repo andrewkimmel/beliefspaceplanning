@@ -65,8 +65,13 @@ class gp_controller():
                 
             D.append(np.linalg.norm(goal-s_next))
         D = np.array(D)
+        
+        action = np.copy(self.A[np.argmin(D)])
+        if np.linalg.norm(goal[:2] - self.obj_pos) > 4.0:
+            K = 0.4
+            action *= K*np.linalg.norm(goal[:2] - self.obj_pos)
 
-        return self.A[np.argmin(D)]       
+        return action
 
     def callbackObj(self, msg):
         Obj_pos = np.array(msg.data)

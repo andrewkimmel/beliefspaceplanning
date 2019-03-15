@@ -130,7 +130,13 @@ S = R[0].keys()
 
 plt.figure(1)
 for i in range(len(S)):
+    if i == 1:
+        continue
     E[:,i] = medfilter(E[:,i], 101)
-    plt.plot(L, E[:,i], label=S[i])
+    plt.plot(L, E[:,i]*100, label=S[i])
 plt.legend()
+plt.title('SVM accuracy improvement')
+plt.xlabel('Size of data')
+plt.ylabel('Success rate [%]')
+plt.savefig(path + 'svm', dpi=300)
 plt.show()

@@ -20,9 +20,10 @@ class general_control():
     drop = True
     obj_pos = np.array([0., 0.])
     gripper_load = np.array([0., 0.])
-    action = np.array([0., 0.])
+    actionGP = np.array([0., 0.])
+    actionVS = np.array([0., 0.])
     gripper_closed = 'open'
-    tol = 2.5
+    tol = 1.5
     goal_tol = 10.0
     horizon = 1
 
@@ -37,8 +38,8 @@ class general_control():
         rospy.Subscriber('/hand_control/gripper_status', String, self.callbackGripperStatus)
 
         rospy.Service('/control', pathTrackReq, self.CallbackTrack)
-        rospy.Subscriber('/gp_controller/action', Float32MultiArray, self.CallbackBestAction)
-        # rospy.Subscriber('/vs_controller/action', Float32MultiArray, self.CallbackBestAction)
+        rospy.Subscriber('/gp_controller/action', Float32MultiArray, self.CallbackBestActionGP)
+        rospy.Subscriber('/vs_controller/action', Float32MultiArray, self.CallbackBestActionVS)
         self.pub_current_goal = rospy.Publisher('/control/goal', Float32MultiArray, queue_size=10)
         self.pub_horizon = rospy.Publisher('/control/horizon', Float32MultiArray, queue_size=10)
         self.pub_exclude = rospy.Publisher('/control/exclude', Float32MultiArray, queue_size=10)
@@ -89,8 +90,11 @@ class general_control():
         msg = Float32MultiArray()
         msg.data = S[i_path,:]
         msge = Float32MultiArray()
-        self.pub_current_goal.publish(msg)
-        self.rate.sleep()
+        for i in range(5):
+            self.pub_current_goal.publish(msg)
+            self.rate.sleep()
+
+        rospy.sleep(1.0)
         
         self.plot_clear_srv()
         self.plot_ref_srv(S.reshape((-1,)))
@@ -101,6 +105,7 @@ class general_control():
         d_prev = 1000
         action = np.array([0.,0.])
         dd_count = 0
+        Controller = 'GP'
         
         print("[control] Tracking path...")
         while 1:
@@ -108,15 +113,17 @@ class general_control():
             state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
             if i_path == S.shape[0]-1:
                 msg.data = S[-1,:]
-            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]):
+            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or (self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]) and self.weightedL2(state[:]-S[i_path+1,:]) < self.tol*3):
                 i_path += 1
                 msg.data = S[i_path,:]
                 count = 0
                 change = True
-                self.tol = 2.5
+                self.tol = 1.5
                 dd_count = 0
-            # elif count > 100:# and i_path < S.shape[0]-1:
-            #     self.tol = 3
+                Controller = 'GP'
+            elif count > 100:# and i_path < S.shape[0]-1:
+                self.tol = 2.5
+                Controller == 'VS'
             self.pub_current_goal.publish(msg)
 
             dd = self.weightedL2(state[:]-S[i_path,:]) - d_prev
@@ -124,11 +131,14 @@ class general_control():
             msge.data = action if dd_count > 3 else np.array([0.,0.])
             self.pub_exclude.publish(msge)
 
-            # if n == 0 and not change and dd < 0:
-            #     n = 1
-            #     print "Extended..."
-            if n <= 0:# or dd_count > 5:
-                action = self.action
+            if n == 0 and not change and dd < 0:
+                n = 1
+                print "Extended..."
+            if n <= 0 or dd_count > 5:
+                if 1:#Controller == 'GP':
+                    action = self.actionGP
+                else:
+                    action = self.actionVS
                 n = self.stepSize
                 dd_count = 0
 
@@ -139,7 +149,7 @@ class general_control():
             suc = self.move_srv(action).success
             n -= 1
 
-            if not suc or self.drop or count > 400:
+            if not suc or self.drop or count > 1000:
                 print("[control] Fail.")
                 success = False
                 break
@@ -167,8 +177,11 @@ class general_control():
     def callbackGripperLoad(self, msg):
         self.gripper_load = np.array(msg.data)
 
-    def CallbackBestAction(self, msg):
-        self.action = np.array(msg.data)
+    def CallbackBestActionGP(self, msg):
+        self.actionGP = np.array(msg.data)
+
+    def CallbackBestActionVS(self, msg):
+        self.actionVS = np.array(msg.data)
 
     def callbackGripperStatus(self, msg):
         self.gripper_closed = msg.data == "closed"

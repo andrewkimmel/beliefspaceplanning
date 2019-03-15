@@ -50,6 +50,13 @@ class vs_controller():
 
         action = np.dot( self.J, v) 
 
+        K = 0.5
+        action *= K*np.linalg.norm(goal - self.obj_pos)
+
+        # action = np.round(action)
+        # action[action > 1.] = 1.0
+        # action[action < -1.] = -1.0
+
         return action
 
     def callbackObj(self, msg):
