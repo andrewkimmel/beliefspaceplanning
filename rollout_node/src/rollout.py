@@ -30,7 +30,7 @@ class rollout():
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
         rospy.Subscriber('/hand_control/gripper_status', String, self.callbackGripperStatus)
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
-        self.action_pub = rospy.Publisher('/collect/gripper_action', Float32MultiArray, queue_size = 10)
+        self.action_pub = rospy.Publisher('/rollout/gripper_action', Float32MultiArray, queue_size = 10)
 
         self.obs_srv = rospy.ServiceProxy('/hand_control/observation', observation)
         self.drop_srv = rospy.ServiceProxy('/hand_control/IsObjDropped', IsDropped)

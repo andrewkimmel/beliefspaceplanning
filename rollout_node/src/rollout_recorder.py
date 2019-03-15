@@ -8,7 +8,7 @@ from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
 from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import gets
 
-state_form = 'pos_load_joints' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
+state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
 
 class rolloutRec():
     discrete_actions = True
@@ -35,7 +35,7 @@ class rolloutRec():
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
         rospy.Subscriber('/hand/obj_vel', Float32MultiArray, self.callbackObjVel)
         rospy.Subscriber('/hand_control/cylinder_drop', Bool, self.callbackDrop)
-        rospy.Subscriber('/collect/gripper_action', Float32MultiArray, self.callbackAction)
+        rospy.Subscriber('/rollout/gripper_action', Float32MultiArray, self.callbackAction)
         rospy.Subscriber('/hand/my_joint_states', Float32MultiArray, self.callbackJoints)
 
         rospy.Service('/rollout_recorder/trigger', Empty, self.callbackTrigger)
