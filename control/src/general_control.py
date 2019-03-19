@@ -56,7 +56,7 @@ class general_control():
 
         self.state_dim = var.state_dim_
         self.action_dim = var.state_action_dim_-var.state_dim_
-        self.stepSize = 5# var.stepSize_
+        self.stepSize = var.stepSize_
 
         print("[control] Ready to track path...")
         self.rate = rospy.Rate(2) 
@@ -66,9 +66,9 @@ class general_control():
 
         path = np.array(req.desired_path).reshape(-1, self.state_dim)
         
-        real_path, success = self.run_tracking(path)
+        real_path, actions, success = self.run_tracking(path)
 
-        return {'real_path': real_path, 'success' : success}
+        return {'real_path': real_path, 'actions': actions, 'success' : success}
 
     def weightedL2(self, ds, W = np.diag(np.array([1.,1.,0.2, 0.2]))):
         # return np.sqrt( np.dot(ds.T, np.dot(W, ds)) )
@@ -113,7 +113,7 @@ class general_control():
             state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
             if i_path == S.shape[0]-1:
                 msg.data = S[-1,:]
-            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or (self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]) and self.weightedL2(state[:]-S[i_path+1,:]) < self.tol*3):
+            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or (self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]) and self.weightedL2(state[:]-S[i_path+1,:])):# < self.tol*3):
                 i_path += 1
                 msg.data = S[i_path,:]
                 count = 0
@@ -131,11 +131,11 @@ class general_control():
             msge.data = action if dd_count > 3 else np.array([0.,0.])
             self.pub_exclude.publish(msge)
 
-            if n == 0 and not change and dd < 0:
-                n = 1
-                print "Extended..."
-            if n <= 0 or dd_count > 5:
-                if 1:#Controller == 'GP':
+            # if n == 0 and not change and dd < 0:
+            #     n = 1
+            #     print "Extended..."
+            if n <= 0:# or dd_count > 5:
+                if 0:#Controller == 'GP':
                     action = self.actionGP
                 else:
                     action = self.actionVS
@@ -159,13 +159,18 @@ class general_control():
                 success = True
                 break
 
+            # if total_count > 100:
+            #     success = True
+            #     break
+
             count += 1
             total_count += 1
             self.rate.sleep()
 
         Sreal = self.gets_srv().states
+        Areal = self.gets_srv().actions
 
-        return Sreal, success
+        return Sreal, Areal, success
 
     def callbackDrop(self, msg):
         self.drop = msg.data
