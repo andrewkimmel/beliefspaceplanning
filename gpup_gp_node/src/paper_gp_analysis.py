@@ -271,7 +271,6 @@ if 0:
 
     naive, = ax.plot([], [], '-k')
 
-
     # plt.xlim(np.min(Ypred_mean_gp, 0)[0]*0-5, np.max(Ypred_mean_gp, 0)[0]*1.0)
     # plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.99, np.max(Ypred_mean_gp, 0)[1]*1.01)
 
@@ -366,6 +365,6 @@ plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP me
 plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '.-c', label='Naive')
 plt.legend(loc='best')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/path' + str(np.random.randint(100000)) + '.png', dpi=300)
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/images/path' + str(np.random.randint(100000)) + '.png', dpi=300)
 plt.show()
 
