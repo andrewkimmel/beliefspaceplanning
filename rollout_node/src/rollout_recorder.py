@@ -56,7 +56,7 @@ class rolloutRec():
     def callbackJointsVel(self, msg):
         self.joint_velocities = np.array(msg.data)
 
-        self.fail = True if any(np.abs(self.joint_velocities) >= 15.) else False
+        self.fail = True if any(np.abs(self.joint_velocities) >= 12.) else False
 
     def callbackAction(self, msg):
         self.action = np.array(msg.data)

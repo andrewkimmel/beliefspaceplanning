@@ -60,7 +60,7 @@ class actorPubRec():
     def callbackJointsVel(self, msg):
         self.joint_velocities = np.array(msg.data)
 
-        self.fail = True if any(np.abs(self.joint_velocities) >= 15.) else False
+        self.fail = True if any(np.abs(self.joint_velocities) >= 12.) else False
 
     def callbackCross(self, msg):
         self.pi_cross = np.array(msg.data)

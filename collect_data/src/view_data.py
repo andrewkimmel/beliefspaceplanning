@@ -14,7 +14,7 @@ def main():
     texp.process_transition_data(stepSize = 1, plot = True)
     texp.process_svm(stepSize = 1)
 
-    texp.plot_data()
+    # texp.plot_data()
 
     return 1
 

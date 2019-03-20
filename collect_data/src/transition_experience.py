@@ -100,11 +100,13 @@ class transition_experience():
 
         plt.figure(1)
         ax1 = plt.subplot(211)
-        ax1.set_aspect('equal')
+        # ax1.set_aspect('equal')
         ax1.plot(states[:,0],states[:,2],'.k')
         # ax1.plot(states[:,0],states[:,1],'.y')
         ax1.plot(failed_states[:,0],failed_states[:,2],'.r')
         ax1.set(title='Link 1')
+        plt.xlabel('Angle')
+        plt.ylabel('Angular velocity')
         # plt.xlim(-100., 100.)
         # plt.ylim(40., 140.)
         
@@ -112,6 +114,8 @@ class transition_experience():
         ax2.plot(states[:,1],states[:,3],'.k')
         ax2.plot(failed_states[:,1],failed_states[:,3],'.r')
         ax2.set(title='Link 2')
+        plt.xlabel('Angle')
+        plt.ylabel('Angular velocity')
         
         plt.show()
 
@@ -200,7 +204,10 @@ class transition_experience():
         print "Saved mat file with " + str(D.shape[0]) + " transition points."
 
         if plot:
+            ax1 = plt.subplot(121)
             plt.scatter(D[:,0], D[:,2])
+            ax2 = plt.subplot(122)
+            plt.scatter(D[:,1], D[:,3])
             plt.show()
     
     def process_svm(self, stepSize = 1):

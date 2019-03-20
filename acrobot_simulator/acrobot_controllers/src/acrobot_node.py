@@ -26,7 +26,7 @@ class SimAcrobotNode():
     # ref_angles = np.array([0.,0.,0.,0.,0.,0.]) # spring reference angle left_proximal, left_distal, right_proximal, right_distal   
 
     dc = 0.025
-    max_load = 0.5
+    max_load = 0.85
     
     def __init__(self):
         rospy.init_node('SimAcrobotNode', anonymous=True)

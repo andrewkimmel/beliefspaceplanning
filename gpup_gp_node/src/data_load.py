@@ -1,11 +1,13 @@
 
 import numpy as np
 from scipy.io import loadmat
-from sklearn.neighbors import KDTree 
+from sklearn.neighbors import KDTree, NearestNeighbors
 import os.path
 import pickle
 import matplotlib.pyplot as plt
 import var
+
+# np.random.seed(1)
 
 class data_load(object):
     # Dillute = 100000
@@ -20,6 +22,7 @@ class data_load(object):
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.load()
         self.dr = dr
+        self.K = K
 
         if os.path.exists(self.path + self.prefix + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj'):
             with open(self.path + self.prefix + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
@@ -85,15 +88,23 @@ class data_load(object):
 
         self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
 
-        print('[data_load] Loading data to kd-tree...')
-        if os.path.exists(self.path + self.prefix + 'kdtree' + self.postfix + '.obj'):
-            with open(self.path + self.prefix + 'kdtree' + self.postfix + '.obj', 'rb') as f: 
-                self.kdt = pickle.load(f)
-        else:
-            self.kdt = KDTree(self.Xtrain, leaf_size=100, metric='euclidean')
-            with open(self.path + self.prefix + 'kdtree' + self.postfix + '.obj', 'wb') as f:
-                pickle.dump(self.kdt, f)
-        print('[data_load] kd-tree ready.')
+        print('[data_load] Loading data to NN object...')
+        self.kdt = NearestNeighbors(n_neighbors=self.K, algorithm='ball_tree', metric=self.wrapEuclidean) # Not really kd-tree
+        self.kdt.fit(self.Xtrain)
+        print('[data_load] NN ready.')
+
+    def wrapEuclidean(self, x, y):
+        v = 0.5 # np.pi
+
+        d = 0
+        s = 0
+        for i in range(self.state_dim):
+            d = np.abs(x[i]-y[i])
+            if i < 2:
+                d = 2*v - d if d > v else d
+            s += d**2
+
+        return np.sqrt( s )
 
     def normz(self, x):
         d = len(x)
@@ -147,9 +158,13 @@ class data_load(object):
         N = 1000
         for i in range(N):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
-            sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
+            # sa = np.array([0.93625701, 0.64523699, 0.17780485, 0.30417818, 0.        ])# 
+            while 1:
+                sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
+                if sa[1] > 0.9:
+                    break
 
-            idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
+            idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = K, return_distance=False)
             X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
             Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 
