@@ -81,7 +81,8 @@
   <joint name="joint1" type="continuous">
     <parent link="world"/>
     <child link="link1"/>
-    <origin xyz="0 0 0.3" rpy="${PI/2} 0 0"/>
+    <origin xyz="0 0 ${height1 + height2 + axel_offset2}" rpy="0 ${PI} 0"/>
+    <!-- <origin xyz="0 0 0.3" rpy="${PI/2} 0 0"/> -->
     <axis xyz="0 1 0"/>
     <!-- <dynamics damping="0.1"/> -->
   </joint>

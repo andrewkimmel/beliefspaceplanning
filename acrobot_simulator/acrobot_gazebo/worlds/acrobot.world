@@ -16,14 +16,14 @@
       <!-- <max_step_size>0.001000</max_step_size>
       <real_time_factor>1.000000</real_time_factor>
       <real_time_update_rate>1000.000000</real_time_update_rate> -->
-      <gravity>0.000000 0.000000 0.0000</gravity>
+      <gravity>0.000000 0.000000 -9.81000</gravity>
     </physics>
 
     <!-- Focus camera on tall pendulum -->
     <gui fullscreen='0'>
       <camera name='user_camera'>
         <!-- <pose>0 0 4. 0.000000 0. 1.57 0.</pose> -->
-        <pose>-0.001 -0.001 3.013 0.0 1.57 0.</pose>
+        <pose>-0.000017 2.844 0.444 0.0 0.048 -1.584</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>

@@ -25,7 +25,7 @@ class SimAcrobotNode():
     act_vel = np.array([0,0]) # left_proximal, left_distal, right_proximal, right_distal
     # ref_angles = np.array([0.,0.,0.,0.,0.,0.]) # spring reference angle left_proximal, left_distal, right_proximal, right_distal   
 
-    dc = 0.05
+    dc = 0.025
     max_load = 0.5
     
     def __init__(self):

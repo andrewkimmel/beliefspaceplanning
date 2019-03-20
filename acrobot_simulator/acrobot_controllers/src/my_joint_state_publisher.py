@@ -60,27 +60,41 @@ class my_joint_state_publisher():
         q_world = PyKDL.Rotation.Quaternion(msg.pose[self.order[0]].orientation.x, msg.pose[self.order[0]].orientation.y, msg.pose[self.order[0]].orientation.z, msg.pose[self.order[0]].orientation.w)
         q_1 = PyKDL.Rotation.Quaternion(msg.pose[self.order[1]].orientation.x, msg.pose[self.order[1]].orientation.y, msg.pose[self.order[1]].orientation.z, msg.pose[self.order[1]].orientation.w)
         q_2 = PyKDL.Rotation.Quaternion(msg.pose[self.order[2]].orientation.x, msg.pose[self.order[2]].orientation.y, msg.pose[self.order[2]].orientation.z, msg.pose[self.order[2]].orientation.w)
-        dq_1 = msg.twist[self.order[1]].angular.z
-        dq_2 = msg.twist[self.order[2]].angular.z
+        dq_1 = msg.twist[self.order[1]].angular.y
+        dq_2 = msg.twist[self.order[2]].angular.y
     
         if 1:
             a = (q_1.Inverse()*q_world).GetEulerZYX()
-            if a[2] > 0:
+            if a[2] > 1:
                 self.joint_angles[0] = a[1]
-            elif a[0] < 0:
+            elif a[1] > 0:
                 self.joint_angles[0] = np.pi - a[1]
             else:
                 self.joint_angles[0] = -(np.pi + a[1])
             b = (q_2.Inverse()*q_1).GetEulerZYX()
-            if b[0] > 3.13 or (b[0] < -3.13 and b[2] < -3.13):
-                self.joint_angles[1] = b[1]
-            elif b[0] < 0:
-                self.joint_angles[1] = np.pi - b[1]
+            if b[2] < 0.1:
+                self.joint_angles[1] = -b[1]
+            elif b[0] > 0:
+                self.joint_angles[1] = -(np.pi - b[1])
             else:
-                self.joint_angles[1] = -(np.pi + b[1])
+                self.joint_angles[1] = np.pi + b[1]
 
-            self.joint_angles[0] = -(np.pi - self.joint_angles[0]) if self.joint_angles[0] >= 0 else np.pi + self.joint_angles[0]
-            self.joint_angles[1] = self.joint_angles[1] - np.pi if self.joint_angles[1] >= 0 else self.joint_angles[1] + np.pi
+            # For horizontal configuration
+            # if a[2] > 0:
+            #     self.joint_angles[0] = a[1]
+            # elif a[0] < 0:
+            #     self.joint_angles[0] = np.pi - a[1]
+            # else:
+            #     self.joint_angles[0] = -(np.pi + a[1])
+            # b = (q_2.Inverse()*q_1).GetEulerZYX()
+            # if b[0] > 3.13 or (b[0] < -3.13 and b[2] < -3.13):
+            #     self.joint_angles[1] = b[1]
+            # elif b[0] < 0:
+            #     self.joint_angles[1] = np.pi - b[1]
+            # else:
+            #     self.joint_angles[1] = -(np.pi + b[1])
+            # self.joint_angles[0] = -(np.pi - self.joint_angles[0]) if self.joint_angles[0] >= 0 else np.pi + self.joint_angles[0]
+            # self.joint_angles[1] = self.joint_angles[1] - np.pi if self.joint_angles[1] >= 0 else self.joint_angles[1] + np.pi
 
             # Apply mean filter to joint velocities with windowSize
             self.joint_vels = np.array([dq_1, (dq_2 - dq_1)])
