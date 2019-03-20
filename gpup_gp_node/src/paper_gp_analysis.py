@@ -113,14 +113,14 @@ if 0:
         print("Rollout number " + str(j) + ' with path ' + tr + "...")
         
         R = rollout_srv(Af)
-        Sro = np.array(R.states).reshape(-1,state_dim)
+        Sro = np.array(R.states).reshape(-1,state_dim-2)
 
         Pro.append(Sro)
         
-        with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_-4) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
+        with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
             pickle.dump(Pro, f)
 
-f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_-8) + '_m' + str(stepSize)
+f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
 with open(f + '.pkl') as f:  
     Pro = pickle.load(f) 
 
@@ -133,13 +133,11 @@ for j in range(len(Pro)):
     Sro = Pro[j]
     # ax.plot(Sro[:,0], Sro[:,1], 'b')
     # plt.plot(Sro[:,0], Sro[:,1], '.-r')
-    S.append(Sro[0,:state_dim])
+    S.append(Sro[0,:state_dim-2])
     if Sro.shape[0]>=A.shape[0]:
         c+= 1
 s_start = np.mean(np.array(S), 0)
-s_start = np.concatenate((s_start, s_start, s_start), axis=0)
-sigma_start = np.std(np.array(S), 0) + np.concatenate((np.array([0.,0.]), np.ones((state_dim-2-8,))*1e-3), axis=0)
-sigma_start = np.concatenate((sigma_start, sigma_start, sigma_start), axis=0)
+sigma_start = np.std(np.array(S), 0) + np.concatenate((np.array([0.,0.]), np.ones((state_dim-4,))*1e-3), axis=0)
 # ax.plot(s_start_mean[0], s_start_mean[1], 'om')
 # patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
 # ax.add_artist(patch)
@@ -176,10 +174,11 @@ if 1:
     
     t_gp = 0
 
-    s = np.copy(s_start)
+    s = np.concatenate((s_start, A[0,:]), axis=0)
+    sigma_start = np.concatenate((sigma_start, np.array([0,0])), axis=0)
     S = np.tile(s, (Np,1))# + np.random.normal(0, sigma_start, (Np, state_dim))
-    Ypred_mean_gp = s.reshape(1,state_dim)
-    Ypred_std_gp = sigma_start.reshape(1,state_dim)
+    Ypred_mean_gp = s[:state_dim-2].reshape(1,state_dim-2)
+    Ypred_std_gp = sigma_start[:state_dim-2].reshape(1,state_dim-2)
 
     Pgp = []; 
     p_gp = 1.
@@ -190,21 +189,22 @@ if 1:
         a = A[i,:]
 
         st = time.time()
-        res = gp_srv(S.reshape(-1,1), a)
+        res = gp_srv(S.reshape(-1, 1), a)
         t_gp += (time.time() - st) 
 
-        S_next = np.array(res.next_states).reshape(-1,state_dim)
+        S_next = np.array(res.next_states).reshape(-1,state_dim-2)
+
         if res.node_probability < p_gp:
             p_gp = res.node_probability
         s_mean_next = np.mean(S_next, 0)
         s_std_next = np.std(S_next, 0)
-        S = S_next
+        S = np.concatenate((S_next, np.tile(a, (Np,1))), axis=1)
 
         # s_mean_next = np.ones((1,state_dim))
         # s_std_next = np.ones((1,state_dim))
 
-        Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
-        Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
+        Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim-2), axis=0)
+        Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim-2), axis=0)
 
     t_gp /= A.shape[0]
 
@@ -214,8 +214,8 @@ if 1:
     Np = 1 # Number of particles
     t_naive = 0
 
-    s = np.copy(s_start) + np.random.normal(0, sigma_start)
-    Ypred_naive = s.reshape(1,state_dim)
+    s = np.copy(np.concatenate((s_start, A[0,:]), axis=0)) + np.random.normal(0, sigma_start)
+    Ypred_naive = s[:state_dim-2].reshape(1,state_dim-2)
 
     print("Running (open loop) path...")
     p_naive = 1.
@@ -230,11 +230,11 @@ if 1:
         if res.node_probability < p_naive:
             p_naive = res.node_probability
         s_next = np.array(res.next_state)
-        s = s_next
+        s = np.concatenate((s_next, a), axis=0)
 
         # s_next = np.ones((1,state_dim))
 
-        Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
+        Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim-2), axis=0)
 
     t_naive /= A.shape[0]
 
@@ -247,7 +247,7 @@ if 1:
 
     s = np.copy(s_start)
     S = np.tile(s, (Np,1))
-    Ypred_bmean = s.reshape(1,state_dim)
+    Ypred_bmean = s.reshape(1,state_dim-2)
 
     print("Running (open loop) path...")
     p_mean = 1.
@@ -265,9 +265,9 @@ if 1:
         # s_mean_next = np.mean(S_next, 0)
         # S = np.tile(s_mean_next, (Np,1))
 
-        s_mean_next = np.ones((1,state_dim))
+        s_mean_next = np.ones((1,state_dim-2))
 
-        Ypred_bmean = np.append(Ypred_bmean, s_mean_next.reshape(1,state_dim), axis=0)
+        Ypred_bmean = np.append(Ypred_bmean, s_mean_next.reshape(1,state_dim-2), axis=0)
 
     t_mean /= A.shape[0]
 
@@ -279,9 +279,9 @@ if 1:
     t_gpup = 0
 
     s = np.copy(s_start)
-    sigma_x = sigma_start
-    Ypred_mean_gpup = s.reshape(1,state_dim)
-    Ypred_std_gpup = sigma_x.reshape(1,state_dim)
+    sigma_x = sigma_start[:state_dim-2]
+    Ypred_mean_gpup = s.reshape(1,state_dim-2)
+    Ypred_std_gpup = sigma_x.reshape(1,state_dim-2)
 
     print("Running (open loop) path...")
     p_gpup = 1
@@ -300,10 +300,10 @@ if 1:
         # s = s_next
         # sigma_x = sigma_next
 
-        s_next = sigma_next = np.ones((1,state_dim))
+        s_next = sigma_next = np.ones((1,state_dim-2))
 
-        Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
-        Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)
+        Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim-2), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
+        Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim-2), axis=0)
 
     t_gpup /= A.shape[0]
 
@@ -577,7 +577,7 @@ plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
 #     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
 #     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png', dpi=300)
+# plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png', dpi=300)
 plt.show()
 
 

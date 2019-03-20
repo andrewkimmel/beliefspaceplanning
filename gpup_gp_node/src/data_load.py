@@ -63,7 +63,7 @@ class data_load(object):
         self.state_dim = var.state_dim_
 
         self.Xtrain = Qtrain[:,:self.state_action_dim]
-        self.Ytrain = Qtrain[:,self.state_action_dim:]
+        self.Ytrain = Qtrain[:,self.state_action_dim:][:,:self.state_dim-2]
 
         # Normalize
         self.x_max_X = np.max(self.Xtrain, axis=0)
@@ -71,7 +71,7 @@ class data_load(object):
         self.x_max_Y = np.max(self.Ytrain, axis=0)
         self.x_min_Y = np.min(self.Ytrain, axis=0)
 
-        for i in range(self.state_dim):
+        for i in range(self.state_dim-2):
             tmp = np.max([self.x_max_X[i], self.x_max_Y[i]])
             self.x_max_X[i] = tmp
             self.x_max_Y[i] = tmp
@@ -81,10 +81,10 @@ class data_load(object):
 
         for i in range(self.state_action_dim):
             self.Xtrain[:,i] = (self.Xtrain[:,i]-self.x_min_X[i])/(self.x_max_X[i]-self.x_min_X[i])
-        for i in range(self.state_dim):
+        for i in range(self.state_dim-2):
             self.Ytrain[:,i] = (self.Ytrain[:,i]-self.x_min_Y[i])/(self.x_max_Y[i]-self.x_min_Y[i])
 
-        self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
+        self.Ytrain -= self.Xtrain[:,:self.state_dim-2] # The target set is the state change
 
         print('[data_load] Loading data to kd-tree...')
         if os.path.exists(self.path + 'kdtree' + self.postfix + '.obj'):
@@ -152,7 +152,7 @@ class data_load(object):
 
             idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
             X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
-            Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+            Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim-2)
 
             if K_manifold > 0:
                 X_nn, Y_nn = reduction(sa, X_nn, Y_nn, K_manifold)

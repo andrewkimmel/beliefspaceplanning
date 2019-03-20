@@ -169,7 +169,7 @@ class transition_experience():
         def clean(D, done, mode):
             print('[transition_experience] Cleaning data...')
 
-            jj = range(14, 16)
+            jj = range(8, 10)
             i = 0
             inx = []
             while i < D.shape[0]:
@@ -180,7 +180,7 @@ class transition_experience():
 
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
-            ia = range(12,14) 
+            ia = range(6, 8) 
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize, ia]) or np.any(done[i:i+stepSize]):
@@ -211,6 +211,26 @@ class transition_experience():
                 i_k += 2
             
             return np.array(DS)
+
+        def add_last_action(S, A, done):
+            
+            i_s = 0; i_k = 1
+            DS = []
+            while i_k < S.shape[0]:
+                while not done[i_k]:
+                    i_k += 1
+                
+                for i in range(i_s, i_k + 1):
+                    if i==i_s:
+                        ds = np.concatenate((S[i], A[i]), axis=0)
+                    else:
+                        ds = np.concatenate((S[i], A[i-1]), axis=0)
+                    DS.append(ds)
+                
+                i_s = i_k + 1
+                i_k += 2
+            
+            return np.array(DS)
                 
         print('[transition_experience] Saving transition data...')
         is_start = 1
@@ -225,7 +245,8 @@ class transition_experience():
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
-        states = add_vel(states, done)
+        # states = add_vel(states, done)
+        states = add_last_action(states, actions, done)
 
         next_states = np.roll(states, -1, axis=0)
 

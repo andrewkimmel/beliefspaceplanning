@@ -50,7 +50,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim, dr = 'diff')
         else:
-            self.K = 50
+            self.K = 100
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
@@ -102,20 +102,20 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         sa = np.mean(SA, 0)
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
-        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim-2)
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
 
-        dS_next = np.zeros((SA.shape[0], self.state_dim))
-        std_next = np.zeros((SA.shape[0], self.state_dim))
-        for i in range(self.state_dim):
+        dS_next = np.zeros((SA.shape[0], self.state_dim-2))
+        std_next = np.zeros((SA.shape[0], self.state_dim-2))
+        for i in range(self.state_dim-2):
             gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
             mm, vv = gp_est.batch_predict(SA[:,:self.state_dim])
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
 
-        S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
+        S_next = SA[:,:self.state_dim-2] + np.random.normal(dS_next, std_next)
 
         if plotRegData and False:
             if np.random.uniform() < 1:
@@ -145,21 +145,21 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     def one_predict(self, sa):
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
-        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim-2)
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
 
-        ds_next = np.zeros((self.state_dim,))
-        std_next = np.zeros((self.state_dim,))
-        for i in range(self.state_dim):
+        ds_next = np.zeros((self.state_dim-2,))
+        std_next = np.zeros((self.state_dim-2,))
+        for i in range(self.state_dim-2):
             gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
             mm, vv = gp_est.predict(sa[:self.state_dim])
             ds_next[i] = mm
             # vv = [[0.0]] if np.abs(vv) < 1e-15 else vv
             std_next[i] = np.sqrt(np.diag(vv))
 
-        s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
+        s_next = sa[:self.state_dim-2] + np.random.normal(ds_next, std_next)
 
         if plotRegData:
             global cO
