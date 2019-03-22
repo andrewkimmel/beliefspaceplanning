@@ -1,0 +1,6 @@
+mean_only_particles_goal2_run0_traj: 100.0, 100.0
+mean_only_particles_goal5_run0_traj: 100.0, 100.0
+mean_only_particles_goal4_run0_traj: 100.0, 100.0
+mean_only_particles_goal1_run0_traj: 100.0, 100.0
+mean_only_particles_goal3_run0_traj: 0.0, 100.0
+mean_only_particles_goal0_run0_traj: 100.0, 100.0

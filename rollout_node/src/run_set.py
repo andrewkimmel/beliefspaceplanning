@@ -9,6 +9,8 @@ import pickle
 from rollout_node.srv import rolloutReq
 import time
 import glob
+from scipy.io import loadmat
+
 
 rollout = 0
 
@@ -135,6 +137,12 @@ set_num = Set
 set_modes = ['robust_particles_pc', 'mean_only_particles']#, 'mean_only_particles' , 'naive_with_svm']
 
 if not rollout and 1:
+
+    file = 'sim_data_discrete_v13_d4_m10.mat'
+    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    Q = loadmat(path + file)
+    Data = Q['D']
+
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
     for set_mode in set_modes:
@@ -203,7 +211,9 @@ if not rollout and 1:
             print("Finished episode success rate: " + str(c) + "%")
 
             # fig = plt.figure(k)
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=(12,12))
+            plt.plot(Data[:,0], Data[:,1], '.y', zorder=0)
+
             p = 0
             for S in Pro:
                 plt.plot(S[:,0], S[:,1], '.--r')
@@ -244,7 +254,7 @@ if not rollout and 1:
                     break
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
-            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png')
+            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=300)
             # plt.show()
 
         fo.close()

@@ -16,8 +16,8 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 Set = '6'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
@@ -148,10 +148,9 @@ set_modes = ['robust_particles_pc', 'mean_only_particles']#, 'mean_only_particle
 if not rollout and 1:
 
     file = 'sim_data_discrete_v13_d4_m10.mat'
-    path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     Q = loadmat(path + file)
     Data = Q['D']
-
 
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/cl_results/'
 
