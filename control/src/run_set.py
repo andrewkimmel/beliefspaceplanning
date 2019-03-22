@@ -9,18 +9,19 @@ import pickle
 from control.srv import pathTrackReq
 import time
 import glob
+from scipy.io import loadmat
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
 Set = '6'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-set_modes = ['robust_particles_pc']
+set_modes = ['mean_only_particles']
 
 # if Set == '1':
 #     # Goal centers - set 1
@@ -145,6 +146,13 @@ set_num = Set
 set_modes = ['robust_particles_pc', 'mean_only_particles']#, 'mean_only_particles' , 'naive_with_svm']
 
 if not rollout and 1:
+
+    file = 'sim_data_discrete_v13_d4_m10.mat'
+    path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    Q = loadmat(path + file)
+    Data = Q['D']
+
+
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/cl_results/'
 
     for set_mode in set_modes:
@@ -195,7 +203,7 @@ if not rollout and 1:
             maxR = A.shape[0]+1
             maxX = np.max([x.shape[0] for x in Pro])
             
-            c = np.sum([(1 if x.shape[0]==maxR else 0) for x in Pro])
+            c = np.sum([(1 if x else 0) for x in Suc])
 
             Smean = []
             Sstd = []
@@ -212,8 +220,10 @@ if not rollout and 1:
             c = float(c) / len(Pro)*100
             print("Finished episode success rate: " + str(c) + "%")
 
-            # fig = plt.figure(k)
-            fig, ax = plt.subplots()
+            # fig = plt.figure()
+            fig, ax = plt.subplots(figsize=(12,12))
+            plt.plot(Data[:,0], Data[:,1], '.y', zorder=0)
+
             p = 0
             for S in Pro:
                 plt.plot(S[:,0], S[:,1], '.--r')
@@ -254,7 +264,7 @@ if not rollout and 1:
                     break
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
-            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png')
+            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=250)
             # plt.show()
 
         fo.close()
