@@ -71,13 +71,14 @@ seed = [
 ## ROBUST PLUS GOALS part 4 - Avishai changed this
 
 nodes =[
-"robust_particles_pc_svmHeuristic",
+# "robust_particles_pc_svmHeuristic",
+"robust_particles_pc",
 "naive_with_svm",
 "mean_only_particles",
 ]
 
 goals = [
-"0.9, -0.9",
+"0.95, -0.9",
 # "0.9,0.9",
 # "0.9,0"
 ]
@@ -88,15 +89,15 @@ goals = [
 # # "-.95, .95"
 # ]
 
-s= "-.9,-.9"
+s= "-.95,-.9"
 
-GOAL_RADIUS = .95
+GOAL_RADIUS = .08
 TOTAL_PARTICLES = 420
-# PROBABILITY_CONSTRAINT = 0.7
-PROBABILITY_CONSTRAINT = 0.85
+PROBABILITY_CONSTRAINT = 0.95
+SUCCESS_PROBABILITY_CONSTRAINT = 0.9
 # PROBABILITY_CONSTRAINT = 0.6
-SUCCESS_PROBABILITY_CONSTRAINT = 0.5
-FAILURE_CONSTANT = 10.0
+# SUCCESS_PROBABILITY_CONSTRAINT = 0.4
+FAILURE_CONSTANT = 200.0
 
 if __name__ == "__main__":
     for x in range(20):

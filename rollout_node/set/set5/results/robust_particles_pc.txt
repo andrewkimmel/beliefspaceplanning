@@ -1,0 +1,8 @@
+robust_particles_pc_goal0_run0_plan: 78.9473684211, 78.9473684211
+robust_particles_pc_goal0_run1_plan: 36.8421052632, 26.3157894737
+robust_particles_pc_svmHeuristic_goal0_run2_plan: 52.6315789474, 31.5789473684
+robust_particles_pc_svmHeuristic_goal0_run0_plan: 36.8421052632, 26.3157894737
+robust_particles_pc_svmHeuristic_goal0_run1_plan: 73.6842105263, 63.1578947368
+robust_particles_pc_goal0_run2_plan: 36.8421052632, 31.5789473684
+robust_particles_pc_svmHeuristic_goal0_run3_plan: 57.8947368421, 57.8947368421
+robust_particles_pc_goal0_run3_plan: 57.8947368421, 57.8947368421

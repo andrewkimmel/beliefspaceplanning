@@ -50,9 +50,9 @@ if tr == '1':
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 0:
+if 1:
     Af = A.reshape((-1,))
     Pro = []
     for j in range(10):
@@ -107,6 +107,8 @@ Smean = np.array(Smean)
 Sstd = np.array(Sstd)
 
 print("Roll-out success rate: " + str(float(c) / len(Pro)*100) + "%")
+
+Smean = Pro[0]
 
 # plt.show()
 # exit(1)
@@ -298,37 +300,37 @@ with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(v
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_inter, Ypred_bmean, stats, A = pickle.load(f)  
 
 # Compare paths
-d_gp = d_gpup = d_naive = d_mean = d = 0.
-for i in range(A.shape[0]):
-    if i < Smean.shape[0]-1:
-        d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
-    d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
-    d_naive += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
-    d_mean += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
-    d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
-d_gp = np.sqrt(d_gp/A.shape[0])
-d_naive = np.sqrt(d_naive/A.shape[0])
-d_mean = np.sqrt(d_mean/A.shape[0])
-d_gpup = np.sqrt(d_gpup/A.shape[0])
+# d_gp = d_gpup = d_naive = d_mean = d = 0.
+# for i in range(A.shape[0]):
+#     if i < Smean.shape[0]-1:
+#         d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
+#     d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
+#     d_naive += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
+#     d_mean += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
+#     d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
+# d_gp = np.sqrt(d_gp/A.shape[0])
+# d_naive = np.sqrt(d_naive/A.shape[0])
+# d_mean = np.sqrt(d_mean/A.shape[0])
+# d_gpup = np.sqrt(d_gpup/A.shape[0])
 
-print "-----------------------------------"
-print "Path length: " + str(d)
-print "-----------------------------------"
-print "GP rmse: " + str(d_gp) + "mm"
-print "Naive rmse: " + str(d_naive) + "mm"
-print "mean rmse: " + str(d_mean) + "mm"
-print "GPUP rmse: " + str(d_gpup) + "mm"
-print "-----------------------------------"
-print "GP runtime: " + str(stats[0][0]) + "sec."
-print "GP Naive: " + str(stats[0][2]) + "sec."
-print "GP mean: " + str(stats[0][1]) + "sec."
-print "GPUP time: " + str(stats[0][3]) + "sec."
-print "-----------------------------------"
-print "GP probability: " + str(stats[1][0])
-print "GP naive probability: " + str(stats[1][1])
-print "GP mean probability: " + str(stats[1][2])
-print "GPUP probability: " + str(stats[1][3])
-print "-----------------------------------"
+# print "-----------------------------------"
+# print "Path length: " + str(d)
+# print "-----------------------------------"
+# print "GP rmse: " + str(d_gp) + "mm"
+# print "Naive rmse: " + str(d_naive) + "mm"
+# print "mean rmse: " + str(d_mean) + "mm"
+# print "GPUP rmse: " + str(d_gpup) + "mm"
+# print "-----------------------------------"
+# print "GP runtime: " + str(stats[0][0]) + "sec."
+# print "GP Naive: " + str(stats[0][2]) + "sec."
+# print "GP mean: " + str(stats[0][1]) + "sec."
+# print "GPUP time: " + str(stats[0][3]) + "sec."
+# print "-----------------------------------"
+# print "GP probability: " + str(stats[1][0])
+# print "GP naive probability: " + str(stats[1][1])
+# print "GP mean probability: " + str(stats[1][2])
+# print "GPUP probability: " + str(stats[1][3])
+# print "-----------------------------------"
 
 
 

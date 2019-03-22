@@ -3,4 +3,5 @@ float32[] action
 ---
 float32[] next_state_mean
 float32[] next_state_std
+float32[] bad_action
 float32 probability

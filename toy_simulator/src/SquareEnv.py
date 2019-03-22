@@ -6,17 +6,17 @@ import random
 import matplotlib.pyplot as plt
 import varz as V
 
+
 class SquareEnv():
 
     visited_states = np.array([0.,0.])
 
     def __init__(self):
-        self.size = V.SIZE
         self.state = np.array([0.,0.])
 
     def reset(self):
-        # self.state = np.random.uniform(-self.size, self.size, 2) # Start from a random position
-        self.state = np.array([-0.9,-0.9]) + np.random.normal(0, V.START_STD, 2) 
+        # self.state = np.array([np.random.uniform(-V.XSIZE, V.XSIZE), np.random.uniform(-V.YSIZE, V.YSIZE)]) # Start from a random position
+        self.state = np.array([V.STARTX,V.STARTY]) + np.random.normal(0, V.START_STD, 2) 
         self.fail = False
 
         # self.visited_states = np.copy(self.state.reshape(1,2))
@@ -26,7 +26,7 @@ class SquareEnv():
         self.state[0] += action[0]/V.SCALE
         self.state[1] += action[1]/V.SCALE
 
-        if self.state[0] > V.SIZE or self.state[0] < -V.SIZE or self.state[1] > V.SIZE or self.state[1] < -V.SIZE:
+        if self.state[0] > V.XSIZE or self.state[0] < -V.XSIZE or self.state[1] > V.YSIZE or self.state[1] < -V.YSIZE:
             self.fail = True
         else:
             std = self.stdDet(self.state)
@@ -72,8 +72,8 @@ class SquareEnv():
         plt.xlabel('x')
         plt.ylabel('y')
         # plt.title(self.title)
-        plt.xlim([-V.SIZE, V.SIZE])
-        plt.ylim([-V.SIZE, V.SIZE])
+        plt.xlim([-V.XSIZE, V.XSIZE])
+        plt.ylim([-V.YSIZE, V.YSIZE])
         plt.show()
 
 

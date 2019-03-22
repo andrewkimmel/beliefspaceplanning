@@ -5,9 +5,16 @@ HIGH_SUC = 0.99
 LOW_STD = 0.006
 HIGH_STD = 0.05
 
-SIZE = 1.
+XSIZE = 1.1
+YSIZE = 1.
 B = 0.8
 
+STARTX = -0.95
+STARTY = -0.9
+GOALX = 0.95
+GOALY = -0.9
 START_STD = 0.02
 
 SCALE = 10.
+
+
