@@ -6,11 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Polygon
 import pickle
-from rollout_node.srv import rolloutReq
+from control.srv import pathTrackReq
 import time
 import glob
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -20,55 +20,7 @@ comp = 'pracsys'
 
 Set = '6'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-set_modes = ['mean_only_particles']
-
-############################# Rollout ################################
-if rollout:
-    rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
-    rospy.init_node('run_rollout_set', anonymous=True)
-    state_dim = 4
-
-    while 1:
-        for set_mode in set_modes:
-            path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
-
-            files = glob.glob(path + set_mode + "*.txt")
-            files_pkl = glob.glob(path + set_mode + "*.pkl")
-
-            if len(files) == 0:
-                continue
-
-            for i in range(len(files)):
-
-                action_file = files[i]
-                if action_file.find('traj') > 0:
-                    continue
-                if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
-                    continue
-                pklfile = action_file[:-3] + 'pkl'
-
-                # To distribute rollout files between computers
-                # ja = pklfile.find('goal')+4
-                # if int(pklfile[ja]) <= 4:
-                #     continue
-
-                print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
-
-                A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
-
-                Af = A.reshape((-1,))
-                Pro = []
-                for j in range(10):
-                    print("Rollout number " + str(j) + ".")
-                    
-                    Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
-
-                    Pro.append(Sro)
-
-                    with open(pklfile, 'w') as f: 
-                        pickle.dump(Pro, f)
-
-############################# Plot ################################
+set_modes = ['robust_particles_pc']
 
 # if Set == '1':
 #     # Goal centers - set 1
@@ -128,6 +80,64 @@ if Set == '5':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
+############################# Rollout ################################
+if rollout:
+    track_srv = rospy.ServiceProxy('/control', pathTrackReq)
+    rospy.init_node('run_control_set', anonymous=True)
+    state_dim = 4
+
+    while 1:
+        for set_mode in set_modes:
+            path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
+
+            files = glob.glob(path + set_mode + "*.txt")
+            files_pkl = glob.glob(path + set_mode + "*.pkl")
+
+            if len(files) == 0:
+                continue
+
+            for i in range(len(files)):
+
+                path_file = files[i]
+                if path_file[80:].find('plan') > 0:
+                    continue
+                if any(path_file[:-3] + 'pkl' in f for f in files_pkl):
+                    continue
+                pklfile = path_file[:-3] + 'pkl'
+
+                ctr = np.concatenate((C[int(pklfile[pklfile.find('goal')+4]), :], np.array([0,0])), axis=0) # Goal center
+
+                # To distribute rollout files between computers
+                # ja = pklfile.find('goal')+4
+                # if int(pklfile[ja]) <= 4:
+                #     continue
+
+                print('Rolling-out file number ' + str(i+1) + ': ' + path_file + '.')
+
+                S = np.loadtxt(path_file, delimiter=',', dtype=float)[:,:4]
+                S = np.append(S, [ctr], axis=0)
+
+                Pro = []
+                Aro = []
+                Suc = []
+                for j in range(2):
+                    print("Rollout number " + str(j) + ".")
+                    
+                    res = track_srv(S.reshape((-1,)))
+                    Sreal = np.array(res.real_path).reshape(-1, S.shape[1])
+                    Areal = np.array(res.actions).reshape(-1, 2)
+                    success = res.success
+
+                    Pro.append(Sreal)
+                    Aro.append(Areal)
+                    Suc.append(success)
+
+
+                    with open(pklfile, 'w') as f: 
+                        pickle.dump([Pro, Aro, Suc], f)
+
+############################# Plot ################################
+
 rp = 7.
 r = 10.
 
@@ -135,7 +145,7 @@ set_num = Set
 set_modes = ['robust_particles_pc', 'mean_only_particles']#, 'mean_only_particles' , 'naive_with_svm']
 
 if not rollout and 1:
-    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
+    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/cl_results/'
 
     for set_mode in set_modes:
 
@@ -148,7 +158,7 @@ if not rollout and 1:
         for k in range(len(files)):
 
             pklfile = files[k]
-            if pklfile.find('traj') > 0:
+            if pklfile[80:].find('plan') > 0:
                 continue
             if pklfile.find(set_mode) < 0:
                 continue
@@ -167,7 +177,7 @@ if not rollout and 1:
             print('Plotting file number ' + str(k+1) + ': ' + file_name)
             
             with open(pklfile) as f:  
-                Pro = pickle.load(f)
+                Pro, Aro, Suc = pickle.load(f)
 
             # if file_name == 'robust_particles_pc_goal1_run1_plan':
             #     for s in Pro:

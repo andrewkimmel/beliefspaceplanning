@@ -12,7 +12,7 @@ from control.srv import pathTrackReq
 from rollout_node.srv import gets
 
 import sys
-sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 class general_control():
@@ -24,7 +24,7 @@ class general_control():
     actionVS = np.array([0., 0.])
     gripper_closed = 'open'
     tol = 1.5
-    goal_tol = 10.0
+    goal_tol = 7.0
     horizon = 1
 
     def __init__(self):

@@ -9,7 +9,7 @@ import pickle
 from control.srv import pathTrackReq
 
 import sys
-sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 class vs_controller():
@@ -52,23 +52,23 @@ class vs_controller():
         v *= self.vel_magnitude
         v[1] *= -1
 
-        Kp = 2.8
-        Kd = 6.5
+        # Kp = 2.8
+        # Kd = 6.5
         # v *= Kp * np.linalg.norm(goal - self.obj_pos) - Kd * np.linalg.norm(self.obj_pos - self.obj_pos_prev)
 
         action = np.dot( self.J, v) 
 
-        a = goal; b = self.goal_prev; s = self.obj_pos
-        d = np.abs( (b[1]-a[1])*s[0]-(b[0]-a[0])*s[1] + b[0]*a[1]-b[1]*a[0] ) / np.sqrt( (b[1]-a[1])**2 + (b[0]-a[0])**2 )
-        print d #a, b, s, d
-        gain = (1.0 if np.isnan(d) or d < 1.7 or np.all(b == 0) else Kp * d) - Kd * np.linalg.norm(self.obj_pos - self.obj_pos_prev)
+        # a = goal; b = self.goal_prev; s = self.obj_pos
+        # d = np.abs( (b[1]-a[1])*s[0]-(b[0]-a[0])*s[1] + b[0]*a[1]-b[1]*a[0] ) / np.sqrt( (b[1]-a[1])**2 + (b[0]-a[0])**2 )
+        # print d #a, b, s, d
+        # gain = (1.0 if np.isnan(d) or d < 1.7 or np.all(b == 0) else Kp * d) - Kd * np.linalg.norm(self.obj_pos - self.obj_pos_prev)
 
-        # print "Distance from path: " + str(gain), d, goal, self.goal_prev
-        # e = np.linalg.norm(goal - self.obj_pos)
-        # gain = 0.45 if e < 2.5 else Kp * e# np.exp(0.35 * e)
-        action *= gain
+        # # print "Distance from path: " + str(gain), d, goal, self.goal_prev
+        # # e = np.linalg.norm(goal - self.obj_pos)
+        # # gain = 0.45 if e < 2.5 else Kp * e# np.exp(0.35 * e)
+        # action *= gain
 
-        self.obj_pos_prev = np.copy(self.obj_pos)
+        # self.obj_pos_prev = np.copy(self.obj_pos)
 
         # action = np.round(action)
         # action[action > 1.] = 1.0
@@ -76,7 +76,6 @@ class vs_controller():
 
         # action[action > 3.] = 3.0
         # action[action < -3.] = -3.0
-
 
         return action
 
@@ -88,7 +87,6 @@ class vs_controller():
         if np.any(self.goal != np.array(msg.data)):
             self.goal_prev = np.copy(self.goal[:2])
             self.goal = np.array(msg.data)
-
 
 if __name__ == '__main__':
     try:
