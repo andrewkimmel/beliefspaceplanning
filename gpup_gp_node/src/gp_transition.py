@@ -27,7 +27,7 @@ diffORspec = 'spec'
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
-    OBS = True
+    OBS = False
 
     def __init__(self):
         # Number of NN
@@ -94,10 +94,42 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
     # Particles prediction
     def batch_predict(self, SA):
+        # If the particles are seperated, move them to one cluster via wraping
+        bi = [False, False]
+        for i in range(np.minimum(25, SA.shape[0])):
+            x1 = SA[np.random.randint(SA.shape[0]), :2]
+            x2 = SA[np.random.randint(SA.shape[0]), :2]
+            if x1[0]-x2[0] > 0.3:
+                bi[0] = True
+            if x1[1]-x2[1] > 0.3:
+                bi[1] = True
+        if np.any(bi):
+            for y in SA:
+                if bi[0]:
+                    y[0] += 1. if y[0] < 0.5 else 0
+                if bi[1]:
+                    y[1] += 1. if y[1] < 0.5 else 0 
+
         sa = np.mean(SA, 0)
-        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
+        idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+
+        # If the neighbors are seperated, move them to one cluster via wraping
+        bi = [False, False]
+        for i in range(np.minimum(25, X_nn.shape[0])):
+            x1 = X_nn[np.random.randint(X_nn.shape[0]), :2]
+            x2 = X_nn[np.random.randint(X_nn.shape[0]), :2]
+            if x1[0]-x2[0] > 0.3:
+                bi[0] = True
+            if x1[1]-x2[1] > 0.3:
+                bi[1] = True
+        if np.any(bi):
+            for x in X_nn:
+                if bi[0]:
+                    x[0] += 1. if x[0] < 0.5 else 0
+                if bi[1]:
+                    x[1] += 1. if x[1] < 0.5 else 0 
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
@@ -111,6 +143,10 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             std_next[:,i] = np.sqrt(np.diag(vv))
 
         S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
+        for s_next in S_next:
+            for i in range(2):
+                s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
+                s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0   
 
         if plotRegData:
             if np.random.uniform() < 0.1:
@@ -146,9 +182,25 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         return S_next 
 
     def one_predict(self, sa):
-        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
+        idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+
+        # If the neighbors are seperated, move them to one cluster via wraping
+        bi = [False, False]
+        for i in range(np.minimum(25, X_nn.shape[0])):
+            x1 = X_nn[np.random.randint(X_nn.shape[0]), :2]
+            x2 = X_nn[np.random.randint(X_nn.shape[0]), :2]
+            if x1[0]-x2[0] > 0.3:
+                bi[0] = True
+            if x1[1]-x2[1] > 0.3:
+                bi[1] = True
+        if np.any(bi):
+            for x in X_nn:
+                if bi[0]:
+                    x[0] += 1. if x[0] < 0.5 else 0
+                if bi[1]:
+                    x[1] += 1. if x[1] < 0.5 else 0 
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
@@ -162,6 +214,9 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             std_next[i] = np.sqrt(np.diag(vv))
 
         s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
+        for i in range(2):
+            s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
+            s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0        
 
         if plotRegData:
             # fig = plt.gcf()

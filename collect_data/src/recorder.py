@@ -39,7 +39,7 @@ class actorPubRec():
         rospy.Service('/actor/trigger', Empty, self.callbackTrigger)
         rospy.Service('/actor/save', Empty, self.callbackSave)
 
-        rate = rospy.Rate(20)
+        rate = rospy.Rate(100)
         count = 0
         while not rospy.is_shutdown():
 
@@ -47,10 +47,15 @@ class actorPubRec():
                 self.state = np.concatenate((self.joint_states, self.joint_velocities), axis=0)
                 
                 self.texp.add(self.state, self.action, self.state, self.fail or self.pi_cross)
+                # self.S.append(self.state)
 
                 if self.fail or self.pi_cross:
                     print('[recorder] Episode ended (%d points so far).' % self.texp.getSize())
                     self.running = False
+
+                    # self.S = np.array(self.S)
+                    # plt.plot(self.S[:,0], self.S[:,1],'.-')
+                    # plt.show()
 
             rate.sleep()
 
@@ -60,7 +65,7 @@ class actorPubRec():
     def callbackJointsVel(self, msg):
         self.joint_velocities = np.array(msg.data)
 
-        self.fail = True if any(np.abs(self.joint_velocities) >= 12.) else False
+        self.fail = True if any(np.abs(self.joint_velocities) >= 8.) else False
 
     def callbackCross(self, msg):
         self.pi_cross = np.array(msg.data)
@@ -72,6 +77,7 @@ class actorPubRec():
         self.running = not self.running
         if self.running:
             self.pi_cross = False
+            # self.S = []
 
         return EmptyResponse()
 

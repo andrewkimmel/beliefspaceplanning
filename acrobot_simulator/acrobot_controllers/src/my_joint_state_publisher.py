@@ -60,17 +60,22 @@ class my_joint_state_publisher():
         q_world = PyKDL.Rotation.Quaternion(msg.pose[self.order[0]].orientation.x, msg.pose[self.order[0]].orientation.y, msg.pose[self.order[0]].orientation.z, msg.pose[self.order[0]].orientation.w)
         q_1 = PyKDL.Rotation.Quaternion(msg.pose[self.order[1]].orientation.x, msg.pose[self.order[1]].orientation.y, msg.pose[self.order[1]].orientation.z, msg.pose[self.order[1]].orientation.w)
         q_2 = PyKDL.Rotation.Quaternion(msg.pose[self.order[2]].orientation.x, msg.pose[self.order[2]].orientation.y, msg.pose[self.order[2]].orientation.z, msg.pose[self.order[2]].orientation.w)
+        p1 = [msg.pose[self.order[2]].position.x, msg.pose[self.order[2]].position.z-msg.pose[self.order[1]].position.z]
         dq_1 = msg.twist[self.order[1]].angular.y
         dq_2 = msg.twist[self.order[2]].angular.y
     
         if 1:
-            a = (q_1.Inverse()*q_world).GetEulerZYX()
-            if a[2] > 1:
-                self.joint_angles[0] = a[1]
-            elif a[1] > 0:
-                self.joint_angles[0] = np.pi - a[1]
-            else:
-                self.joint_angles[0] = -(np.pi + a[1])
+            # a = (q_1.Inverse()*q_world).GetEulerZYX()
+            # if a[2] > 1:
+            #     self.joint_angles[0] = a[1]
+            # elif a[1] > 0:
+            #     self.joint_angles[0] = np.pi - a[1]
+            # else:
+            #     self.joint_angles[0] = -(np.pi + a[1])
+            g = -(np.arctan2(p1[1], p1[0])-np.pi/2+np.pi)
+            g += 2*np.pi if g < -np.pi else 0
+            self.joint_angles[0] = g
+
             b = (q_2.Inverse()*q_1).GetEulerZYX()
             if b[2] < 0.1:
                 self.joint_angles[1] = -b[1]
@@ -78,6 +83,8 @@ class my_joint_state_publisher():
                 self.joint_angles[1] = -(np.pi - b[1])
             else:
                 self.joint_angles[1] = np.pi + b[1]
+
+            # print np.rad2deg(self.joint_angles), np.rad2deg(g), g - self.joint_angles[0]
 
             # For horizontal configuration
             # if a[2] > 0:
@@ -107,6 +114,7 @@ class my_joint_state_publisher():
             #     self.joint_vels = np.mean(self.win, axis=0)
             #     self.win = np.delete(self.win, 0, axis=0)  
             self.joint_vels[np.abs(self.joint_vels) <= 0.1e-2] = 0.    
+            
 
     def ClockCallback(self, msg):
         self.current_time = msg.clock.secs + msg.clock.nsecs * 1e-9

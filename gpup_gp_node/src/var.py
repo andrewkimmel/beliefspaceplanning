@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-data_version_ = 0
+data_version_ = 1
 
 N_dillute_ = 0*550000 # Number of points to randomly select from data
 stepSize_ = 1

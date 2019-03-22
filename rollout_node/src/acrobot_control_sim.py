@@ -50,7 +50,7 @@ class acrobot_control():
         # if ( self.joint_states_prev[0] * self.joint_states[0] < 0 and np.abs(self.joint_states[0]) > f ) or ( self.joint_states_prev[1] * self.joint_states[1] < 0 and np.abs(self.joint_states[1]) > f ) :
         #     self.pi_cross = True
 
-        self.pi_cross_pub.publish(self.pi_cross)
+        # self.pi_cross_pub.publish(self.pi_cross)
         self.rate.sleep()
 
     def callbackJointsVel(self, msg):
@@ -87,7 +87,7 @@ class acrobot_control():
 
         # print np.abs(self.joint_velocities), any(np.abs(self.joint_velocities) >= 15.)
 
-        if any(np.abs(self.joint_velocities) >= 12.): # np.abs(action_load) > 0.8:
+        if any(np.abs(self.joint_velocities) >= 8.): # np.abs(action_load) > 0.8:
             rospy.logerr('[acrobot_control_sim] Velocities to high.')
             return {'dropped': True}
 

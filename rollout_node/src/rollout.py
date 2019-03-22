@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from std_srvs.srv import Empty, EmptyResponse
+from std_srvs.srv import Empty, EmptyResponse, SetBool
 from std_msgs.msg import Bool, String, Float32MultiArray
 from rollout_node.srv import rolloutReq, rolloutReqFile, plotReq, observation, IsDropped, TargetAngles
 import numpy as np
@@ -36,8 +36,8 @@ class rollout():
         self.move_srv = rospy.ServiceProxy('/acrobot_control/MoveGripper', TargetAngles)
         self.reset_srv = rospy.ServiceProxy('/acrobot_control/ResetGripper', Empty)
 
-        self.trigger_srv = rospy.ServiceProxy('/rollout_recorder/trigger', Empty)
-        self.trigger_actor_srv = rospy.ServiceProxy('/rollout_actor/trigger', Empty)
+        self.trigger_srv = rospy.ServiceProxy('/rollout_recorder/trigger', SetBool)
+        self.trigger_actor_srv = rospy.ServiceProxy('/rollout_actor/trigger', SetBool)
         self.gets_srv = rospy.ServiceProxy('/rollout_recorder/get_states', gets)
 
         self.state_dim = var.state_dim_
@@ -46,7 +46,7 @@ class rollout():
 
         print("[rollout] Ready to rollout...")
 
-        self.rate = rospy.Rate(20) 
+        self.rate = rospy.Rate(100) 
         # while not rospy.is_shutdown():
         rospy.spin()
 
@@ -62,13 +62,12 @@ class rollout():
 
         # Start episode
         success = True
-        self.trigger_srv()
-        self.trigger_actor_srv()
+        self.trigger_srv(True)
+        self.trigger_actor_srv(True)
         stepSize = var.stepSize_
         n = 0
         i = 0
         while 1:
-
             if n == 0:
                 action = A[i]
                 i += 1
@@ -91,6 +90,8 @@ class rollout():
 
             self.rate.sleep()
 
+        self.trigger_actor_srv(False)
+        self.trigger_srv(False)
         print("[rollout] Rollout done.")
 
         # self.states = np.array(S).reshape((-1,))

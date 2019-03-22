@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '4'
+tr = '1'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -29,22 +29,22 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 #####################################################################################################
 
 if tr == '1':
-    A = np.concatenate( (np.array([[-0.3] for _ in range(int(20*1./stepSize))]), 
-            np.array([[-0.] for _ in range(int(10*1./stepSize))]), 
-            np.array([[0.3] for _ in range(int(40*1./stepSize))]) ), axis=0 )
+    A = np.concatenate( (np.array([[-0.3] for _ in range(int(200*1./stepSize))]), 
+            np.array([[-0.] for _ in range(int(100*1./stepSize))]), 
+            np.array([[0.3] for _ in range(int(400*1./stepSize))]) ), axis=0 )
 
 if tr == '2':
-    A = np.concatenate( (np.array([[0.3] for _ in range(int(10*1./stepSize))]), 
-            np.array([[-0.7] for _ in range(int(10*1./stepSize))]),
-            np.array([[0.0] for _ in range(int(30*1./stepSize))]),  
-            np.array([[0.7] for _ in range(int(4*1./stepSize))]), 
-            np.array([[0.] for _ in range(int(10*1./stepSize))]) ), axis=0 )
+    A = np.concatenate( (np.array([[0.3] for _ in range(int(100*1./stepSize))]), 
+            np.array([[-0.7] for _ in range(int(100*1./stepSize))]),
+            np.array([[0.0] for _ in range(int(300*1./stepSize))]),  
+            np.array([[0.7] for _ in range(int(40*1./stepSize))]), 
+            np.array([[0.] for _ in range(int(100*1./stepSize))]) ), axis=0 )
 
 if tr == '3':
-    A = np.concatenate( (np.array([[0.3] for _ in range(int(10*1./stepSize))]), 
-            np.array([[-0.3] for _ in range(int(11*1./stepSize))]),
-            np.array([[0.3] for _ in range(int(12*1./stepSize))]),  
-            np.array([[-0.3] for _ in range(int(7*1./stepSize))]), 
+    A = np.concatenate( (np.array([[0.7] for _ in range(int(24*1./stepSize))]), 
+            np.array([[-1.0] for _ in range(int(30*1./stepSize))]),
+            np.array([[-0.7] for _ in range(int(15*1./stepSize))]),  
+            np.array([[0.7] for _ in range(int(4*1./stepSize))]), 
             np.array([[0.] for _ in range(int(10*1./stepSize))]) ), axis=0 )
 
 if tr == '4':
@@ -69,7 +69,7 @@ rospy.init_node('verification_gazebo', anonymous=True)
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
-if 1:
+if 0:
     Af = A.reshape((-1,))
     Pro = []
     for j in range(10):
@@ -343,7 +343,7 @@ if 0:
 
         return sm, prtc_mean, prtc_mean_line, prtc,
 
-    ani = animation.FuncAnimation(fig, animate, frames=len(Pgp), init_func=init, interval=300, repeat_delay=1000, blit=True)
+    ani = animation.FuncAnimation(fig, animate, frames=1+0*len(Pgp), init_func=init, interval=300, repeat_delay=1000, blit=True)
 
 t = range(A.shape[0]+1)
 

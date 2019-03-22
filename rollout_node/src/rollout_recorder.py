@@ -5,7 +5,7 @@ import numpy as np
 import time
 import random
 from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
-from std_srvs.srv import Empty, EmptyResponse
+from std_srvs.srv import Empty, EmptyResponse, SetBool
 from rollout_node.srv import gets
 
 class rolloutRec():
@@ -32,10 +32,10 @@ class rolloutRec():
         rospy.Subscriber('/acrobot/my_joint_velocities', Float32MultiArray, self.callbackJointsVel)
         rospy.Subscriber('/acrobot/pi_cross', Bool, self.callbackCross)
 
-        rospy.Service('/rollout_recorder/trigger', Empty, self.callbackTrigger)
+        rospy.Service('/rollout_recorder/trigger', SetBool, self.callbackTrigger)
         rospy.Service('/rollout_recorder/get_states', gets, self.get_states)
 
-        rate = rospy.Rate(20)
+        rate = rospy.Rate(100)
         while not rospy.is_shutdown():
 
             if self.running:
@@ -65,11 +65,12 @@ class rolloutRec():
         self.pi_cross = np.array(msg.data)
 
     def callbackTrigger(self, msg):
-        self.running = True
-        self.S = []
-        self.A = []
+        self.running = msg.data
+        if self.running:
+            self.S = []
+            self.A = []
 
-        return EmptyResponse()
+        return {'success': True, 'message': ''}
 
     def get_states(self, msg):
 

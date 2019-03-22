@@ -86,7 +86,21 @@ class data_load(object):
         for i in range(self.state_dim):
             self.Ytrain[:,i] = (self.Ytrain[:,i]-self.x_min_Y[i])/(self.x_max_Y[i]-self.x_min_Y[i])
 
-        self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
+        for i in range(self.Ytrain.shape[0]):
+            for j in range(self.state_dim):
+                if j < 2 and np.abs(self.Ytrain[i,j] - self.Xtrain[i,j]) > 0.4:
+                    if self.Xtrain[i,j] > 0.4:
+                        a =  (self.Ytrain[i,j] + 1) - self.Xtrain[i,j]
+                    elif self.Xtrain[i,j] < -0.4:
+                        a =  (self.Ytrain[i,j] - 1) - self.Xtrain[i,j]
+                    self.Ytrain[i,j] = a
+                else:
+                    self.Ytrain[i,j] -= self.Xtrain[i,j] 
+        # self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
+
+        # plt.plot(self.Ytrain[:,0],self.Ytrain[:,1],'.')
+        # plt.show()
+        # exit(1)
 
         print('[data_load] Loading data to NN object...')
         self.kdt = NearestNeighbors(n_neighbors=self.K, algorithm='ball_tree', metric=self.wrapEuclidean) # Not really kd-tree
@@ -98,7 +112,7 @@ class data_load(object):
 
         d = 0
         s = 0
-        for i in range(self.state_dim):
+        for i in range(self.state_action_dim):
             d = np.abs(x[i]-y[i])
             if i < 2:
                 d = 2*v - d if d > v else d
@@ -159,10 +173,7 @@ class data_load(object):
         for i in range(N):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
             # sa = np.array([0.93625701, 0.64523699, 0.17780485, 0.30417818, 0.        ])# 
-            while 1:
-                sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
-                if sa[1] > 0.9:
-                    break
+            sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
 
             idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = K, return_distance=False)
             X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)

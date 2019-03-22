@@ -11,7 +11,6 @@ sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node
 import var
 
 
-
 class transition_experience():
     path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -25,7 +24,6 @@ class transition_experience():
 
         self.recorder_data = True if postfix == '_bu' else False
             
-        
         self.file = 'acrobot_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
         self.file_name = self.path + self.file + '.obj'
 
@@ -81,6 +79,11 @@ class transition_experience():
 
         states = np.array([item[0] for item in self.memory])
         done = [item[3] for item in self.memory]
+
+        for s in states:
+            for i in range(2):
+                s[i] += 2*np.pi if s[i] < -np.pi else 0.0
+                s[i] -= 2*np.pi if s[i] >  np.pi else 0.0
 
         # Start dist.
         St = []
@@ -175,9 +178,19 @@ class transition_experience():
         next_states = np.array([item[2] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
+        for s in states:
+            for i in range(2):
+                s[i] += 2*np.pi if s[i] < -np.pi else 0.0
+                s[i] -= 2*np.pi if s[i] >  np.pi else 0.0
+
         # For data from recorder
         if self.recorder_data:
             next_states = np.roll(states, -1, axis=0)
+        else:
+            for s in next_states:
+                for i in range(2):
+                    s[i] += 2*np.pi if s[i] < -np.pi else 0.0
+                    s[i] -= 2*np.pi if s[i] >  np.pi else 0.0
 
         for i in range(done.shape[0]):
             if done[i]:
@@ -236,6 +249,11 @@ class transition_experience():
         states = np.array([item[0] for item in self.memory])
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
+
+        for s in states:
+            for i in range(2):
+                s[i] += 2*np.pi if s[i] < -np.pi else 0.0
+                s[i] -= 2*np.pi if s[i] >  np.pi else 0.0
 
         for i in range(done.shape[0]):
             if done[i]:
