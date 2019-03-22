@@ -3,7 +3,7 @@
 data_version_ = 1
 
 N_dillute_ = 0*550000 # Number of points to randomly select from data
-stepSize_ = 1
+stepSize_ = 10
 dim_ = 4
 
 state_dim_ = dim_

@@ -346,14 +346,15 @@ if 0:
     ani = animation.FuncAnimation(fig, animate, frames=1+0*len(Pgp), init_func=init, interval=300, repeat_delay=1000, blit=True)
 
 t = range(A.shape[0]+1)
+t = list(np.array(t)*stepSize)
 
 plt.figure(1)
 for i in range(1,5):
     ax = plt.subplot(2,2,i)
 
-    ax.plot(t[:len(Smean[:,i-1])], Smean[:,i-1], '-b', label='rollout mean')
+    ax.plot(range(Smean.shape[0]), Smean[:,i-1], '-b', label='rollout mean')
     for Sro in Pro: 
-        plt.plot(t[:len(Sro[:,i-1])], Sro[:,i-1], ':y')
+        plt.plot(range(Sro.shape[0]), Sro[:,i-1], ':y')
     # ax.fill_between(t[:-1], Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[0]]-Sstd[:,ix[0]], facecolor='blue', alpha=0.5, label='rollout std.')
     ax.plot(t, Ypred_mean_gp[:,i-1], '-r', label='BPP mean')
     ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='red', alpha=0.5, label='BGP std.')

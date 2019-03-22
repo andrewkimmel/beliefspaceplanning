@@ -159,7 +159,7 @@ class transition_experience():
 
         def multiStep(D, done, stepSize): 
             Dnew = []
-            ia = range(4,6)
+            ia = range(4,5)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize, ia]) or np.any(done[i:i+stepSize]):
@@ -228,7 +228,7 @@ class transition_experience():
         def multiStep(D, done, stepSize): 
             Dnew = []
             done_new = []
-            ia = range(4,6)
+            ia = range(4,5)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize, ia]):

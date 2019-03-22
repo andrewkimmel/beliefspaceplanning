@@ -29,8 +29,8 @@ class svm_failure():
         File = 'acrobot_svm_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_) + '.obj' # <= File name here!!!!!
 
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
-        if os.path.exists(path + 'acrobot_svm_fit_discrete' + self.mode + self.postfix + '.obj'):
-            with open(path + 'acrobot_svm_fit_discrete' + self.mode + self.postfix + '.obj', 'rb') as f: 
+        if os.path.exists(path + 'acrobot_svm_fit_' + self.mode + self.postfix + '.obj'):
+            with open(path + 'acrobot_svm_fit_' + self.mode + self.postfix + '.obj', 'rb') as f: 
                 self.clf, self.x_mean, self.x_std = pickle.load(f)
             print('[SVM] Loaded svm fit.')
         else:
@@ -49,7 +49,7 @@ class svm_failure():
             self.clf = svm.SVC( probability=True, class_weight='balanced', C=1.0 )
             self.clf.fit( list(self.SA), 1*self.done )
 
-            with open(self.path + 'acrobot_svm_fit_discrete' + self.mode +  self.postfix + '.obj', 'wb') as f: 
+            with open(self.path + 'acrobot_svm_fit_' + self.mode +  self.postfix + '.obj', 'wb') as f: 
                 pickle.dump([self.clf, self.x_mean, self.x_std], f)
 
         print 'SVM ready with %d classes: '%len(self.clf.classes_) + str(self.clf.classes_)
