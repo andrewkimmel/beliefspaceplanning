@@ -32,6 +32,7 @@ class gp_controller():
         rospy.Subscriber('/gripper/load', Float32MultiArray, self.callbackGripperLoad)
 
         pub_best_action = rospy.Publisher('/gp_controller/action', Float32MultiArray, queue_size=10)
+        # pub_2record = rospy.Publisher('/rollout/gripper_action', Float32MultiArray, queue_size=10)
         rospy.Subscriber('/control/goal', Float32MultiArray, self.callbackGoal)
         rospy.Subscriber('/control/exclude', Float32MultiArray, self.callbackExclude)
 
@@ -45,17 +46,20 @@ class gp_controller():
 
             msg.data = self.action
             pub_best_action.publish(msg)
+            # pub_2record.publish(msg)
             rate.sleep()
 
     def check_all_action(self, s):
         goal = self.goal
         
         D = []
+        # print "---------"
         for a in self.A:
             if np.all(a == self.exclude_action):
                 D.append(1000)
                 print "Action " + str(a) + " excluded."
                 continue
+            # print "Checking state ", s, " with action ", a, " size ", len(D)
             horizon = 15 if np.all(a == self.A[0]) or np.all(a == self.A[0]) else 1
             cur_s = np.copy(s)
             for i in range(horizon):
@@ -65,8 +69,13 @@ class gp_controller():
                 
             D.append(np.linalg.norm(goal-s_next))
         D = np.array(D)
+        
+        action = np.copy(self.A[np.argmin(D)])
+        # if np.linalg.norm(goal[:2] - self.obj_pos) > 4.0:
+        #     K = 0.4
+        #     action *= K*np.linalg.norm(goal[:2] - self.obj_pos)
 
-        return self.A[np.argmin(D)]       
+        return action
 
     def callbackObj(self, msg):
         Obj_pos = np.array(msg.data)

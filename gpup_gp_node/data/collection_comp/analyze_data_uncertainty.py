@@ -51,10 +51,12 @@ M = np.min([Q[Set].shape[0] for Set in Q.keys()])
 
 # plt.figure(0)
 # for S in Q:
-#     plt.plot(Q[S][:,0], Q[S][:,1], '.', label=S)
-# plt.plot(Xtest[:,0], Xtest[:,1], '.r', label='test')
+#     if S == '50':
+#         continue
+#     plt.plot(Q[S][:150000,0], Q[S][:150000,1], '.', label=S)
+# # plt.plot(Xtest[:,0], Xtest[:,1], '.r', label='test')
 # plt.legend()
-# # plt.savefig(path + 'data')
+# plt.savefig(path + 'data')
 
 # plt.show()
 # exit(1)

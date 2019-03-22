@@ -45,8 +45,15 @@ class Plot():
             if self.ref_flag:
                 plt.plot(self.Sref[:,0], self.Sref[:,1],'--k')
                 self.ref_flag = False
+
+            # ax = plt.subplot()
+            # Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
+            # for o in Obs:
+            #     obs = plt.Circle(o[:2], o[2])#, zorder=10)
+            #     ax.add_artist(obs)
+
             plt.plot(self.obj_pos[0], self.obj_pos[1],'.r')
-            plt.plot(self.start_pos[0], self.start_pos[1],'*b')
+            # plt.plot(self.start_pos[0], self.start_pos[1],'*b')
             plt.plot(self.goal[0], self.goal[1],'*g')
             plt.axis("equal")
             plt.axis([-60, 60, 60, 177])

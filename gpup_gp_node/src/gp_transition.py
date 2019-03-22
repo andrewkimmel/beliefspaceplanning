@@ -184,8 +184,8 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
                 ax.plot([sa[ia[0]], s_next[ia[0]]], [sa[ia[1]], s_next[ia[1]]], '-y')
                 # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Load - DF')
-                plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp3/pic_' + str(cO) + '.png')
+                plt.title('Load (action: ' + str(sa[4:]) + ')')
+                plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/control/results/pics/pic_' + str(cO) + '.png')
                 plt.clf()
 
                 cO += 1
