@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import rospy
 from sensor_msgs.msg import Image
-from action_node.srv import empty
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg

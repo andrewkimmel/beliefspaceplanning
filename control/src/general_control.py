@@ -12,7 +12,7 @@ from control.srv import pathTrackReq
 from rollout_node.srv import gets
 
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 class general_control():
@@ -22,7 +22,7 @@ class general_control():
     gripper_load = np.array([0., 0.])
     action = np.array([0., 0.])
     gripper_closed = 'open'
-    tol = 2.5
+    tol = 1.5
     goal_tol = 10.0
     horizon = 1
 
@@ -108,15 +108,15 @@ class general_control():
             state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
             if i_path == S.shape[0]-1:
                 msg.data = S[-1,:]
-            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]):
+            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or (self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]) and self.weightedL2(state[:]-S[i_path+1,:]) < self.tol*2):
                 i_path += 1
                 msg.data = S[i_path,:]
                 count = 0
                 change = True
-                self.tol = 2.5
+                self.tol = 1.5
                 dd_count = 0
-            # elif count > 100:# and i_path < S.shape[0]-1:
-            #     self.tol = 3
+            elif count > 100:# and i_path < S.shape[0]-1:
+                self.tol = 3
             self.pub_current_goal.publish(msg)
 
             dd = self.weightedL2(state[:]-S[i_path,:]) - d_prev
@@ -124,10 +124,10 @@ class general_control():
             msge.data = action if dd_count > 3 else np.array([0.,0.])
             self.pub_exclude.publish(msge)
 
-            # if n == 0 and not change and dd < 0:
-            #     n = 1
-            #     print "Extended..."
-            if n <= 0:# or dd_count > 5:
+            if n == 0 and not change and dd < 0:
+                n = 1
+                print "Extended..."
+            if n <= 0 or dd_count > 5:
                 action = self.action
                 n = self.stepSize
                 dd_count = 0

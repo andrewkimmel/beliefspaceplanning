@@ -28,10 +28,10 @@ track_srv = rospy.ServiceProxy('/control', pathTrackReq)
 # File = 'naive_with_svm_goal1_run0_traj'
 # File = 'robust_particles_pc_goal0_run0_traj'
 # File = 'naive_with_svm_goal2_run1_traj'
-File = 'robust_particles_pc_goal4_run1_traj'
+File = 'robust_particles_pc_goal4_run0_traj'
 
-traj = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/' + File + '.txt' 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/control/results/'
+traj = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/set4/' + File + '.txt' 
+path = '/home/juntao/catkin_ws/src/beliefspaceplanning/control/results/'
 
 ctr = np.concatenate((C[int(traj[traj.find('goal')+4]), :], np.array([0,0])), axis=0)
 

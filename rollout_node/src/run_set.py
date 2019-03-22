@@ -15,12 +15,12 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
-Set = '5'
-set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-# set_modes = ['naive_with_svm']
+Set = '6'
+# set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+set_modes = ['mean_only_particles']
 
 ############################# Rollout ################################
 if rollout:
@@ -109,7 +109,7 @@ if Set == '3':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
-if Set == '4':
+if Set == '4' or Set == '6':
     # Goal centers
     C = np.array([
         [-37, 119],
@@ -132,7 +132,7 @@ rp = 7.
 r = 10.
 
 set_num = Set
-set_modes = ['robust_particles_pc', 'naive_with_svm']#, 'mean_only_particles']
+set_modes = ['robust_particles_pc', 'mean_only_particles']#, 'mean_only_particles' , 'naive_with_svm']
 
 if not rollout and 1:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
@@ -243,7 +243,7 @@ if not rollout and 1:
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png')
-            plt.show()
+            # plt.show()
 
         fo.close()
         

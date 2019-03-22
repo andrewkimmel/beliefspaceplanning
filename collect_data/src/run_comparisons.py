@@ -76,8 +76,8 @@ from collect_data.srv import sparse_goal
 nodes =[
 # "robust_particles_pc_svmHeuristic", 
 "robust_particles_pc", 
-# "naive_with_svm",
-# "mean_only_particles",
+"naive_with_svm",
+"mean_only_particles"
 ]
 ## ROBUST PLUS GOALS part 1
 # goals = [
@@ -193,20 +193,20 @@ seed = [
 # "-32, 104,  16,  16",
 # ]
 
-## Set 4 - Don't delete!!!
-# goals = [
-# "-37, 119,  16,  16",
-# "-33, 102,  16,  16",
-# "-22, 129,  16,  16",
-# "-52, 112,  16,  16",
-# "67, 80,  16,  16",
-# "-63, 91,  16,  16",
-# ]
-
-## Set 5 - Don't delete!!!
+# Set 4 - Don't delete!!!
 goals = [
-"50, 111,  16,  16",
+"-37, 119,  16,  16",
+"-33, 102,  16,  16",
+"-22, 129,  16,  16",
+"-52, 112,  16,  16",
+"67, 80,  16,  16",
+"-63, 91,  16,  16",
 ]
+
+# ## Set 5 - Don't delete!!!
+# goals = [
+# "50, 111,  16,  16",
+# ]
 
 
 
