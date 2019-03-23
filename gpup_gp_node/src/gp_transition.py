@@ -294,17 +294,17 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                     return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': np.array([0.,0.])}
 
                 # Find main direction of fail
-                    S_failed_mean = np.mean(S[failed_inx, :], axis=0)
-                    S_mean = np.mean(S, axis=0)
-                    ang = np.rad2deg(np.arctan2(S_failed_mean[1]-S_mean[1], S_failed_mean[0]-S_mean[0]))
-                    if ang <= 45. and ang >= -45.:
-                        bad_action = np.array([1.,-1.])
-                    elif ang >= 135. or ang <= -135.:
-                        bad_action = np.array([-1.,1.])
-                    elif ang > 45. and ang < 135.:
-                        bad_action = np.array([1.,1.])
-                    elif ang < -45. and ang > -135.:
-                        bad_action = np.array([-1.,-1.])
+                S_failed_mean = np.mean(S[failed_inx, :], axis=0)
+                S_mean = np.mean(S, axis=0)
+                ang = np.rad2deg(np.arctan2(S_failed_mean[1]-S_mean[1], S_failed_mean[0]-S_mean[0]))
+                if ang <= 45. and ang >= -45.:
+                    bad_action = np.array([1.,-1.])
+                elif ang >= 135. or ang <= -135.:
+                    bad_action = np.array([-1.,1.])
+                elif ang > 45. and ang < 135.:
+                    bad_action = np.array([1.,1.])
+                elif ang < -45. and ang > -135.:
+                    bad_action = np.array([-1.,-1.])
 
                 dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                 S[failed_inx, :] = S[dup_inx,:]
