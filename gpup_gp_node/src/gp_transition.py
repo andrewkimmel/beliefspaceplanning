@@ -266,12 +266,26 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             # print node_probability
 
             # Remove failed particles by duplicating good ones
+            bad_action = np.array([0.,0.])
             if len(failed_inx):
                 good_inx = np.delete( np.array(range(S.shape[0])), failed_inx )
                 if len(good_inx) == 0: # All particles failed
                     S_next = []
                     mean = [0,0]
                     return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability}
+
+                # Find main direction of fail
+                S_failed_mean = np.mean(S[failed_inx, :], axis=0)
+                S_mean = np.mean(S, axis=0)
+                ang = np.rad2deg(np.arctan2(S_failed_mean[1]-S_mean[1], S_failed_mean[0]-S_mean[0]))
+                if ang <= 45. and ang >= -45.:
+                    bad_action = np.array([1.,-1.])
+                elif ang >= 135. or ang <= -135.:
+                    bad_action = np.array([-1.,1.])
+                elif ang > 45. and ang < 135.:
+                    bad_action = np.array([1.,1.])
+                elif ang < -45. and ang > -135.:
+                    bad_action = np.array([-1.,-1.])
 
                 dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                 S[failed_inx, :] = S[dup_inx,:]
@@ -281,7 +295,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
             mean = self.get_mean_shift(S_next)
             
-            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability}
+            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action}
 
     # Predicts the next step by calling the GP class - repeats the same action 'n' times
     def GetTransitionRepeat(self, req):
