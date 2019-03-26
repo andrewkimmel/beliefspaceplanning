@@ -148,7 +148,7 @@ class collect_data():
                     action = A[ep_step]
                     n = 1
                 else:
-                    action, n = self.choose_action(0.6)
+                    action, n = self.choose_action(0.7)
 
             msg.data = action
             self.pub_gripper_action.publish(msg)

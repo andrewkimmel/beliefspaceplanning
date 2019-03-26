@@ -7,7 +7,7 @@ from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import TargetAngles, IsDropped, observation, MoveServos
 import math
 
-state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
+state_form = 'pos_load_vel' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
 
 class hand_control():
 
@@ -18,6 +18,7 @@ class hand_control():
 
     gripper_pos = np.array([0., 0.])
     gripper_load = np.array([0., 0.])
+    gripper_load_prev = np.array([0., 0.])
     joint_states = np.array([0., 0., 0., 0.])
     joint_velocities = np.array([0., 0., 0., 0.])
     lift_status = False # True - lift up, False - lift down
@@ -26,6 +27,7 @@ class hand_control():
     base_theta = 0
     obj_pos = [0.,0.]
     obj_vel = [0.,0.]
+    D_load = np.array([0., 0.])
     R = []
     count = 1
     OBS = False
@@ -58,10 +60,14 @@ class hand_control():
 
         #### Later I should remove the angles from hands.py and set initial angles here at the start ####
 
-        rate = rospy.Rate(100)
+        rate = rospy.Rate(50)
         while not rospy.is_shutdown():
             pub_gripper_status.publish(self.gripper_status)
             pub_drop.publish(not self.object_grasped)
+
+            self.D_load = np.copy(self.gripper_load) - np.copy(self.gripper_load_prev)
+            self.gripper_load_prev = np.copy(self.gripper_load)
+            
 
             # print(self.obj_pos)
             # rospy.spin()
@@ -202,12 +208,13 @@ class hand_control():
         elif state_form == 'pos_vel':   
             obs = np.concatenate((self.obj_pos, self.obj_vel), axis=0)
         elif state_form == 'pos_load_vel':   
-            obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel), axis=0)
+            obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.D_load), axis=0)
         elif state_form == 'pos_load_vel_joints':   
             obs = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.joint_states), axis=0)
         elif state_form == 'pos_load_joints':   
             obs = np.concatenate((self.obj_pos, self.gripper_load, self.joint_states), axis=0)
 
+        # print obs
         return {'state': obs}
 
 

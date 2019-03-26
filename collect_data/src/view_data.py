@@ -10,7 +10,7 @@ from transition_experience import *
 
 
 def main():
-    texp = transition_experience(discrete=True, postfix='')
+    texp = transition_experience(discrete=True, postfix='_bu')
 
     # texp.save_to_file()
     # texp.process_transition_data(stepSize = 1, plot = False, mode = 1)

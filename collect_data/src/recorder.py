@@ -14,6 +14,7 @@ class actorPubRec():
 
     gripper_pos = np.array([0., 0.])
     gripper_load = np.array([0., 0.])
+    gripper_load_prev = np.array([0., 0.])
     obj_pos = np.array([0., 0.])
     obj_vel = np.array([0., 0.])
     drop = True
@@ -46,7 +47,11 @@ class actorPubRec():
         while not rospy.is_shutdown():
 
             if self.running:
-                self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.joint_states, self.joint_velocities), axis=0)
+                dL = self.gripper_load - self.gripper_load_prev
+                self.gripper_load_prev = np.copy(self.gripper_load)
+                print dL
+                self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, dL), axis=0)
+                
                 
                 self.texp.add(self.state, self.action, self.state, self.drop)
 
@@ -60,6 +65,8 @@ class actorPubRec():
             rate.sleep()
 
     def callbackGripperLoad(self, msg):
+        if np.all(self.gripper_load_prev == 0) or np.any(np.abs(self.gripper_load_prev - self.gripper_load) > 0.5):
+            self.gripper_load_prev = np.array(msg.data)
         self.gripper_load = np.array(msg.data)
 
     def callbackObj(self, msg):

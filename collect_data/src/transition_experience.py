@@ -80,14 +80,17 @@ class transition_experience():
             states = np.array([item[0] for item in self.memory])
             next_states = np.array([item[2] for item in self.memory])
         else:
-            states = np.array([item[0][:4] for item in self.memory])
+            states = np.array([item[0] for item in self.memory])
         done = [item[3] for item in self.memory]
+
+        print states.shape
+        return
 
         # Start dist.
         St = []
         for i in range(states.shape[0]-1):
             if done[i] and not done[i+1]:
-                St.append(states[i+1,:4])
+                St.append(states[i+1,:])
         St = np.array(St)
         s_start = np.mean(St, 0)
         s_std = np.std(St, 0)
