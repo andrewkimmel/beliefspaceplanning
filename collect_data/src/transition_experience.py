@@ -83,9 +83,6 @@ class transition_experience():
             states = np.array([item[0] for item in self.memory])
         done = [item[3] for item in self.memory]
 
-        print states.shape
-        return
-
         # Start dist.
         St = []
         for i in range(states.shape[0]-1):
