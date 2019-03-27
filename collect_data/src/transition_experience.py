@@ -7,13 +7,13 @@ from scipy.io import savemat
 from scipy import signal
 from sklearn.neighbors import KDTree #pip install -U scikit-learn
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 recorder_data = False
 
 class transition_experience():
-    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
 
     def __init__(self, Load=True, discrete = False, postfix=''):
@@ -23,7 +23,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'a' + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:

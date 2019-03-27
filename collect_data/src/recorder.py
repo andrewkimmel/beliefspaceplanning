@@ -49,7 +49,6 @@ class actorPubRec():
             if self.running:
                 dL = self.gripper_load - self.gripper_load_prev
                 self.gripper_load_prev = np.copy(self.gripper_load)
-                print dL
                 self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, dL), axis=0)
                 
                 

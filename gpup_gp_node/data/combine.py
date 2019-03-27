@@ -15,19 +15,19 @@ def combine(file1, file2, file3, file4, f):
         M2 = pickle.load(filehandler)
     print('Loaded %d points.'%len(M2))
 
-    print 'Loading ' + file3 + '...'
-    with open(file3, 'rb') as filehandler:
-        M3 = pickle.load(filehandler)
-    print('Loaded %d points.'%len(M3))
+    # print 'Loading ' + file3 + '...'
+    # with open(file3, 'rb') as filehandler:
+    #     M3 = pickle.load(filehandler)
+    # print('Loaded %d points.'%len(M3))
 
-    print 'Loading ' + file4 + '...' # Only 4 dim state
-    with open(file4, 'rb') as filehandler:
-        M4 = pickle.load(filehandler)
-    print('Loaded %d points.'%len(M4))
+    # print 'Loading ' + file4 + '...' # Only 4 dim state
+    # with open(file4, 'rb') as filehandler:
+    #     M4 = pickle.load(filehandler)
+    # print('Loaded %d points.'%len(M4))
 
-    M = M1 + M2 + M3 + M4
+    M = M1 + M2 #+ M3 + M4
 
-    print len(M1), len(M2), len(M3), len(M4), len(M)
+    print len(M1), len(M2)#, len(M3), len(M4), len(M)
 
     print('Saving data with %d points...'%len(M))
     file_pi = open(f, 'wb')
@@ -35,11 +35,11 @@ def combine(file1, file2, file3, file4, f):
     print('Saved transition data of size %d.'%len(M))
     file_pi.close()
 
-f1 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13a.obj'
-f2 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13b.obj'
+f1 = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v14a.obj'
+f2 = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v14b.obj'
 f3 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13c.obj'
 f4 = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13d.obj'
-f = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v13.obj'
+f = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_raw_discrete_v14.obj'
 
 combine(f1, f2, f3, f4, f)
 
