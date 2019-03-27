@@ -39,15 +39,15 @@ class data_load(object):
         # plt.plot(Qtrain[:,0],Qtrain[:,1],'.')
         # plt.show()
 
-        is_start = 3050# 30532 #1540#int(Q['is_start'])#100080
-        # while is_start < 200000:
-        #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
-        #         break
-        #     is_start += 1
-        # print is_start
-        is_end = is_start + 20#int(Q['is_end'])
-        self.Qtest = Qtrain[is_start:is_end, :]
-        Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
+        # is_start = 3050# 30532 #1540#int(Q['is_start'])#100080
+        # # while is_start < 200000:
+        # #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
+        # #         break
+        # #     is_start += 1
+        # # print is_start
+        # is_end = is_start + 20#int(Q['is_end'])
+        # self.Qtest = Qtrain[is_start:is_end, :]
+        # Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
 
         # plt.plot(self.Qtest[:,0], self.Qtest[:,1],'.-k')
         # plt.plot(self.Qtest[0,0], self.Qtest[0,1],'o')
@@ -73,6 +73,7 @@ class data_load(object):
         self.x_max_Y = np.max(self.Ytrain, axis=0)
         self.x_min_Y = np.min(self.Ytrain, axis=0)
 
+
         for i in range(self.state_dim):
             tmp = np.max([self.x_max_X[i], self.x_max_Y[i]])
             self.x_max_X[i] = tmp
@@ -89,18 +90,14 @@ class data_load(object):
         for i in range(self.Ytrain.shape[0]):
             for j in range(self.state_dim):
                 if j < 2 and np.abs(self.Ytrain[i,j] - self.Xtrain[i,j]) > 0.4:
-                    if self.Xtrain[i,j] > 0.4:
+                    if self.Xtrain[i,j] > 0.6:
                         a =  (self.Ytrain[i,j] + 1) - self.Xtrain[i,j]
-                    elif self.Xtrain[i,j] < -0.4:
+                    elif self.Xtrain[i,j] < 0.4:
                         a =  (self.Ytrain[i,j] - 1) - self.Xtrain[i,j]
                     self.Ytrain[i,j] = a
                 else:
                     self.Ytrain[i,j] -= self.Xtrain[i,j] 
         # self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
-
-        # plt.plot(self.Ytrain[:,0],self.Ytrain[:,1],'.')
-        # plt.show()
-        # exit(1)
 
         print('[data_load] Loading data to NN object...')
         self.kdt = NearestNeighbors(n_neighbors=self.K, algorithm='ball_tree', metric=self.wrapEuclidean) # Not really kd-tree
@@ -182,7 +179,11 @@ class data_load(object):
             if K_manifold > 0:
                 X_nn, Y_nn = reduction(sa, X_nn, Y_nn, K_manifold)
 
-            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,0], optimize = True, theta=None) # Optimize to get hyper-parameters
+            try:
+                gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,0], optimize = True, theta=None) # Optimize to get hyper-parameters
+            except:
+                print('[data_load] Singular!')
+                continue
             theta = gp_est.cov.theta
 
             SA_opt.append(sa)

@@ -25,7 +25,7 @@ class transition_experience():
         self.recorder_data = True if postfix == '_bu' else False
             
         self.file = 'acrobot_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
-        self.file_name = self.path + self.file + '.obj'
+        self.file_name = self.path + self.file + '.txt' # + '.obj
 
         if Load:
             self.load()
@@ -41,9 +41,18 @@ class transition_experience():
     def load(self):
         if os.path.isfile(self.file_name):
             print('Loading data from ' + self.file_name)
-            with open(self.file_name, 'rb') as filehandler:
-            # filehandler = open(self.file_name, 'r')
-                self.memory = pickle.load(filehandler)
+            # with open(self.file_name, 'rb') as filehandler:
+                # self.memory = pickle.load(filehandler)
+            print self.file_name
+            D = np.loadtxt(self.file_name, delimiter=',')
+            self.memory = []
+            for d in D:
+                state = np.array(d[:4])
+                action = np.array(d[4])
+                next_state = np.array(d[5:])
+                done = False
+                self.memory += [(state, action, next_state, done)]
+
             print('Loaded transition data of size %d.'%self.getSize())
         else:
             self.clear()
@@ -200,7 +209,7 @@ class transition_experience():
         # next_states = next_states[:, [0, 1, 2, 3]]
         self.state_dim = states.shape[1]
 
-        D = np.concatenate((states, actions, next_states), axis = 1)
+        D = np.concatenate((states, actions.reshape(-1,1), next_states), axis = 1)
         # D, done = clean(D, done)
 
         inx = np.where(done)
@@ -210,10 +219,10 @@ class transition_experience():
         if stepSize > 1:
             D = multiStep(D, done, stepSize)
 
-        # D = D[np.random.choice(D.shape[0], int(0.6*D.shape[0]), replace=False),:] # Dillute
+        D = D[np.random.choice(D.shape[0], int(0.4*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
-        savemat(self.path + 'acrobot_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
+        savemat(self.path + 'acrobot_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
         print "Saved mat file with " + str(D.shape[0]) + " transition points."
 
         if plot:
