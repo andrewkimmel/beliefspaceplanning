@@ -169,7 +169,6 @@ class data_load(object):
         N = 1000
         for i in range(N):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
-            # sa = np.array([0.93625701, 0.64523699, 0.17780485, 0.30417818, 0.        ])# 
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
 
             idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = K, return_distance=False)

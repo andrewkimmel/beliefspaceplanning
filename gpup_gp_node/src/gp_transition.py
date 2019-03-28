@@ -45,7 +45,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim, dr = 'diff')
         else:
-            self.K = 2
+            self.K = 100
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
@@ -142,7 +142,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
 
-        S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
+        S_next = SA[:,:self.state_dim] + dS_next#np.random.normal(dS_next, std_next)
         for s_next in S_next:
             for i in range(2):
                 s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
@@ -213,7 +213,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
             ds_next[i] = mm
             std_next[i] = np.sqrt(np.diag(vv))
 
-        s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
+        s_next = sa[:self.state_dim] + ds_next#np.random.normal(ds_next, std_next)
         for i in range(2):
             s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
             s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0        
