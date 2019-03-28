@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '3'
+tr = '1'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -48,7 +48,7 @@ sigma_start = np.ones((state_dim,))*1e-3
 # plt.show()
 # exit(1)
 
-if 0:   
+if 1:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
@@ -211,7 +211,7 @@ for i in range(1,5):
     ax.plot(range(Smean.shape[0]), Smean[:,i-1], '-b', label='rollout mean')
     # ax.fill_between(t[:-1], Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[0]]-Sstd[:,ix[0]], facecolor='blue', alpha=0.5, label='rollout std.')
     ax.plot(t, Ypred_mean_gp[:,i-1], '-r', label='BPP mean')
-    ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='red', alpha=0.5, label='BGP std.')
+    ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='green', alpha=0.5, label='BGP std.')
     # ax.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
     # ax.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
     ax.plot(t, Ypred_naive[:,i-1], '-k', label='Naive')

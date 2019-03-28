@@ -24,12 +24,12 @@ class data_load(object):
         self.dr = dr
         self.K = K
 
-        if os.path.exists(self.path + self.prefix + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj'):
-            with open(self.path + self.prefix + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
+        if os.path.exists(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj'):
+            with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
                 _, self.theta_opt, self.opt_kdt = pickle.load(f)
             print('[data_load] Loaded hyper-parameters data from ' + self.file)
         else:
-            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal)
+            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont)
 
     def load(self):
 
@@ -145,7 +145,7 @@ class data_load(object):
             X[:,i] = X[:,i]*(self.x_max_X[i]-self.x_min_X[i]) + self.x_min_X[i]
         return X
 
-    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1,  simORreal = 'sim'):
+    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1,  simORreal = 'sim', discreteORcont = 'discrete'):
         print('[data_load] Pre-computing GP hyper-parameters data.')
 
         if K_manifold > 0:
@@ -180,7 +180,7 @@ class data_load(object):
                 X_nn, Y_nn = reduction(sa, X_nn, Y_nn, K_manifold)
 
             try:
-                gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,0], optimize = True, theta=None) # Optimize to get hyper-parameters
+                gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,0], optimize = True, theta=None) # Optimize to get hyper-parameters
             except:
                 print('[data_load] Singular!')
                 continue
@@ -194,7 +194,7 @@ class data_load(object):
 
         self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
 
-        with open(self.path + self.prefix + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
+        with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
             pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
         print('[data_load] Saved hyper-parameters data.')
 

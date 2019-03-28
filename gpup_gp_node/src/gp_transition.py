@@ -22,7 +22,7 @@ discreteORcont = 'cont'
 useDiffusionMaps = False
 probability_threshold = 0.65
 plotRegData = False
-diffORspec = 'spec'
+diffORspec = 'diff'
 
 
 class Spin_gp(data_load, mean_shift):#, svm_failure):
@@ -32,9 +32,9 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
     def __init__(self):
         # Number of NN
         if useDiffusionMaps:
-            dim = 4
-            self.K = 100
-            self.K_manifold = 10
+            dim = 3
+            self.K = 1000
+            self.K_manifold = 100
             sigma = 5
             if diffORspec == 'diff':
                 # self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
@@ -45,7 +45,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim, dr = 'diff')
         else:
-            self.K = 100
+            self.K = 2
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
@@ -137,8 +137,8 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         dS_next = np.zeros((SA.shape[0], self.state_dim))
         std_next = np.zeros((SA.shape[0], self.state_dim))
         for i in range(self.state_dim):
-            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
-            mm, vv = gp_est.batch_predict(SA[:,:self.state_dim])
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
+            mm, vv = gp_est.batch_predict(SA[:,:self.state_action_dim])
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
 
@@ -208,8 +208,8 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         ds_next = np.zeros((self.state_dim,))
         std_next = np.zeros((self.state_dim,))
         for i in range(self.state_dim):
-            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
-            mm, vv = gp_est.predict(sa[:self.state_dim])
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
+            mm, vv = gp_est.predict(sa[:self.state_action_dim])
             ds_next[i] = mm
             std_next[i] = np.sqrt(np.diag(vv))
 
