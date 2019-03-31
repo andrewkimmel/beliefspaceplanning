@@ -24,12 +24,12 @@ class data_load(object):
         self.dr = dr
         self.K = K
 
-        if os.path.exists(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj'):
-            with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
-                _, self.theta_opt, self.opt_kdt = pickle.load(f)
-            print('[data_load] Loaded hyper-parameters data from ' + self.file)
-        else:
-            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont)
+        # if os.path.exists(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj'):
+        #     with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
+        #         _, self.theta_opt, self.opt_kdt = pickle.load(f)
+        #     print('[data_load] Loaded hyper-parameters data from ' + self.file)
+        # else:
+        #     self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont)
 
     def load(self):
 
@@ -72,7 +72,6 @@ class data_load(object):
         self.x_min_X = np.min(self.Xtrain, axis=0)
         self.x_max_Y = np.max(self.Ytrain, axis=0)
         self.x_min_Y = np.min(self.Ytrain, axis=0)
-
 
         for i in range(self.state_dim):
             tmp = np.max([self.x_max_X[i], self.x_max_Y[i]])
@@ -166,7 +165,7 @@ class data_load(object):
 
         SA_opt = []
         theta_opt = []
-        N = 1000
+        N = 20000
         for i in range(N):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]

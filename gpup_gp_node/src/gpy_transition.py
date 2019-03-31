@@ -5,7 +5,6 @@ from std_srvs.srv import SetBool, Empty, EmptyResponse
 from gpup_gp_node.srv import batch_transition, batch_transition_repeat, one_transition, setk
 import math
 import numpy as np
-from gp import GaussianProcess
 from data_load import data_load
 from svm_class import svm_failure
 from diffusionMaps import DiffusionMap
@@ -13,6 +12,12 @@ from diffusionMaps import DiffusionMap
 from spectralEmbed import spectralEmbed
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
+
+method = 'GPy'
+if method == 'GPy':
+    import GPy
+elif method == 'pyGPs':
+    import pyGPs
 
 
 # np.random.seed(10)
@@ -45,52 +50,25 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, K_manifold = self.K_manifold, sigma=sigma, dim = dim, dr = 'diff')
         else:
-            self.K = 100
+            self.K = 50
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
-        # svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
-        mean_shift.__init__(self)
-
-        rospy.Service('/gp/transition', batch_transition, self.GetTransition)
+        # svm_failure.neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']__init__(self, discrete = (True if discreteORcont=='discrete' else False))
+        mean_shift.__ineg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']nit__(self)
+neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']
+        rospy.Service(neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']'/gp/transition', batch_transition, self.GetTransition)
         rospy.Service('/gp/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
         rospy.Service('/gp/transitionRepeat', batch_transition_repeat, self.GetTransitionRepeat)
         rospy.Service('/gp/batchSVMcheck', batch_transition, self.batch_svm_check_service)
-        rospy.Service('/gp/set_K', setk, self.setK)
         rospy.init_node('gp_transition', anonymous=True)
         print('[gp_transition] Ready.')            
 
         rospy.spin()
-
-    def setK(self, msg):
-        V = np.array(msg.data)
-
-        if V[0]  < self.state_dim:
-            useDiffusionMaps = True
-            dim = int(V[0])
-            self.K_manifold = int(V[1])
-            self.K = int(V[2])
-            if diffORspec == 'diff':
-                sigma = V[3]
-                self.df = DiffusionMap(sigma=sigma, embedding_dim=dim)
-                if V[4]:
-                    self.dr = 'diff'
-                    self.precompute_hyperp(K = self.K, K_manifold = self.K_manifold, sigma = sigma, dim = dim)
-                print('[gp_transition] Using diffusion maps with dimension %d, K: (%d, %d) and sigma=%f.'%(dim, self.K_manifold, self.K, sigma))
-            elif diffORspec == 'spec':
-                self.embedding = spectralEmbed(embedding_dim=dim)
-                if V[4]:
-                    self.dr = 'spec'
-                    self.precompute_hyperp(K = self.K, K_manifold = self.K_manifold, dim = dim) 
-                print('[gp_transition] Using spectral embedding with dimension %d.'%(dim))
-        else:
-            useDiffusionMaps = False
-            self.K = int(V[1])
-            if V[4]:
-                self.precompute_hyperp(K = self.K)
-            print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
-
-        # return EmptyResponse()
 
     # Particles prediction
     def batch_predict(self, SA):
@@ -99,9 +77,12 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         for i in range(np.minimum(25, SA.shape[0])):
             x1 = SA[np.random.randint(SA.shape[0]), :2]
             x2 = SA[np.random.randint(SA.shape[0]), :2]
-            if x1[0]-x2[0] > 0.3:
-                bi[0] = True
-            if x1[1]-x2[1] > 0.3:
+            if x1[0]-xneg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']2[0] > 0.3:
+                bi[0] neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']= True
+            if x1[1]-xneg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']2[1] > 0.3:
                 bi[1] = True
         if np.any(bi):
             for y in SA:
@@ -138,12 +119,18 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         std_next = np.zeros((SA.shape[0], self.state_dim))
         for i in range(self.state_dim):
             gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
-            mm, vv = gp_est.batch_predict(SA[:,:self.state_action_dim])
-            dS_next[:,i] = mm
-            std_next[:,i] = np.sqrt(np.diag(vv))
-
-        S_next = SA[:,:self.state_dim] + dS_next#np.random.normal(dS_next, std_next)
-        for s_next in S_next:
+            mm, vv = gneg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']p_est.batch_predict(SA[:,:self.state_action_dim])
+            dS_next[:,neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']i] = mm
+            std_next[:neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x'],i] = np.sqrt(np.diag(vv))
+neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']
+        S_next = SA[:,neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']:self.state_dim] + dS_next#np.random.normal(dS_next, std_next)
+        for s_next in neg_log_marginal_likelihood, self.theta, method='l-bfgs-b', bounds=bounds,tol=1e-20, options={'disp':False,'eps':1e-10})
+        self.theta = res['x']S_next:
             for i in range(2):
                 s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
                 s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0   
@@ -170,7 +157,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 plt.title('Load')
                 ia = [4, 5]
                 ax = plt.subplot(133)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
+                ax.plot(sa[ia[0]], sa[ia[1]], 'ymog')
                 ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
                 ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
                 ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
@@ -185,11 +172,6 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
-
-        # print "X_nn:"
-        # print X_nn
-        # print "Y_nn:"
-        # print Y_nn
 
         # If the neighbors are seperated, move them to one cluster via wraping
         bi = [False, False]
@@ -209,16 +191,29 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
-        print  "========"
+
         ds_next = np.zeros((self.state_dim,))
         std_next = np.zeros((self.state_dim,))
         for i in range(self.state_dim):
-            if i == 0:
-                gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = True, theta = None)
-                # Theta = gp_est.cov.theta
-            else:
-                gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = True, theta = None)
-            mm, vv = gp_est.predict(sa[:self.state_action_dim])
+
+            if method == 'GPy':
+                kernel = GPy.kern.RBF(input_dim=self.state_action_dim, variance=1., lengthscale=1.)
+                gp_est = GPy.models.GPRegression(X_nn[:,:self.state_action_dim], Y_nn[:,i].reshape(-1,1),kernel)
+                gp_est.optimize(messages=False)
+                # m.optimize_restarts(num_restarts = 10)
+                mm, vv = gp_est.predict(sa[:self.state_action_dim].reshape(1,self.state_action_dim))
+            elif method == 'pyGPs':
+                gp_est = pyGPs.GPR()
+                m = pyGPs.mean.Linear( D=self.state_action_dim )# + pyGPs.mean.Const()  
+                k = pyGPs.cov.RBF(log_ell=5., log_sigma=-5)
+                gp_est.setPrior(mean=m, kernel=k) 
+                gp_est.getPosterior(X_nn[:,:self.state_action_dim], Y_nn[:,i])
+                rand_inx = np.random.choice(self.K, 10)
+                gp_est.optimize(X_nn[rand_inx,:], Y_nn[rand_inx, i], numIterations=10)
+                gp_est.predict(sa.reshape(1,self.state_action_dim))
+                mm = gp_est.ym
+                vv = gp_est.ys2
+
             ds_next[i] = mm
             std_next[i] = np.sqrt(np.diag(vv))
 

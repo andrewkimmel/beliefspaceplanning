@@ -67,6 +67,7 @@ class Covariance(object):
 
         diff = xi - xj
         W = 1. / w
+        # W = np.ones((w.shape))
 
         #slighly dirty hack to determine whether i==j
         return v * np.exp(-0.5 * (np.dot(diff.T, W* diff))) + (vt if (xi == xj).all() else 0)

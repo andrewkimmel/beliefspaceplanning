@@ -25,7 +25,7 @@ class transition_experience():
         self.recorder_data = True if postfix == '_bu' else False
             
         self.file = 'acrobot_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
-        self.file_name = self.path + self.file + '.txt' # + '.obj
+        self.file_name = self.path + self.file # + '.obj
 
         if Load:
             self.load()
@@ -39,12 +39,11 @@ class transition_experience():
         self.memory = []
 
     def load(self):
-        if os.path.isfile(self.file_name):
-            print('Loading data from ' + self.file_name)
+        if os.path.isfile(self.file_name + '.txt'):
+            print('Loading data from ' + self.file_name + '.txt')
             # with open(self.file_name, 'rb') as filehandler:
                 # self.memory = pickle.load(filehandler)
-            print self.file_name
-            D = np.loadtxt(self.file_name, delimiter=',')
+            D = np.concatenate((np.loadtxt(self.file_name  + '.txt', delimiter=','), np.loadtxt(self.file_name + '2' + '.txt', delimiter=',')), axis=0)
             self.memory = []
             for d in D:
                 state = np.array(d[:4])
@@ -219,7 +218,7 @@ class transition_experience():
         if stepSize > 1:
             D = multiStep(D, done, stepSize)
 
-        D = D[np.random.choice(D.shape[0], int(0.25*D.shape[0]), replace=False),:] # Dillute
+        D = D[np.random.choice(D.shape[0], int(0.2*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
         savemat(self.path + 'acrobot_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})

@@ -34,9 +34,9 @@ for v in Ar:
     n = int(v[1]*100)
     for _ in range(n):
         A.append(a)
-A = np.array(A)#[:200,:]
+A = np.array(A)#[:200]
 
-Smean = np.loadtxt(path + traj_file, delimiter=',')[:200,:]
+Smean = np.loadtxt(path + traj_file, delimiter=',')#[:200,:]
 
 print A.shape, Smean.shape
 
@@ -48,8 +48,19 @@ sigma_start = np.ones((state_dim,))*1e-5
 # plt.title('path ' + tr)
 # plt.show()
 # exit(1)
+# s = Smean[0,:]
+# a = np.array([A[0]])
 
-if 0:   
+# print s, a
+
+# res = naive_srv(s.reshape(-1,1), a)
+# s_next = np.array(res.next_state)
+
+# print s_next
+
+# exit(1)
+
+if 1:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
