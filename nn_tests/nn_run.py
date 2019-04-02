@@ -37,7 +37,7 @@ Regularization = False
 
 print('Loading training data...')
 
-File = 'acrobot_data_cont_v0_d4_m1.mat'
+File = 'acrobot_data_cont_v0_d4_m1_nn.mat'
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
 
 Q = loadmat(path + File)
@@ -81,12 +81,12 @@ from sklearn.model_selection import train_test_split
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.1, random_state=42)
 
 ############################################ Network Parameters ########################################################
-hidden_layers = [10]*50
+hidden_layers = [6]*70
 activation = 'relu'
 
 # Training Parameters
-learning_rate =  0.01
-num_steps = int(2e5)
+learning_rate =  0.001
+num_steps = int(1e6)
 batch_size = 250
 display_step = 100
 

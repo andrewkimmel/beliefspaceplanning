@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 # np.random.seed(10)
 
 simORreal = 'acrobot'
-discreteORcont = 'cont'
+discreteORcont = 'discrete'
 useDiffusionMaps = False
 probability_threshold = 0.65
 plotRegData = False
@@ -134,10 +134,12 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
 
+        Theta = self.get_theta(sa) # Get hyper-parameters for this query point
+
         dS_next = np.zeros((SA.shape[0], self.state_dim))
         std_next = np.zeros((SA.shape[0], self.state_dim))
         for i in range(self.state_dim):
-            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = self.get_theta(sa))
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
             mm, vv = gp_est.batch_predict(SA[:,:self.state_action_dim])
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
@@ -186,11 +188,6 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 
-        # print "X_nn:"
-        # print X_nn
-        # print "Y_nn:"
-        # print Y_nn
-
         # If the neighbors are seperated, move them to one cluster via wraping
         bi = [False, False]
         for i in range(np.minimum(25, X_nn.shape[0])):
@@ -209,18 +206,16 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
-        print  "========"
+
+        Theta = self.get_theta(sa) # Get hyper-parameters for this query point
+
         ds_next = np.zeros((self.state_dim,))
         std_next = np.zeros((self.state_dim,))
         for i in range(self.state_dim):
-            if i == 0:
-                gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = True, theta = None)
-                # Theta = gp_est.cov.theta
-            else:
-                gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = True, theta = None)
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
             mm, vv = gp_est.predict(sa[:self.state_action_dim])
             ds_next[i] = mm
-            std_next[i] = np.sqrt(np.diag(vv))
+            std_next[i] = np.sqrt(vv)
 
         s_next = sa[:self.state_dim] + ds_next#np.random.normal(ds_next, std_next)
         for i in range(2):

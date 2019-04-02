@@ -23,7 +23,7 @@ gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_test/cont/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_test/discrete/'
 action_file = 'acrobot_ao_rrt_plan' + tr + '.txt'
 traj_file = 'acrobot_ao_rrt_traj' + tr + '.txt'
 
@@ -34,11 +34,9 @@ for v in Ar:
     n = int(v[1]*100)
     for _ in range(n):
         A.append(a)
-A = np.array(A)#[:200]
+A = np.array(A)[:150]
 
-Smean = np.loadtxt(path + traj_file, delimiter=',')#[:200,:]
-
-print A.shape, Smean.shape
+Smean = np.loadtxt(path + traj_file, delimiter=',')[:150,:]
 
 # plt.plot(Smean[:,0], Smean[:,1], '.-r')
 
@@ -48,15 +46,55 @@ sigma_start = np.ones((state_dim,))*1e-5
 # plt.title('path ' + tr)
 # plt.show()
 # exit(1)
-# s = Smean[0,:]
-# a = np.array([A[0]])
 
-# print s, a
+# from gp import GaussianProcess
+# from data_load import data_load
+# DL = data_load(simORreal = 'acrobot', discreteORcont = 'discrete', K = 100)
 
-# res = naive_srv(s.reshape(-1,1), a)
-# s_next = np.array(res.next_state)
+# # s = Smean[0,:]
+# # a = np.array([A[0]])
+# # sa = np.concatenate((s, a), axis=1)
+# # sa = DL.normz( sa )    
+# # idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
+# # X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
+# # Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
+# # ds_next = np.zeros((DL.state_dim,))
+# # std_next_normz = np.zeros((DL.state_dim,))
+# # for i in range(DL.state_dim):
+# #     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = True, theta = None)
+# #     mm, vv = gp_est.predict(sa[:DL.state_action_dim])
+# #     ds_next[i] = mm
+# #     std_next_normz[i] = np.sqrt(np.diag(vv))
+# # sa_normz = sa[:DL.state_dim] + ds_next
+# # s_next = DL.denormz( sa_normz )
+# # std_next = DL.denormz_change( std_next_normz )
 
-# print s_next
+# S = Smean[:2,:].reshape(2,-1)
+# a = np.array([A[:2]]).reshape(2,1)
+
+# SA = np.concatenate((S, a), axis=1)
+# SA = DL.normz_batch( SA )
+# sa = np.mean(SA, 0)
+# idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
+# X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
+# Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
+
+# dS_next = np.zeros((SA.shape[0], DL.state_dim))
+# std_next_normz = np.zeros((SA.shape[0], DL.state_dim))
+# for i in range(DL.state_dim):
+#     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = None)
+#     mm, vv = gp_est.batch_predict(SA[:,:DL.state_action_dim])
+#     dS_next[:,i] = mm
+#     std_next_normz[:,i] = np.sqrt(np.diag(vv))
+# SA_normz = SA[:,:DL.state_dim] + dS_next
+
+# S_next = DL.denormz_batch( SA_normz )
+# std_next = np.zeros(std_next_normz.shape)
+# for i in range(std_next_normz.shape[0]):
+#     std_next[i] = DL.denormz_change(std_next_normz[i])
+
+# print S, a
+# print S_next, std_next
 
 # exit(1)
 
