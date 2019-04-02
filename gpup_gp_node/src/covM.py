@@ -4,11 +4,11 @@
 Author: Avishai Sintov
         Rutgers University
         2018-2019
+This code is based on the Matlab implementation of the Gaussian Kernel and covariance matrix
 '''
 
 import numpy as np
 from scipy.linalg import inv
-
 
 class Covariance(object):
 

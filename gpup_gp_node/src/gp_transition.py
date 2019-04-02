@@ -139,7 +139,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         dS_next = np.zeros((SA.shape[0], self.state_dim))
         std_next = np.zeros((SA.shape[0], self.state_dim))
         for i in range(self.state_dim):
-            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i], algorithm = 'Matlab')
             mm, vv = gp_est.batch_predict(SA[:,:self.state_action_dim])
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
@@ -212,7 +212,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         ds_next = np.zeros((self.state_dim,))
         std_next = np.zeros((self.state_dim,))
         for i in range(self.state_dim):
-            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i], algorithm = 'Matlab')
             mm, vv = gp_est.predict(sa[:self.state_action_dim])
             ds_next[i] = mm
             std_next[i] = np.sqrt(vv)

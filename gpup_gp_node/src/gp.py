@@ -7,18 +7,23 @@ Author: Avishai Sintov
 '''
 
 import numpy as np
-from cov import Covariance
 import time
 
-algorithm = 'Matlab'  # 'Girard' or 'Matlab'
+# algorithm is 'Girard' or 'Matlab'
 
 class GaussianProcess(object):
 
-    def __init__(self, X, Y, optimize = True, theta = None):
+    def __init__(self, X, Y, optimize = True, theta = None, algorithm = 'Matlab'):
 
         self.X = X
         self.Y_mean = np.mean(Y)
         self.Y = Y# - self.Y_mean
+
+        self.algorithm = algorithm
+        if self.algorithm == 'Girard':
+            from covG import Covariance
+        elif self.algorithm == 'Matlab':
+            from covM import Covariance
 
         self.cov = Covariance(self.X, self.Y, theta = theta, optimize = optimize)
 
@@ -30,7 +35,7 @@ class GaussianProcess(object):
             k_vector[i] = self.cov.Gcov(x, self.X[i,:])
         k_vector = k_vector.reshape(1,-1)
 
-        if algorithm == 'Girard':
+        if self.algorithm == 'Girard':
             k = self.cov.Gcov(x, x)
 
             # Implementation from Girard, Pg. 22
@@ -48,7 +53,7 @@ class GaussianProcess(object):
             # var = k - s
             # mean += self.Y_mean
 
-        elif algorithm == 'Matlab':
+        elif self.algorithm == 'Matlab':
             # Implementation of Matlab
             AlphaHat = self.cov.get_AlphaHat()
             mean = k_vector.dot(AlphaHat)
@@ -65,12 +70,12 @@ class GaussianProcess(object):
         N = Xs.shape[0] # Number of query inputs
         k_vector = self.cov.cov_matrix_ij(Xs, self.X, add_vt = False)
 
-        if algorithm == 'Girard':
+        if self.algorithm == 'Girard':
             # Batch implementation from Girard, Pg. 22
             k = self.cov.cov_matrix_ij(Xs, Xs)
             mean = np.dot(k_vector, np.dot(self.cov.Kinv, self.Y)) # + self.Y_mean #!!!!
             variance = np.diag(np.diag(k)) - np.dot(kv, np.dot(self.cov.Kinv, k_vector.T))# + self.cov._get_vt() #code variance + aleatory variance
-        elif algorithm == 'Matlab':
+        elif self.algorithm == 'Matlab':
             AlphaHat = self.cov.get_AlphaHat()
             mean = k_vector.dot(AlphaHat)
             LinvKXXnewc = np.linalg.inv(self.cov.L).dot(k_vector.T)

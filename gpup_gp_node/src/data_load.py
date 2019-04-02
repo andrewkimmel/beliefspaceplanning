@@ -17,7 +17,7 @@ class data_load(object):
         self.Dillute = Dillute
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.prefix =  simORreal + '_'
-        self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
+        self.file = simORreal + '_data_' + discreteORcont + self.postfix + 's.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.dr = dr
@@ -194,14 +194,15 @@ class data_load(object):
             SA_opt.append(sa)
             theta_opt.append(Theta)
 
-        self.SA_opt = np.array(SA_opt)
-        self.theta_opt = np.array(theta_opt)
+            if not (i % 100):
+                self.SA_opt = np.array(SA_opt)
+                self.theta_opt = np.array(theta_opt)
 
-        self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
+                self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
 
-        with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + 'b.obj', 'wb') as f: 
-            pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
-        print('[data_load] Saved hyper-parameters data.')
+                with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + 'b.obj', 'wb') as f: 
+                    pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
+                print('[data_load] Saved hyper-parameters data.')
 
     def get_theta(self, sa):
         idx = self.opt_kdt.query(sa.reshape(1,-1), k = 1, return_distance=False)    
