@@ -13,6 +13,7 @@ from diffusionMaps import DiffusionMap
 from spectralEmbed import spectralEmbed
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
+import time
 
 
 # np.random.seed(10)
@@ -103,12 +104,16 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 bi[0] = True
             if x1[1]-x2[1] > 0.3:
                 bi[1] = True
-        if np.any(bi):
-            for y in SA:
-                if bi[0]:
-                    y[0] += 1. if y[0] < 0.5 else 0
-                if bi[1]:
-                    y[1] += 1. if y[1] < 0.5 else 0 
+        for i in range(2):
+            if bi[i]:
+                C = 0
+                for sa in SA:
+                    C += 1 if sa[i] > 0.5 else 0 # Move the minority particles
+                for sa in SA:
+                    if C > SA.shape[0]:
+                        sa[i] += 1. if sa[i] < 0.5 else 0.0
+                    else:
+                        sa[i] -= 1. if sa[i] > 0.5 else 0.0                
 
         sa = np.mean(SA, 0)
         idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
@@ -124,12 +129,13 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 bi[0] = True
             if x1[1]-x2[1] > 0.3:
                 bi[1] = True
-        if np.any(bi):
-            for x in X_nn:
-                if bi[0]:
-                    x[0] += 1. if x[0] < 0.5 else 0
-                if bi[1]:
-                    x[1] += 1. if x[1] < 0.5 else 0 
+        for i in range(2):
+            if bi[i]:
+                for x in X_nn:
+                    if sa[i] > 0.5:
+                        x[i] += 1. if x[i] < 0.5 else 0
+                    else:
+                        x[i] -= 1. if x[i] > 0.5 else 0 
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
@@ -150,43 +156,14 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
                 s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0   
 
-        if plotRegData:
-            if np.random.uniform() < 0.1:
-                ia = [0, 1]
-                ax = plt.subplot(131)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Position')
-                ia = [2, 3]
-                ax = plt.subplot(132)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Load')
-                ia = [4, 5]
-                ax = plt.subplot(133)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Velocity')
-                plt.show()
-
-        return S_next 
+        return S_next
 
     def one_predict(self, sa):
+        st = time.time()
         idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+        tnn = time.time() - st
 
         # If the neighbors are seperated, move them to one cluster via wraping
         bi = [False, False]
@@ -197,12 +174,13 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 bi[0] = True
             if x1[1]-x2[1] > 0.3:
                 bi[1] = True
-        if np.any(bi):
-            for x in X_nn:
-                if bi[0]:
-                    x[0] += 1. if x[0] < 0.5 else 0
-                if bi[1]:
-                    x[1] += 1. if x[1] < 0.5 else 0 
+        for i in range(2):
+            if bi[i]:
+                for x in X_nn:
+                    if sa[i] > 0.5:
+                        x[i] += 1. if x[i] < 0.5 else 0
+                    else:
+                        x[i] -= 1. if x[i] > 0.5 else 0 
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
@@ -211,54 +189,37 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
 
         ds_next = np.zeros((self.state_dim,))
         std_next = np.zeros((self.state_dim,))
+        tgp = 0
+        tp = 0
         for i in range(self.state_dim):
-            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i], algorithm = 'Matlab')
+            st = time.time()
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = True, theta = None, algorithm = 'Matlab')
+            tgp += time.time() - st
+            st = time.time()
             mm, vv = gp_est.predict(sa[:self.state_action_dim])
+            tp += time.time() - st
             ds_next[i] = mm
             std_next[i] = np.sqrt(vv)
 
+        # print tgp / self.state_dim, tp / self.state_dim, tnn
+
         s_next = sa[:self.state_dim] + ds_next#np.random.normal(ds_next, std_next)
+
+
+        print s_next[:2], self.denormz( s_next )[:2]
+        if np.any(s_next[:2] > 1.0) or np.any(s_next[:2] < -1.0):
+            print "Breach."
+            raw_input()
+
         for i in range(2):
             s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
             s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0        
 
-        if plotRegData:
-            # fig = plt.gcf()
-            # fig.set_size_inches(24,15)
-            # fig.set_figheight(15)
-            # fig.set_figwidth(24)
-            # print sa
-            if np.random.uniform() < 1.1:
-                ia = [0, 1]
-                ax = plt.subplot(121)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([sa[ia[0]], s_next[ia[0]]], [sa[ia[1]], s_next[ia[1]]], '-y')
-                # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Position' + str(sa[-2:]))
-                ia = [2, 3]
-                ax = plt.subplot(122)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([sa[ia[0]], s_next[ia[0]]], [sa[ia[1]], s_next[ia[1]]], '-y')
-                # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Load - DF')
-                # ia = [4, 5]
-                # ax = plt.subplot(133)
-                # ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                # ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                # ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                # ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                # ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                # plt.title('Velocity')
-                # plt.show()
-                plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/pic_' + str(rospy.get_time()) + '.png')
-                plt.clf()
+        # if np.any(s_next[:2] - sa[:2] > 0.5):  
+        #     print "g: ", self.denormz( s_next )
+        #     raw_input()
 
-        return s_next 
+        return s_next
 
     def reduction(self, sa, X, Y):
         if diffORspec == 'diff':

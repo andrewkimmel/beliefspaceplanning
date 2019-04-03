@@ -148,7 +148,7 @@ class Covariance(object):
         bounds = [(-100.,100.) for _ in range(3)]
 
         from scipy.optimize import minimize
-        res = minimize(self.neg_log_marginal_likelihood, self.theta, method='Nelder-Mead', bounds=bounds, tol=1e-20, options={'disp':False,'eps':1e-10})
+        res = minimize(self.neg_log_marginal_likelihood, self.theta, method='Nelder-Mead', bounds=bounds, tol=1e-6, options={'disp':False,'eps':1e-6})
         self.theta = res['x']
 
         # from Utilities import minimize

@@ -6,6 +6,7 @@ import os.path
 import pickle
 import matplotlib.pyplot as plt
 import var
+import time
 
 # np.random.seed(1)
 
@@ -29,7 +30,7 @@ class data_load(object):
                 _, self.theta_opt, self.opt_kdt = pickle.load(f)
             print('[data_load] Loaded hyper-parameters data for data in ' + self.file)
         else:
-            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont, combine = True)
+            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont, combine = False)
 
     def load(self):
 
@@ -73,6 +74,11 @@ class data_load(object):
         self.x_max_Y = np.max(self.Ytrain, axis=0)
         self.x_min_Y = np.min(self.Ytrain, axis=0)
 
+        self.x_max_X[:2] = np.pi
+        self.x_max_Y[:2] = np.pi
+        self.x_min_X[:2] = -np.pi
+        self.x_min_Y[:2] = -np.pi
+
         for i in range(self.state_dim):
             tmp = np.max([self.x_max_X[i], self.x_max_Y[i]])
             self.x_max_X[i] = tmp
@@ -90,9 +96,9 @@ class data_load(object):
             for j in range(self.state_dim):
                 if j < 2 and np.abs(self.Ytrain[i,j] - self.Xtrain[i,j]) > 0.4:
                     if self.Xtrain[i,j] > 0.6:
-                        a =  (self.Ytrain[i,j] + 1) - self.Xtrain[i,j]
+                        a = (self.Ytrain[i,j] + 1) - self.Xtrain[i,j]
                     elif self.Xtrain[i,j] < 0.4:
-                        a =  (self.Ytrain[i,j] - 1) - self.Xtrain[i,j]
+                        a = (self.Ytrain[i,j] - 1) - self.Xtrain[i,j]
                     self.Ytrain[i,j] = a
                 else:
                     self.Ytrain[i,j] -= self.Xtrain[i,j] 

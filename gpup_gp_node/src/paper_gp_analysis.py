@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '1'
+tr = '2'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -51,50 +51,59 @@ sigma_start = np.ones((state_dim,))*1e-5
 # from data_load import data_load
 # DL = data_load(simORreal = 'acrobot', discreteORcont = 'discrete', K = 100)
 
-# # s = Smean[0,:]
-# # a = np.array([A[0]])
-# # sa = np.concatenate((s, a), axis=1)
-# # sa = DL.normz( sa )    
-# # idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
-# # X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
-# # Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
-# # ds_next = np.zeros((DL.state_dim,))
-# # std_next_normz = np.zeros((DL.state_dim,))
-# # for i in range(DL.state_dim):
-# #     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = True, theta = None)
-# #     mm, vv = gp_est.predict(sa[:DL.state_action_dim])
-# #     ds_next[i] = mm
-# #     std_next_normz[i] = np.sqrt(np.diag(vv))
-# # sa_normz = sa[:DL.state_dim] + ds_next
-# # s_next = DL.denormz( sa_normz )
-# # std_next = DL.denormz_change( std_next_normz )
+# s = Smean[0,:]
+# a = np.array([A[0]])
+# sa = np.concatenate((s, a), axis=0)
+# sa = DL.normz( sa )    
+# st = time.time()
+# idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
+# X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
+# Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
+# tnn = time.time() - st
+# print "tnn: ", tnn
+# ds_next = np.zeros((DL.state_dim,))
+# std_next_normz = np.zeros((DL.state_dim,))
+# Theta = DL.get_theta(sa)
+# for i in range(DL.state_dim):
+#     st = time.time()
+#     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
+#     tgp = time.time() - st
+#     st = time.time()
+#     mm, vv = gp_est.predict(sa[:DL.state_action_dim])
+#     tp = time.time() - st
+#     ds_next[i] = mm
+#     std_next_normz[i] = np.sqrt(vv)
+#     print "T: ", i, tgp, tp
+# sa_normz = sa[:DL.state_dim] + ds_next
+# s_next = DL.denormz( sa_normz )
+# std_next = DL.denormz_change( std_next_normz )
 
 # S = Smean[:2,:].reshape(2,-1)
 # a = np.array([A[:2]]).reshape(2,1)
 
-# SA = np.concatenate((S, a), axis=1)
-# SA = DL.normz_batch( SA )
-# sa = np.mean(SA, 0)
-# idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
-# X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
-# Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
+# # SA = np.concatenate((S, a), axis=1)
+# # SA = DL.normz_batch( SA )
+# # sa = np.mean(SA, 0)
+# # idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
+# # X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
+# # Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
 
-# dS_next = np.zeros((SA.shape[0], DL.state_dim))
-# std_next_normz = np.zeros((SA.shape[0], DL.state_dim))
-# for i in range(DL.state_dim):
-#     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = None)
-#     mm, vv = gp_est.batch_predict(SA[:,:DL.state_action_dim])
-#     dS_next[:,i] = mm
-#     std_next_normz[:,i] = np.sqrt(np.diag(vv))
-# SA_normz = SA[:,:DL.state_dim] + dS_next
+# # dS_next = np.zeros((SA.shape[0], DL.state_dim))
+# # std_next_normz = np.zeros((SA.shape[0], DL.state_dim))
+# # for i in range(DL.state_dim):
+# #     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = None)
+# #     mm, vv = gp_est.batch_predict(SA[:,:DL.state_action_dim])
+# #     dS_next[:,i] = mm
+# #     std_next_normz[:,i] = np.sqrt(np.diag(vv))
+# # SA_normz = SA[:,:DL.state_dim] + dS_next
 
-# S_next = DL.denormz_batch( SA_normz )
-# std_next = np.zeros(std_next_normz.shape)
-# for i in range(std_next_normz.shape[0]):
-#     std_next[i] = DL.denormz_change(std_next_normz[i])
+# # S_next = DL.denormz_batch( SA_normz )
+# # std_next = np.zeros(std_next_normz.shape)
+# # for i in range(std_next_normz.shape[0]):
+# #     std_next[i] = DL.denormz_change(std_next_normz[i])
 
-# print S, a
-# print S_next, std_next
+# # print S, a
+# print s_next, std_next
 
 # exit(1)
 
