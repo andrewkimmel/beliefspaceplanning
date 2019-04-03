@@ -17,7 +17,7 @@ class data_load(object):
         self.Dillute = Dillute
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.prefix =  simORreal + '_'
-        self.file = simORreal + '_data_' + discreteORcont + self.postfix + 's.mat'
+        self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.dr = dr
@@ -29,7 +29,7 @@ class data_load(object):
                 _, self.theta_opt, self.opt_kdt = pickle.load(f)
             print('[data_load] Loaded hyper-parameters data for data in ' + self.file)
         else:
-            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont)
+            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont, combine = True)
 
     def load(self):
 
@@ -144,7 +144,7 @@ class data_load(object):
             X[:,i] = X[:,i]*(self.x_max_X[i]-self.x_min_X[i]) + self.x_min_X[i]
         return X
 
-    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1,  simORreal = 'sim', discreteORcont = 'discrete'):
+    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1,  simORreal = 'sim', discreteORcont = 'discrete', combine = False):
         print('[data_load] One time pre-computation of GP hyper-parameters data - THIS WILL TAKE A WHILE...!!!!')
 
         if K_manifold > 0:
@@ -162,6 +162,24 @@ class data_load(object):
 
         from gp import GaussianProcess
         import pickle
+
+        if combine:
+            with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + 'a.obj', 'rb') as f: 
+                SA_opt_a, theta_opt_a, _ = pickle.load(f)
+            print('[data_load] Loaded %d random points from file a.'%SA_opt_a.shape[0])
+            with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + 'b.obj', 'rb') as f: 
+                SA_opt_b, theta_opt_b, _ = pickle.load(f)
+            print('[data_load] Loaded %d random points from file b.'%SA_opt_b.shape[0])
+
+            self.SA_opt = np.concatenate((SA_opt_a, SA_opt_b), axis=0)
+            self.theta_opt = np.concatenate((theta_opt_a, theta_opt_b), axis=0)
+            self.opt_kdt = KDTree(self.SA_opt, leaf_size=20, metric='euclidean')
+
+            with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
+                pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
+            print('[data_load] Combined and saved hyper-parameters data of size %d.'%self.SA_opt.shape[0])
+            return
+
 
         SA_opt = []
         theta_opt = []

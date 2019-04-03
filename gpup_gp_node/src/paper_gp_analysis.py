@@ -34,9 +34,9 @@ for v in Ar:
     n = int(v[1]*100)
     for _ in range(n):
         A.append(a)
-A = np.array(A)[:150]
+A = np.array(A)#[:150]
 
-Smean = np.loadtxt(path + traj_file, delimiter=',')[:150,:]
+Smean = np.loadtxt(path + traj_file, delimiter=',')#[:150,:]
 
 # plt.plot(Smean[:,0], Smean[:,1], '.-r')
 
