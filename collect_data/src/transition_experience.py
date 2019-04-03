@@ -157,13 +157,15 @@ class transition_experience():
 
         np.savetxt(filen, M, delimiter=' ')
 
+    
+
     def process_transition_data(self, mode = 1, stepSize = 1, plot = False):
         '''
         mode:
             1 - Position and load
             2 - Position
             3 - Position, load and velocity
-            4 - Position, load and joints
+            4 - Position, load and joints or velocities(4)
             5 - Position and joints
         '''
         def clean(D, done, mode):
@@ -187,9 +189,34 @@ class transition_experience():
                 i += 1
             return D[inx,:], done[inx]
 
+        def uniform_actions(D):
+            print('[transition_experience] Applying action uniformity to the data...')
+            DA = D[:,8:10]
+            A, Ix, N = np.unique(DA, axis=0, return_inverse=True, return_counts=True)
+
+            n = np.min(N)
+
+            P = []
+            for i in range(A.shape[0]):
+                ix = np.where(Ix == i)[0]
+
+                Da = D[ix, :]
+                Da = Da[np.random.choice(Da.shape[0], n, replace=False), :] # Dillute to minimal number of actions
+
+                P.append(Da)
+
+            Dnew = np.concatenate((P[0], P[1]), axis=0)
+            for i in range(2, len(P)):
+                Dnew = np.concatenate((Dnew, P[i]), axis=0)
+
+            # Dnew = np.random.shuffle(Dnew)
+            print('[transition_experience] Applyed action uniformity to the data, now with size %d.'%Dnew.shape[0])
+
+            return Dnew
+
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
-            ia = range(4,6) if mode == 1  else range(2,4) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            ia = range(4,6) if mode == 1  else range(8,10) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize, ia]) or np.any(done[i:i+stepSize]):
@@ -207,8 +234,8 @@ class transition_experience():
             states = np.array([item[0] for item in self.memory])
             next_states = np.array([item[2] for item in self.memory])
         else:
-            states = np.array([item[0][:4] for item in self.memory])
-            next_states = np.array([item[2][:4] for item in self.memory])
+            states = np.array([item[0] for item in self.memory])
+            next_states = np.array([item[2] for item in self.memory])
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
@@ -230,8 +257,8 @@ class transition_experience():
             states = np.concatenate((states[:, :4], signal.medfilt(states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
             next_states = np.concatenate((next_states[:, :4], signal.medfilt(next_states[:, 4], kernel_size = 21).reshape((-1,1)), signal.medfilt(next_states[:, 5], kernel_size = 21).reshape((-1,1))), axis=1)
         elif mode == 4:
-            states = states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
-            next_states = next_states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+            states = states#[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+            next_states = next_states#[:, [0, 1, 2, 3, 6, 7, 8, 9]]
         elif mode == 5:
             states = states[:, [0, 1, 6, 7, 8, 9]]
             next_states = next_states[:, [0, 1, 6, 7, 8, 9]]
@@ -240,7 +267,7 @@ class transition_experience():
         D = np.concatenate((states, actions, next_states), axis = 1)
         D, done = clean(D, done, mode)
 
-        inx = np.where(done)
+        inx = np.where(done)[0]
         D = np.delete(D, inx, 0)
         done = np.delete(done, inx, 0)
 
@@ -248,6 +275,7 @@ class transition_experience():
             D = multiStep(D, done, stepSize, mode)
 
         # D = D[np.random.choice(D.shape[0], int(0.6*D.shape[0]), replace=False),:] # Dillute
+        D = uniform_actions(D)
         self.D = D
 
         savemat(self.path + 'sim_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
@@ -262,7 +290,7 @@ class transition_experience():
         def multiStep(D, done, stepSize, mode): 
             Dnew = []
             done_new = []
-            ia = range(4,6) if mode == 1 else range(4,6)
+            ia = range(4,6) if mode == 1 else range(8,10)
             for i in range(D.shape[0]-stepSize):
                 a = D[i, ia] 
                 if not np.all(a == D[i:i+stepSize, ia]):
@@ -283,7 +311,7 @@ class transition_experience():
         if var.data_version_ == 13 and len(self.memory) < 5e5: 
             states = np.array([item[0] for item in self.memory])
         else:
-            states = np.array([item[0][:4] for item in self.memory])
+            states = np.array([item[0] for item in self.memory])
         actions = np.array([item[1] for item in self.memory])
         done = np.array([item[3] for item in self.memory])
 
@@ -294,7 +322,7 @@ class transition_experience():
         elif mode == 2:
             states = states[:, [0, 1]]
         elif mode == 4:
-            states = states[:, [0, 1, 2, 3, 6, 7, 8, 9]]
+            states = states#[:, [0, 1, 2, 3, 6, 7, 8, 9]]
         elif mode == 5:
             states = states[:, [0, 1, 6, 7, 8, 9]]
 

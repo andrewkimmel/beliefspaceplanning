@@ -85,7 +85,7 @@ class collect_data():
         for ep_step in range(self.episode_length):
 
             if n == 0:
-                action, n = self.choose_action(0.8)
+                action, n = self.choose_action(0.9)
 
             msg.data = action
             self.pub_gripper_action.publish(msg)
@@ -187,7 +187,7 @@ class collect_data():
                 else:
                     a = A[1]
 
-            if np.random.uniform() > 0.65:
+            if np.random.uniform() > 0.8:
                 if np.random.uniform() > 0.5:
                     num_steps = np.random.randint(400)
                 else:

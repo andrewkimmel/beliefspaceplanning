@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '3'
+tr = '2'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -104,7 +104,7 @@ if tr == '4':
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
 if 0:
     Af = A.reshape((-1,))
@@ -575,7 +575,7 @@ plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
 #     plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '-k', label='Naive')
 #     # plt.plot(Ypred_bmean[:,0], Ypred_bmean[:,1], '-m', label='Batch mean')
 
-plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png', dpi=300)
+plt.savefig('/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/path' + str(np.random.randint(100000)) + '.png', dpi=300)
 plt.show()
 
 
