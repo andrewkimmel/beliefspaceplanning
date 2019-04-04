@@ -14,6 +14,7 @@ from spectralEmbed import spectralEmbed
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
 import time
+from sklearn.neighbors import NearestNeighbors
 
 # np.random.seed(10)
 
@@ -92,7 +93,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         # return EmptyResponse()
 
     # Particles prediction
-    def batch_predict(self, SA, wrap_in):
+    def batch_predict(self, SA):
         # If the particles are seperated, move them to one cluster via wraping
         bi = [False, False]
         for i in range(np.minimum(25, SA.shape[0])):
@@ -150,17 +151,71 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
             std_next[:,i] = np.sqrt(np.diag(vv))
 
         S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
-        wrap_out = [0,0]
         for s_next in S_next:
             for i in range(2):
-                if s_next[i] < 1.0:
-                    s_next[i] += 1.0 
-                    wrap_out[i] = 1
-                if s_next[i] > 1.0:
-                    s_next[i] -= 1.0 
-                    wrap_out[i] = 1
+                s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
+                s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0 
 
-        return S_next, wrap_out
+        return S_next
+
+    # Particles prediction
+    def batch_predict_iterative(self, SA):
+
+        S_next = []
+        while SA.shape[0]:
+            sa = np.copy(SA[np.random.randint(SA.shape[0]), :])
+            D = self.kdt.query(sa.reshape(1,-1), k = self.K)
+            idx = D[0]
+            r = np.max(D[1])*1.1
+            X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
+            Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+
+            neigh = NearestNeighbors(radius=r)
+            neigh.fit(SA)
+            idx_local = neigh.radius_neighbors(sa.reshape(1,-1),return_distance=False)[0]
+            SA_local = np.copy(SA[idx_local, :])
+            SA = np.delete(SA, idx_local, axis = 0)
+
+            # If the neighbors are seperated, move them to one cluster via wraping
+            bi = [False, False]
+            for i in range(np.minimum(25, X_nn.shape[0])):
+                x1 = X_nn[np.random.randint(X_nn.shape[0]), :2]
+                x2 = X_nn[np.random.randint(X_nn.shape[0]), :2]
+                if np.abs(x1[0]-x2[0]) > 0.97:
+                    bi[0] = True
+                if np.abs(x1[1]-x2[1]) > 0.97:
+                    bi[1] = True
+            for i in range(2):
+                if bi[i]:
+                    for x in X_nn:
+                        if sa[i] > 0.5:
+                            x[i] += 1. if x[i] < 0.5 else 0
+                        else:
+                            x[i] -= 1. if x[i] > 0.5 else 0 
+
+            if useDiffusionMaps:
+                X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
+
+            Theta = self.get_theta(sa) # Get hyper-parameters for this query point
+
+            dS_next = np.zeros((SA_local.shape[0], self.state_dim))
+            std_next = np.zeros((SA_local.shape[0], self.state_dim))
+            for i in range(self.state_dim):
+                gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i], algorithm = 'Matlab')
+                mm, vv = gp_est.batch_predict(SA_local[:,:self.state_action_dim])
+                dS_next[:,i] = mm
+                std_next[:,i] = np.sqrt(np.diag(vv))
+
+            S_next_local = SA_local[:,:self.state_dim] + np.random.normal(dS_next, std_next)
+            for s_next in S_next_local:
+                for i in range(2):
+                    s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
+                    s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0 
+
+            for s in S_next_local:
+                S_next.append(s)
+
+        return np.array(S_next)
 
     def one_predict(self, sa):
         st = time.time()
@@ -227,10 +282,11 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         SA = np.concatenate((S, np.tile(a, (S.shape[0],1))), axis=1)
 
         SA = self.normz_batch( SA )    
-        SA_normz, wrap_out = self.batch_predict(SA)
+        # SA_normz = self.batch_predict(SA)
+        SA_normz = self.batch_predict_iterative(SA)
         S_next = self.denormz_batch( SA_normz )
 
-        return S_next, wrap_out
+        return S_next
 
     def batch_svm_check(self, S, a):
         failed_inx = []
@@ -308,7 +364,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 S[failed_inx, :] = S[dup_inx,:]
 
             # Propagate
-            S_next, wrap_out = self.batch_propa(S, a)
+            S_next = self.batch_propa(S, a)
 
             if self.OBS:
                 # print "Checking obstacles..."
@@ -345,7 +401,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
 
             mean = self.get_mean_shift(S_next)
             
-            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action, 'batch_wrap_out': wrap_out}
+            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action}
 
     def obstacle_check(self, s):
         # Obs1 = np.array([42, 90, 12.])

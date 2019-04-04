@@ -1,9 +1,7 @@
 float32[] states
 float32[] action
-int16[] batch_wrap_in
 ---
 float32[] next_states
 float32[] mean_shift
 float32 node_probability
 float32[] bad_action
-int16[] batch_wrap_out
