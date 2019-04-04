@@ -15,7 +15,6 @@ from mean_shift import mean_shift
 import matplotlib.pyplot as plt
 import time
 
-
 # np.random.seed(10)
 
 simORreal = 'acrobot'
@@ -24,7 +23,6 @@ useDiffusionMaps = False
 probability_threshold = 0.65
 plotRegData = False
 diffORspec = 'diff'
-
 
 class Spin_gp(data_load, mean_shift):#, svm_failure):
 
@@ -94,15 +92,15 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         # return EmptyResponse()
 
     # Particles prediction
-    def batch_predict(self, SA):
+    def batch_predict(self, SA, wrap_in):
         # If the particles are seperated, move them to one cluster via wraping
         bi = [False, False]
         for i in range(np.minimum(25, SA.shape[0])):
             x1 = SA[np.random.randint(SA.shape[0]), :2]
             x2 = SA[np.random.randint(SA.shape[0]), :2]
-            if x1[0]-x2[0] > 0.3:
+            if np.abs(x1[0]-x2[0]) > 0.97:
                 bi[0] = True
-            if x1[1]-x2[1] > 0.3:
+            if np.abs(x1[1]-x2[1]) > 0.97:
                 bi[1] = True
         for i in range(2):
             if bi[i]:
@@ -116,7 +114,8 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                         sa[i] -= 1. if sa[i] > 0.5 else 0.0                
 
         sa = np.mean(SA, 0)
-        idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
+        # idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
+        idx = self.kdt.query(np.copy(sa).reshape(1,-1), k = self.K)[0]
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 
@@ -125,9 +124,9 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         for i in range(np.minimum(25, X_nn.shape[0])):
             x1 = X_nn[np.random.randint(X_nn.shape[0]), :2]
             x2 = X_nn[np.random.randint(X_nn.shape[0]), :2]
-            if x1[0]-x2[0] > 0.3:
+            if np.abs(x1[0]-x2[0]) > 0.97:
                 bi[0] = True
-            if x1[1]-x2[1] > 0.3:
+            if np.abs(x1[1]-x2[1]) > 0.97:
                 bi[1] = True
         for i in range(2):
             if bi[i]:
@@ -150,17 +149,23 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
 
-        S_next = SA[:,:self.state_dim] + dS_next#np.random.normal(dS_next, std_next)
+        S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
+        wrap_out = [0,0]
         for s_next in S_next:
             for i in range(2):
-                s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
-                s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0   
+                if s_next[i] < 1.0:
+                    s_next[i] += 1.0 
+                    wrap_out[i] = 1
+                if s_next[i] > 1.0:
+                    s_next[i] -= 1.0 
+                    wrap_out[i] = 1
 
-        return S_next
+        return S_next, wrap_out
 
     def one_predict(self, sa):
         st = time.time()
-        idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
+        # idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = self.K, return_distance=False)
+        idx = self.kdt.query(np.copy(sa).reshape(1,-1), k = self.K)[0]
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
         tnn = time.time() - st
@@ -170,9 +175,9 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         for i in range(np.minimum(25, X_nn.shape[0])):
             x1 = X_nn[np.random.randint(X_nn.shape[0]), :2]
             x2 = X_nn[np.random.randint(X_nn.shape[0]), :2]
-            if x1[0]-x2[0] > 0.3:
+            if np.abs(x1[0]-x2[0]) > 0.97:
                 bi[0] = True
-            if x1[1]-x2[1] > 0.3:
+            if np.abs(x1[1]-x2[1]) > 0.97:
                 bi[1] = True
         for i in range(2):
             if bi[i]:
@@ -193,7 +198,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         tp = 0
         for i in range(self.state_dim):
             st = time.time()
-            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = True, theta = None, algorithm = 'Matlab')
+            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i], algorithm = 'Matlab')
             tgp += time.time() - st
             st = time.time()
             mm, vv = gp_est.predict(sa[:self.state_action_dim])
@@ -203,21 +208,10 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
 
         # print tgp / self.state_dim, tp / self.state_dim, tnn
 
-        s_next = sa[:self.state_dim] + ds_next#np.random.normal(ds_next, std_next)
-
-
-        print s_next[:2], self.denormz( s_next )[:2]
-        if np.any(s_next[:2] > 1.0) or np.any(s_next[:2] < -1.0):
-            print "Breach."
-            raw_input()
-
+        s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
         for i in range(2):
             s_next[i] += 1.0 if s_next[i] < 1.0 else 0.0
             s_next[i] -= 1.0 if s_next[i] > 1.0 else 0.0        
-
-        # if np.any(s_next[:2] - sa[:2] > 0.5):  
-        #     print "g: ", self.denormz( s_next )
-        #     raw_input()
 
         return s_next
 
@@ -233,10 +227,10 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         SA = np.concatenate((S, np.tile(a, (S.shape[0],1))), axis=1)
 
         SA = self.normz_batch( SA )    
-        SA_normz = self.batch_predict(SA)
+        SA_normz, wrap_out = self.batch_predict(SA)
         S_next = self.denormz_batch( SA_normz )
 
-        return S_next
+        return S_next, wrap_out
 
     def batch_svm_check(self, S, a):
         failed_inx = []
@@ -314,7 +308,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                 S[failed_inx, :] = S[dup_inx,:]
 
             # Propagate
-            S_next = self.batch_propa(S, a)
+            S_next, wrap_out = self.batch_propa(S, a)
 
             if self.OBS:
                 # print "Checking obstacles..."
@@ -349,15 +343,9 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
                     dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                     S_next[failed_inx, :] = S_next[dup_inx,:]
 
-            for s in S_next:
-                if np.linalg.norm(s[:2]-np.array([33,110])) < 1.5*4:
-                    print "r ",  s
-                if np.linalg.norm(s[:2]-np.array([-27,118])) < 1.5*2.5:
-                    print "l ", s
-
             mean = self.get_mean_shift(S_next)
             
-            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action}
+            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action, 'batch_wrap_out': wrap_out}
 
     def obstacle_check(self, s):
         # Obs1 = np.array([42, 90, 12.])

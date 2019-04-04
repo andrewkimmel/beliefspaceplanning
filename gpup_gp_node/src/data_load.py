@@ -2,13 +2,29 @@
 import numpy as np
 from scipy.io import loadmat
 from sklearn.neighbors import KDTree, NearestNeighbors
+from pynndescent import NNDescent
 import os.path
 import pickle
 import matplotlib.pyplot as plt
 import var
 import time
+import numba
 
 # np.random.seed(1)
+
+@numba.njit(fastmath=True)
+def wrapEuclideanNumba(x, y, dim = 5):
+    v = 0.5 # np.pi
+
+    d = 0
+    s = 0
+    for i in range(dim):
+        d = np.abs(x[i]-y[i])
+        if i < 2:
+            d = 2*v - d if d > v else d
+        s += d**2
+
+    return np.sqrt( s )
 
 class data_load(object):
     # Dillute = 100000
@@ -58,8 +74,8 @@ class data_load(object):
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']
 
-        # if self.Dillute > 0:
-        #     Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], self.Dillute, replace=False),:] # Dillute
+        if self.Dillute > 0:
+            Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], self.Dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
         self.state_action_dim = var.state_action_dim_
@@ -105,8 +121,17 @@ class data_load(object):
         # self.Ytrain -= self.Xtrain[:,:self.state_dim] # The target set is the state change
 
         print('[data_load] Loading data to NN object...')
-        self.kdt = NearestNeighbors(n_neighbors=self.K, algorithm='ball_tree', metric=self.wrapEuclidean) # Not really kd-tree
-        self.kdt.fit(self.Xtrain)
+        # self.kdt = NearestNeighbors(n_neighbors=self.K, algorithm='ball_tree', metric=self.wrapEuclidean) # Not really kd-tree
+        # self.kdt.fit(self.Xtrain)     
+        self.kdt = NNDescent(self.Xtrain, metric = wrapEuclideanNumba, metric_kwds = {'dim': self.state_action_dim}, n_neighbors = 60)
+        # if os.path.exists(self.path + 'acrobot_kdtree' + self.postfix + '.obj'):
+        #     with open(self.path + 'acrobot_kdtree' + self.postfix + '.obj', 'rb') as f: 
+        #         self.kdt = pickle.load(f)
+        # else:
+        #     self.kdt = NearestNeighbors(n_neighbors=self.K, algorithm='ball_tree', metric=self.wrapEuclidean) # Not really kd-tree
+        #     self.kdt.fit(self.Xtrain)            
+        #     with open(self.path + 'acrobot_kdtree' + self.postfix + '.obj', 'wb') as f:
+        #         pickle.dump(self.kdt, f, -1)
         print('[data_load] NN ready.')
 
     def wrapEuclidean(self, x, y):
@@ -195,7 +220,8 @@ class data_load(object):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
 
-            idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = K, return_distance=False)
+            # idx = self.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = K, return_distance=False)
+            idx = self.kdt.query(np.copy(sa).reshape(1,-1), k = self.K)[0]
             X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
             Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 

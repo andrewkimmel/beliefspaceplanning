@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '2'
+tr = '1'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -51,64 +51,104 @@ sigma_start = np.ones((state_dim,))*1e-5
 # from data_load import data_load
 # DL = data_load(simORreal = 'acrobot', discreteORcont = 'discrete', K = 100)
 
-# s = Smean[0,:]
-# a = np.array([A[0]])
-# sa = np.concatenate((s, a), axis=0)
-# sa = DL.normz( sa )    
-# st = time.time()
-# idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
-# X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
-# Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
-# tnn = time.time() - st
-# print "tnn: ", tnn
-# ds_next = np.zeros((DL.state_dim,))
-# std_next_normz = np.zeros((DL.state_dim,))
-# Theta = DL.get_theta(sa)
-# for i in range(DL.state_dim):
+# for j in range(500):
+
+#     # j = 424
+
+#     s = Smean[j,:]
+#     a = np.array([A[j]])
+#     sa = np.concatenate((s, a), axis=0)
+#     sa = DL.normz( sa )    
 #     st = time.time()
-#     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
-#     tgp = time.time() - st
+#     # idx = DL.kdt.query(np.copy(sa).reshape(1,-1), k = DL.K)[0]
+#     # print "NN Time: ", time.time() - st
+#     idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
+#     X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
+#     Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
+#     # print np.sort(idx)
+#     ds_next = np.zeros((DL.state_dim,))
+#     std_next_normz = np.zeros((DL.state_dim,))
+#     Theta = DL.get_theta(sa)
+#     # print Theta
+#     for i in range(DL.state_dim):
+#         gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
+#         mm, vv = gp_est.predict(sa[:DL.state_action_dim])
+#         # print vv
+#         ds_next[i] = mm
+#         std_next_normz[i] = np.sqrt(vv)
+#     sa_normz = sa[:DL.state_dim] + ds_next
+#     s_next = DL.denormz( sa_normz )
+#     std_next1 = DL.denormz_change( std_next_normz )
+
+#     # print s_next, std_next1
+
+#     S = Smean[j,:].reshape(1,-1)
+#     a = np.array([A[j]]).reshape(1,1)
+
+#     SA = np.concatenate((S, a), axis=1)
+#     SA = DL.normz_batch( SA )
+#     sa = np.mean(SA, 0)
 #     st = time.time()
-#     mm, vv = gp_est.predict(sa[:DL.state_action_dim])
-#     tp = time.time() - st
-#     ds_next[i] = mm
-#     std_next_normz[i] = np.sqrt(vv)
-#     print "T: ", i, tgp, tp
-# sa_normz = sa[:DL.state_dim] + ds_next
-# s_next = DL.denormz( sa_normz )
-# std_next = DL.denormz_change( std_next_normz )
+#     # idx = DL.kdt.query(np.copy(sa).reshape(1,-1), k = DL.K)[0]
+#     # print "NN Time: ", time.time() - st
+#     idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
+#     X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
+#     Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
+#     # print np.sort(idx)
+#     dS_next = np.zeros((SA.shape[0], DL.state_dim))
+#     std_next_normz = np.zeros((SA.shape[0], DL.state_dim))
+#     Theta = DL.get_theta(sa)
+#     # print Theta
+#     for i in range(DL.state_dim):
+#         gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
+#         mm, vv = gp_est.batch_predict(SA[:,:DL.state_action_dim])
+#         # print vv
+#         dS_next[:,i] = mm
+#         std_next_normz[:,i] = np.sqrt(np.diag(vv))
+#     SA_normz = SA[:,:DL.state_dim] + dS_next
 
-# S = Smean[:2,:].reshape(2,-1)
-# a = np.array([A[:2]]).reshape(2,1)
+#     S_next = DL.denormz_batch( SA_normz )
+#     std_next2 = np.zeros(std_next_normz.shape)
+#     for i in range(std_next_normz.shape[0]):
+#         std_next2[i] = DL.denormz_change(std_next_normz[i])
 
-# # SA = np.concatenate((S, a), axis=1)
-# # SA = DL.normz_batch( SA )
-# # sa = np.mean(SA, 0)
-# # idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
-# # X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
-# # Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
+#     # print S_next, std_next2
+    
+#     print j, "-------"
 
-# # dS_next = np.zeros((SA.shape[0], DL.state_dim))
-# # std_next_normz = np.zeros((SA.shape[0], DL.state_dim))
-# # for i in range(DL.state_dim):
-# #     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = None)
-# #     mm, vv = gp_est.batch_predict(SA[:,:DL.state_action_dim])
-# #     dS_next[:,i] = mm
-# #     std_next_normz[:,i] = np.sqrt(np.diag(vv))
-# # SA_normz = SA[:,:DL.state_dim] + dS_next
+#     if np.any(np.abs(std_next1 - std_next2[0]) > 1e-5):
+#         print std_next1 - std_next2[0]
+#         print s_next, std_next1
+#         print S_next, std_next2
+#         raw_input()
 
-# # S_next = DL.denormz_batch( SA_normz )
-# # std_next = np.zeros(std_next_normz.shape)
-# # for i in range(std_next_normz.shape[0]):
-# #     std_next[i] = DL.denormz_change(std_next_normz[i])
 
-# # print S, a
-# print s_next, std_next
+# exit(1)
+
+# s = np.copy(s_start)
+# S = np.tile(s, (1,1))# + np.random.normal(0, sigma_start, (Np, state_dim))
+
+# print("Running (open loop) path...")
+# for i in range(0, A.shape[0]):
+#     print("Step " + str(i) + " of " + str(A.shape[0]) + ", action: " + str(A[i]))
+#     a = np.array([A[i]])
+
+#     res = gp_srv(S.reshape(-1,1), a)
+#     S_next = np.array(res.next_states).reshape(-1,state_dim)
+#     s_mean_next = np.mean(S_next, 0)
+#     s_std_next = np.std(S_next, 0)
+#     S = S_next
+
+#     res = naive_srv(s.reshape(-1,1), a)
+#     s_next = np.array(res.next_state)
+#     s = s_next
+
+#     print S, s
 
 # exit(1)
 
 if 1:   
-    Np = 100 # Number of particles
+    Np = 1000 # Number of particles
 
     ######################################## GP propagation ##################################################
 
@@ -129,19 +169,19 @@ if 1:
         Pgp.append(S)
         a = np.array([A[i]])
 
-        # st = time.time()
-        # res = gp_srv(S.reshape(-1,1), a)
-        # t_gp += (time.time() - st) 
+        st = time.time()
+        res = gp_srv(S.reshape(-1,1), a)
+        t_gp += (time.time() - st) 
 
-        # S_next = np.array(res.next_states).reshape(-1,state_dim)
-        # if res.node_probability < p_gp:
-        #     p_gp = res.node_probability
-        # s_mean_next = np.mean(S_next, 0)
-        # s_std_next = np.std(S_next, 0)
-        # S = S_next
+        S_next = np.array(res.next_states).reshape(-1,state_dim)
+        if res.node_probability < p_gp:
+            p_gp = res.node_probability
+        s_mean_next = np.mean(S_next, 0)
+        s_std_next = np.std(S_next, 0)
+        S = S_next
 
-        s_mean_next = np.ones((1,state_dim))
-        s_std_next = np.ones((1,state_dim))
+        # s_mean_next = np.ones((1,state_dim))
+        # s_std_next = np.ones((1,state_dim))
 
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
@@ -154,7 +194,7 @@ if 1:
     Np = 1 # Number of particles
     t_naive = 0
 
-    s = np.copy(s_start) + np.random.normal(0, sigma_start)
+    s = np.copy(s_start)# + np.random.normal(0, sigma_start)
     Ypred_naive = s.reshape(1,state_dim)
 
     print("Running (open loop) path...")
@@ -280,7 +320,7 @@ for i in range(1,5):
 
 
 plt.figure(2)
-ax1 = plt.subplot(1,2,1)
+# ax1 = plt.subplot(1,2,1)
 ix = [0, 1]
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
@@ -288,11 +328,11 @@ plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.-k', label='Naive')
 # plt.plot(Ypred_bmean[:,ix[0]], Ypred_bmean[:,ix[1]], '.-k', label='Mean')
 plt.legend()
 
-ax2 = plt.subplot(1,2,2)
-ix = [2, 3]
-plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
-plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.--k', label='Naive')
+# ax2 = plt.subplot(1,2,2)
+# ix = [2, 3]
+# plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
+# plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
+# plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.--k', label='Naive')
 # plt.plot(Ypred_bmean[:,ix[0]], Ypred_bmean[:,ix[1]], '.-k', label='Mean')
 
 plt.savefig(path + 'path_' + tr + '.png', dpi=300)
