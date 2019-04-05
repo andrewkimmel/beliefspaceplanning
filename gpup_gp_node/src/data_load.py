@@ -1,11 +1,13 @@
 
 import numpy as np
 from scipy.io import loadmat
-from sklearn.neighbors import KDTree 
+from sklearn.neighbors import KDTree, NearestNeighbors
 import os.path
 import pickle
 import matplotlib.pyplot as plt
 import var
+
+# np.random.seed(1)
 
 class data_load(object):
     # Dillute = 100000
@@ -14,18 +16,20 @@ class data_load(object):
         
         self.Dillute = Dillute
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
+        self.prefix =  simORreal + '_'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
         self.path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
-        self.load()
         self.dr = dr
+        self.K = K
+        self.load()
 
-        if os.path.exists(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj'):
-            with open(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
+        if os.path.exists(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj'):
+            with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
                 _, self.theta_opt, self.opt_kdt = pickle.load(f)
-            print('[data_load] Loaded hyper-parameters data from ' + self.file)
+            print('[data_load] Loaded hyper-parameters data for data in ' + self.file)
         else:
-            self.precompute_hyperp(K, K_manifold, sigma, dim)
+            self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont)
 
     def load(self):
 
@@ -35,17 +39,15 @@ class data_load(object):
         # plt.plot(Qtrain[:,0],Qtrain[:,1],'.')
         # plt.show()
 
-        # is_start = 3000# 30532 #1540#int(Q['is_start'])#100080
+        # is_start = 3050# 30532 #1540#int(Q['is_start'])#100080
         # # while is_start < 200000:
         # #     if np.all(Qtrain[is_start, 2:4] == np.array([16., 16.])):
         # #         break
         # #     is_start += 1
         # # print is_start
-        # is_end = is_start + 100#int(Q['is_end'])
-        # inx = np.random.choice(Qtrain.shape[0], 1000, replace=False)
-        # self.Qtest = Qtrain[inx, :]
-        # # Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
-        # Qtrain = np.delete(Qtrain, inx, 0)
+        # is_end = is_start + 20#int(Q['is_end'])
+        # self.Qtest = Qtrain[is_start:is_end, :]
+        # Qtrain = np.delete(Qtrain, range(is_start, is_end), 0)
 
         # plt.plot(self.Qtest[:,0], self.Qtest[:,1],'.-k')
         # plt.plot(self.Qtest[0,0], self.Qtest[0,1],'o')
@@ -55,8 +57,8 @@ class data_load(object):
         if 'Dreduced' in Q:
             self.Xreduced = Q['Dreduced']
 
-        if self.Dillute > 0:
-            Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], self.Dillute, replace=False),:] # Dillute
+        # if self.Dillute > 0:
+        #     Qtrain = Qtrain[np.random.choice(Qtrain.shape[0], self.Dillute, replace=False),:] # Dillute
         print('[data_load] Loaded training data of ' + str(Qtrain.shape[0]) + '.')
 
         self.state_action_dim = var.state_action_dim_
@@ -124,8 +126,8 @@ class data_load(object):
             X[:,i] = X[:,i]*(self.x_max_X[i]-self.x_min_X[i]) + self.x_min_X[i]
         return X
 
-    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1):
-        print('[data_load] Pre-computing GP hyper-parameters data.')
+    def precompute_hyperp(self, K = 100, K_manifold=-1, sigma=-1, dim=-1,  simORreal = 'sim', discreteORcont = 'discrete'):
+        print('[data_load] One time pre-computation of GP hyper-parameters data - THIS WILL TAKE A WHILE...!!!!')
 
         if K_manifold > 0:
             if self.dr == 'diff':
@@ -145,7 +147,8 @@ class data_load(object):
 
         SA_opt = []
         theta_opt = []
-        N = 1000
+        # [theta_opt.append([]) for _ in range(self.state_dim)] # List for each dimension
+        N = 10000
         for i in range(N):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
@@ -157,25 +160,36 @@ class data_load(object):
             if K_manifold > 0:
                 X_nn, Y_nn = reduction(sa, X_nn, Y_nn, K_manifold)
 
-            gp_est = GaussianProcess(X_nn[:,:self.state_dim], Y_nn[:,0], optimize = True, theta=None) # Optimize to get hyper-parameters
-            theta = gp_est.cov.theta
+            fail = False
+            Theta = []
+            for d in range(self.state_dim):
+                try:
+                    gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,d], optimize = True, theta=None) # Optimize to get hyper-parameters
+                except:
+                    print('[data_load] Singular!')
+                    fail = True
+                    break
+                Theta.append(gp_est.cov.theta)
+            if fail:
+                continue
 
             SA_opt.append(sa)
-            theta_opt.append(theta)
+            theta_opt.append(Theta)
 
-        self.SA_opt = np.array(SA_opt)
-        self.theta_opt = np.array(theta_opt)
+            if not (i % 50):
+                self.SA_opt = np.array(SA_opt)
+                self.theta_opt = np.array(theta_opt)
 
-        self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
+                self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
 
-        with open(self.path + 'opt_data_discrete' + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
-            pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
-        print('[data_load] Saved hyper-parameters data.')
+                with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + 'b.obj', 'wb') as f: 
+                    pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
+                print('[data_load] Saved hyper-parameters data.')
 
     def get_theta(self, sa):
-        idx = self.opt_kdt.query(sa.reshape(1,-1), k = 1, return_distance=False)        
+        idx = self.opt_kdt.query(sa.reshape(1,-1), k = 1, return_distance=False)    
 
-        return self.theta_opt[idx,:].reshape((-1,))
+        return self.theta_opt[idx,:][0][0]
 
 
 

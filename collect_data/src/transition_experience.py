@@ -23,7 +23,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + 'a' + postfix
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -157,8 +157,6 @@ class transition_experience():
 
         np.savetxt(filen, M, delimiter=' ')
 
-    
-
     def process_transition_data(self, mode = 1, stepSize = 1, plot = False):
         '''
         mode:
@@ -194,7 +192,7 @@ class transition_experience():
             DA = D[:,8:10]
             A, Ix, N = np.unique(DA, axis=0, return_inverse=True, return_counts=True)
 
-            n = np.min(N)
+            n = np.minimum(np.min(N), 150000)
 
             P = []
             for i in range(A.shape[0]):
