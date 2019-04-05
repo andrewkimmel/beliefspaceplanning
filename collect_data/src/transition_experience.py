@@ -192,7 +192,7 @@ class transition_experience():
             DA = D[:,8:10]
             A, Ix, N = np.unique(DA, axis=0, return_inverse=True, return_counts=True)
 
-            n = np.minimum(np.min(N), 150000)
+            n = np.minimum(np.min(N), 65000)
 
             P = []
             for i in range(A.shape[0]):

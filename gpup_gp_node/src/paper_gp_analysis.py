@@ -16,86 +16,148 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '1'
+tr = '4'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_test/discrete/'
-action_file = 'acrobot_ao_rrt_plan' + tr + '.txt'
-traj_file = 'acrobot_ao_rrt_traj' + tr + '.txt'
+rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
+plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 
-Ar = np.loadtxt(path + action_file, delimiter=',')
-A = []
-for v in Ar:
-    a = v[0]
-    n = int(v[1]*100)
-    for _ in range(n):
-        A.append(a)
-A = np.array(A)#[:150]
+#####################################################################################################
 
-Smean = np.loadtxt(path + traj_file, delimiter=',')#[:150,:]
+if tr == '1':
+    A = np.array([[-1.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,0.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,0.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[0.00000000000000000000,1.00000000000000000000],
+[-1.00000000000000000000,-1.00000000000000000000]]) 
 
-# plt.plot(Smean[:,0], Smean[:,1], '.-r')
+if tr == '3':
+    A = np.concatenate( (np.array([[-1., -1.] for _ in range(int(150*1./stepSize))]), 
+            np.array([[-1.,  1.] for _ in range(int(100*1./stepSize))]), 
+            np.array([[ 1.,  0.] for _ in range(int(100*1./stepSize))]), 
+            np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]),
+            np.array([[-1.,  1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
 
-s_start = Smean[0]
-sigma_start = np.ones((state_dim,))*1e-5
+if tr == '2':
+    A = np.concatenate( (np.array([[ 1., -1.] for _ in range(int(100*1./stepSize))]), 
+            np.array([[-1., -1.] for _ in range(int(40*1./stepSize))]), 
+            np.array([[-1.,  1.] for _ in range(int(80*1./stepSize))]),
+            np.array([[ 1.,  0.] for _ in range(int(70*1./stepSize))]),
+            np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
+
+if tr == '4':
+    A = np.array([[1., -1.] for _ in range(int(400*1./stepSize))])
+
+######################################## Roll-out ##################################################
+
+
+# from data_load import data_load
+# dl = data_load(Dillute=4000)
+# Dtest = dl.Qtest
+# A = Dtest[:,state_dim:state_dim+2]
+# Pro = []
+# Pro.append(Dtest[:,:state_dim])
+
+rospy.init_node('verification_gazebo', anonymous=True)
+
+path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+
+if 0:
+    Af = A.reshape((-1,))
+    Pro = []
+    for j in range(2):
+        print("Rollout number " + str(j) + ' with path ' + tr + "...")
+        
+        R = rollout_srv(Af)
+        Sro = np.array(R.states).reshape(-1,state_dim)
+
+        Pro.append(Sro)
+        
+        with open(path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
+            pickle.dump(Pro, f)
+
+f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
+with open(f + '.pkl') as f:  
+    Pro = pickle.load(f) 
+
+
+# fig = plt.figure(0)
+# ax = fig.add_subplot(111)#, aspect='equal')
+S = []
+c = 0
+for j in range(len(Pro)): 
+    Sro = Pro[j]
+    # ax.plot(Sro[:,0], Sro[:,1], 'b')
+    # plt.plot(Sro[:,0], Sro[:,1], '.-r')
+    S.append(Sro[0,:state_dim])
+    if Sro.shape[0]>=A.shape[0]:
+        c+= 1
+s_start = np.mean(np.array(S), 0)
+sigma_start = np.std(np.array(S), 0) + np.concatenate((np.array([0.,0.]), np.ones((state_dim-2,))*1e-3), axis=0)
+# ax.plot(s_start_mean[0], s_start_mean[1], 'om')
+# patch = Ellipse(xy=(s_start[0], s_start[1]), width=sigma_start[0]*2, height=sigma_start[1]*2, angle=0., animated=False, edgecolor='r', linewidth=2., linestyle='-', fill=True)
+# ax.add_artist(patch)
+
+Smean = []
+Sstd = []
+for i in range(A.shape[0]+1):
+    F = []
+    for j in range(len(Pro)): 
+        if Pro[j].shape[0] > i:
+            F.append(Pro[j][i])
+    Smean.append( np.mean(np.array(F), axis=0) )
+    Sstd.append( np.std(np.array(F), axis=0) )
+Smean = np.array(Smean)
+Sstd = np.array(Sstd)
+
+Smean = Pro[0]
 
 # plt.title('path ' + tr)
 # plt.show()
-# exit(1)
-
-# from gp import GaussianProcess
-# from data_load import data_load
-# DL = data_load(simORreal = 'acrobot', discreteORcont = 'discrete', K = 100)
-
-# # s = Smean[0,:]
-# # a = np.array([A[0]])
-# # sa = np.concatenate((s, a), axis=1)
-# # sa = DL.normz( sa )    
-# # idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
-# # X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
-# # Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
-# # ds_next = np.zeros((DL.state_dim,))
-# # std_next_normz = np.zeros((DL.state_dim,))
-# # for i in range(DL.state_dim):
-# #     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = True, theta = None)
-# #     mm, vv = gp_est.predict(sa[:DL.state_action_dim])
-# #     ds_next[i] = mm
-# #     std_next_normz[i] = np.sqrt(np.diag(vv))
-# # sa_normz = sa[:DL.state_dim] + ds_next
-# # s_next = DL.denormz( sa_normz )
-# # std_next = DL.denormz_change( std_next_normz )
-
-# S = Smean[:2,:].reshape(2,-1)
-# a = np.array([A[:2]]).reshape(2,1)
-
-# SA = np.concatenate((S, a), axis=1)
-# SA = DL.normz_batch( SA )
-# sa = np.mean(SA, 0)
-# idx = DL.kdt.kneighbors(np.copy(sa).reshape(1,-1), n_neighbors = DL.K, return_distance=False)
-# X_nn = DL.Xtrain[idx,:].reshape(DL.K, DL.state_action_dim)
-# Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
-
-# dS_next = np.zeros((SA.shape[0], DL.state_dim))
-# std_next_normz = np.zeros((SA.shape[0], DL.state_dim))
-# for i in range(DL.state_dim):
-#     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = None)
-#     mm, vv = gp_est.batch_predict(SA[:,:DL.state_action_dim])
-#     dS_next[:,i] = mm
-#     std_next_normz[:,i] = np.sqrt(np.diag(vv))
-# SA_normz = SA[:,:DL.state_dim] + dS_next
-
-# S_next = DL.denormz_batch( SA_normz )
-# std_next = np.zeros(std_next_normz.shape)
-# for i in range(std_next_normz.shape[0]):
-#     std_next[i] = DL.denormz_change(std_next_normz[i])
-
-# print S, a
-# print S_next, std_next
-
 # exit(1)
 
 if 1:   
@@ -116,23 +178,23 @@ if 1:
     p_gp = 1.
     print("Running (open loop) path...")
     for i in range(0, A.shape[0]):
-        print("[GP] Step " + str(i) + " of " + str(A.shape[0]) + ", action: " + str(A[i]))
+        print("[GP] Step " + str(i) + " of " + str(A.shape[0]))
         Pgp.append(S)
-        a = np.array([A[i]])
+        a = A[i,:]
 
-        # st = time.time()
-        # res = gp_srv(S.reshape(-1,1), a)
-        # t_gp += (time.time() - st) 
+        st = time.time()
+        res = gp_srv(S.reshape(-1,1), a)
+        t_gp += (time.time() - st) 
 
-        # S_next = np.array(res.next_states).reshape(-1,state_dim)
-        # if res.node_probability < p_gp:
-        #     p_gp = res.node_probability
-        # s_mean_next = np.mean(S_next, 0)
-        # s_std_next = np.std(S_next, 0)
-        # S = S_next
+        S_next = np.array(res.next_states).reshape(-1,state_dim)
+        if res.node_probability < p_gp:
+            p_gp = res.node_probability
+        s_mean_next = np.mean(S_next, 0)
+        s_std_next = np.std(S_next, 0)
+        S = S_next
 
-        s_mean_next = np.ones((1,state_dim))
-        s_std_next = np.ones((1,state_dim))
+        # s_mean_next = np.ones((1,state_dim))
+        # s_std_next = np.ones((1,state_dim))
 
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
@@ -151,8 +213,8 @@ if 1:
     print("Running (open loop) path...")
     p_naive = 1.
     for i in range(0, A.shape[0]):
-        print("[Naive] Step " + str(i) + " of " + str(A.shape[0]) + ", action: " + str(A[i]))
-        a = np.array([A[i]])
+        print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
+        a = A[i,:]
 
         st = time.time()
         res = naive_srv(s.reshape(-1,1), a)
@@ -184,7 +246,7 @@ if 1:
     p_mean = 1.
     for i in range(0, A.shape[0]):
         print("[Mean] Step " + str(i) + " of " + str(A.shape[0]))
-        a = np.array([A[i]])
+        a = A[i,:]
 
         # st = time.time()
         # res = gp_srv(S.reshape(-1,1), a)
@@ -218,7 +280,7 @@ if 1:
     p_gpup = 1
     for i in range(0, A.shape[0]):
         print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
-        a = np.array([A[i]])
+        a = A[i,:]
 
         # st = time.time()
         # res = gpup_srv(s, sigma_x, a)
@@ -250,9 +312,79 @@ if 1:
 with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
+# # Compare paths
+# d_gp = d_gpup = d_naive = d_mean = d = 0.
+# for i in range(A.shape[0]):
+#     if i < Smean.shape[0]-1:
+#         d += np.linalg.norm(Smean[i,:2]-Smean[i+1,:2])
+#     d_gp += np.linalg.norm(Ypred_mean_gp[i,:2] - Smean[i,:2])
+#     d_naive += np.linalg.norm(Ypred_naive[i,:2] - Smean[i,:2])
+#     d_mean += np.linalg.norm(Ypred_bmean[i,:2] - Smean[i,:2])
+#     d_gpup += np.linalg.norm(Ypred_mean_gpup[i,:2] - Smean[i,:2])
+# d_gp = np.sqrt(d_gp/A.shape[0])
+# d_naive = np.sqrt(d_naive/A.shape[0])
+# d_mean = np.sqrt(d_mean/A.shape[0])
+# d_gpup = np.sqrt(d_gpup/A.shape[0])
+
+# print "-----------------------------------"
+# print "Path length: " + str(d)
+# print "-----------------------------------"
+# print "GP rmse: " + str(d_gp) + "mm"
+# print "Naive rmse: " + str(d_naive) + "mm"
+# print "mean rmse: " + str(d_mean) + "mm"
+# print "GPUP rmse: " + str(d_gpup) + "mm"
+# print "-----------------------------------"
+# print "GP runtime: " + str(stats[0][0]) + "sec."
+# print "GP Naive: " + str(stats[0][1]) + "sec."
+# print "GP mean: " + str(stats[0][2]) + "sec."
+# print "GPUP time: " + str(stats[0][3]) + "sec."
+# print "-----------------------------------"
+# print "GP probability: " + str(stats[1][0])
+# print "GP naive probability: " + str(stats[1][1])
+# print "GP mean probability: " + str(stats[1][2])
+# print "GPUP probability: " + str(stats[1][3])
+# print "-----------------------------------"
+
+if 0:
+    fig = plt.figure(0)
+    ax = fig.add_subplot(111)#, aspect='equal')
+    plt.plot(Smean[:,0], Smean[:,1], '-b')
+
+    prtc_mean_line, = ax.plot([], [], '-g')
+    sm, = ax.plot([], [], 'ok', markerfacecolor='r', markersize=8)
+
+    prtc_mean, = ax.plot([], [], '*g')
+
+    prtc, = ax.plot([], [], '.k', markersize=1)
+
+    # plt.xlim(np.min(Ypred_mean_gp, 0)[0]*0-5, np.max(Ypred_mean_gp, 0)[0]*1.0)
+    # plt.ylim(np.min(Ypred_mean_gp, 0)[1]*0.99, np.max(Ypred_mean_gp, 0)[1]*1.01)
+
+    def init():
+        prtc_mean.set_data([], [])
+        prtc_mean_line.set_data([], [])
+        sm.set_data([], [])
+        prtc.set_data([], [])
+
+        return sm, prtc_mean, prtc_mean_line, prtc,
+
+    def animate(i):
+
+        sm.set_data(Smean[i][0], Smean[i][1])
+
+        prtc_mean.set_data(Ypred_mean_gp[i,0], Ypred_mean_gp[i,1])
+        prtc_mean_line.set_data(Ypred_mean_gp[:i+1,0], Ypred_mean_gp[:i+1,1])
+
+        S = Pgp[i]
+        prtc.set_data(S[:,0], S[:,1])
+
+        return sm, prtc_mean, prtc_mean_line, prtc,
+
+    ani = animation.FuncAnimation(fig, animate, frames=len(Pgp), init_func=init, interval=300, repeat_delay=1000, blit=True)
 
 t = range(A.shape[0]+1)
-t = list(np.array(t)*stepSize)
+
+ix = [0, 1]
 
 plt.figure(1)
 for i in range(1,5):
@@ -267,26 +399,30 @@ for i in range(1,5):
     ax.plot(t, Ypred_naive[:,i-1], '-k', label='Naive')
     # ax.plot(t, Ypred_bmean[:,0], '-m', label='Batch mean')
     ax.legend()
-    plt.title('Path ' + tr)
-
+plt.title('Path ' + tr)
 
 plt.figure(2)
 ax1 = plt.subplot(1,2,1)
-ix = [0, 1]
+for j in range(len(Pro)): 
+    Sro = Pro[j]
+    plt.plot(Sro[:,0], Sro[:,1], ':y')
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.-k', label='Naive')
-# plt.plot(Ypred_bmean[:,ix[0]], Ypred_bmean[:,ix[1]], '.-k', label='Mean')
+plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
+# plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')
 plt.legend()
 
 ax2 = plt.subplot(1,2,2)
-ix = [2, 3]
-plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
-plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.--k', label='Naive')
-# plt.plot(Ypred_bmean[:,ix[0]], Ypred_bmean[:,ix[1]], '.-k', label='Mean')
+for j in range(len(Pro)): 
+    Sro = Pro[j]
+    plt.plot(Sro[:,2], Sro[:,3], ':y')
+plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
+plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
+plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
+# plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], ':y', label='Inter')
 
-plt.savefig(path + 'path_' + tr + '.png', dpi=300)
+
+# plt.savefig('/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png', dpi=300)
 plt.show()
 
 

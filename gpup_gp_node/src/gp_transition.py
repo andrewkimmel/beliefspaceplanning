@@ -95,7 +95,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
     # Particles prediction
     def batch_predict(self, SA):
         sa = np.mean(SA, 0)
-        idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
+        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 
@@ -148,7 +148,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         return S_next 
 
     def one_predict(self, sa):
-        idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
+        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 
@@ -332,12 +332,6 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
 
                     dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                     S_next[failed_inx, :] = S_next[dup_inx,:]
-
-            for s in S_next:
-                if np.linalg.norm(s[:2]-np.array([33,110])) < 1.5*4:
-                    print "r ",  s
-                if np.linalg.norm(s[:2]-np.array([-27,118])) < 1.5*2.5:
-                    print "l ", s
 
             mean = self.get_mean_shift(S_next)
             
