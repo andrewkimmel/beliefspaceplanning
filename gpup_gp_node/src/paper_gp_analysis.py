@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '1'
+tr = '3'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -47,7 +47,7 @@ sigma_start = np.ones((state_dim,))*1e-5
 # plt.show()
 # exit(1)
 
-if 1:   
+if 0:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
@@ -55,7 +55,7 @@ if 1:
     print "Running GP."
     
     t_gp = []
-    
+
     s = np.copy(s_start)
     S = np.tile(s, (Np,1))# + np.random.normal(0, sigma_start, (Np, state_dim))
     Ypred_mean_gp = s.reshape(1,state_dim)
@@ -115,8 +115,8 @@ if 1:
         s_std_next = np.std(S_next, 0)
         S = S_next
 
-        # s_mean_next = np.ones((1,state_dim))
-        # s_std_next = np.ones((1,state_dim))
+        # s_mean_next = np.zeros((1,state_dim))
+        # s_std_next = np.zeros((1,state_dim))
 
         Ypred_mean_bgp = np.append(Ypred_mean_bgp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_bgp = np.append(Ypred_std_bgp, s_std_next.reshape(1,state_dim), axis=0)
@@ -151,78 +151,13 @@ if 1:
 
     t_naive /= A.shape[0]
 
-    ######################################## Mean propagation ##################################################
-
-    print "Running Batch Mean."
-    Np = 100 # Number of particles
-
-    t_mean = 0
-
-    s = np.copy(s_start)
-    S = np.tile(s, (Np,1))
-    Ypred_bmean = s.reshape(1,state_dim)
-
-    print("Running (open loop) path...")
-    p_mean = 1.
-    for i in range(0, A.shape[0]):
-        print("[Mean] Step " + str(i) + " of " + str(A.shape[0]))
-        a = np.array([A[i]])
-
-        # st = time.time()
-        # res = gp_srv(S.reshape(-1,1), a)
-        # t_mean += (time.time() - st) 
-
-        # if res.node_probability < p_mean:
-        #     p_mean = res.node_probability
-        # S_next = np.array(res.next_states).reshape(-1,state_dim)
-        # s_mean_next = np.mean(S_next, 0)
-        # S = np.tile(s_mean_next, (Np,1))
-
-        s_mean_next = np.ones((1,state_dim))
-
-        Ypred_bmean = np.append(Ypred_bmean, s_mean_next.reshape(1,state_dim), axis=0)
-
-    t_mean /= A.shape[0]
-
-    ######################################## GPUP propagation ###############################################
-
-    print "Running GPUP."
-    sigma_start += np.ones((state_dim,))*1e-4
-
-    t_gpup = 0
-
-    s = np.copy(s_start)
-    sigma_x = sigma_start
-    Ypred_mean_gpup = s.reshape(1,state_dim)
-    Ypred_std_gpup = sigma_x.reshape(1,state_dim)
-
-    print("Running (open loop) path...")
-    p_gpup = 1
-    for i in range(0, A.shape[0]):
-        print("[GPUP] Step " + str(i) + " of " + str(A.shape[0]))
-        a = np.array([A[i]])
-
-        # st = time.time()
-        # res = gpup_srv(s, sigma_x, a)
-        # t_gpup += (time.time() - st) 
-
-        # if res.node_probability < p_gpup:
-        #     p_gpup = res.node_probability
-        # s_next = np.array(res.next_mean)
-        # sigma_next = np.array(res.next_std)
-        # s = s_next
-        # sigma_x = sigma_next
-
-        s_next = sigma_next = np.ones((1,state_dim))
-
-        Ypred_mean_gpup = np.append(Ypred_mean_gpup, s_next.reshape(1,state_dim), axis=0) #Ypred_mean_gpup,np.array([0,0,0,0]).reshape(1,state_dim),axis=0)#
-        Ypred_std_gpup = np.append(Ypred_std_gpup, sigma_next.reshape(1,state_dim), axis=0)
-
-    t_gpup /= A.shape[0]
 
     ######################################## Save ###########################################################
 
-    stats = np.array([[t_gp, t_naive, t_mean, t_gpup,], [p_gp, p_naive, p_mean, p_gpup]])
+    Ypred_mean_gpup = Ypred_std_gpup = 0
+    Ypred_bmean = 0
+
+    stats = np.array([[t_gp, t_naive], [p_gp, p_naive]])
 
     with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl', 'w') as f:
         pickle.dump([Ypred_mean_gp, Ypred_std_gp, Ypred_mean_bgp, Ypred_std_bgp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A], f)
@@ -245,7 +180,7 @@ for i in range(1,5):
     ax.plot(t, Ypred_mean_gp[:,i-1], '-r', label='BPP - mean')
     ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='green', alpha=0.5, label='BGP std.')
     ax.plot(t, Ypred_mean_bgp[:,i-1], '-c', label='BPP bruth - mean')
-    ax.fill_between(t, Ypred_mean_bgp[:,i-1]+Ypred_std_bgp[:,i-1], Ypred_mean_bgp[:,i-1]-Ypred_std_bgp[:,i-1], facecolor='cyan', alpha=0.5, label='BGP bruth std.')
+    ax.fill_between(t, Ypred_mean_bgp[:,i-1]+Ypred_std_bgp[:,i-1], Ypred_mean_bgp[:,i-1]-Ypred_std_bgp[:,i-1], facecolor='magenta', alpha=0.5, label='BGP bruth std.')
     # ax.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
     # ax.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
     ax.plot(t, Ypred_naive[:,i-1], '-k', label='Naive')
@@ -259,7 +194,7 @@ plt.figure(2)
 ix = [0, 1]
 plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
 plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
-plt.plot(Ypred_mean_bgp[:,ix[0]], Ypred_mean_bgp[:,ix[1]], '.-r', label='BPP bruth mean')
+plt.plot(Ypred_mean_bgp[:,ix[0]], Ypred_mean_bgp[:,ix[1]], '.-m', label='BPP bruth mean')
 plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.-k', label='Naive')
 # plt.plot(Ypred_bmean[:,ix[0]], Ypred_bmean[:,ix[1]], '.-k', label='Mean')
 plt.legend()
@@ -273,7 +208,8 @@ plt.savefig(path + 'path_' + tr + '.png', dpi=300)
 # plt.plot(Ypred_naive[:,ix[0]], Ypred_naive[:,ix[1]], '.--k', label='Naive')
 # plt.plot(Ypred_bmean[:,ix[0]], Ypred_bmean[:,ix[1]], '.-k', label='Mean')
 
-plt.figure(2)
+plt.figure(3)
+t_gp = stats[0][0]
 plt.plot(t_gp)
 plt.ylabel('Time [sec]')
 
