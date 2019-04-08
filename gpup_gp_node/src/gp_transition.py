@@ -224,27 +224,27 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
 
     def batch_svm_check(self, S, a):
         failed_inx = []
-        # for i in range(S.shape[0]):
-        #     p, _ = self.probability(S[i,:], a) # Probability of failure
-        #     prob_fail = np.random.uniform(0,1)
-        #     if prob_fail <= p:
-        #         failed_inx.append(i)
+        for i in range(S.shape[0]):
+            p, _ = self.probability(S[i,:], a) # Probability of failure
+            prob_fail = np.random.uniform(0,1)
+            if prob_fail <= p:
+                failed_inx.append(i)
 
         return failed_inx
 
     def batch_svm_check_service(self, req):
 
-        # S = np.array(req.states).reshape(-1, self.state_dim)
-        # a = np.array(req.action)
+        S = np.array(req.states).reshape(-1, self.state_dim)
+        a = np.array(req.action)
 
-        # failed_inx = []
-        # for i in range(S.shape[0]):
-        #     p, _ = self.probability(S[i,:], a) # Probability of failure
-        #     prob_fail = np.random.uniform(0,1)
-        #     if prob_fail <= p:
-        #         failed_inx.append(i)
+        failed_inx = []
+        for i in range(S.shape[0]):
+            p, _ = self.probability(S[i,:], a) # Probability of failure
+            prob_fail = np.random.uniform(0,1)
+            if prob_fail <= p:
+                failed_inx.append(i)
 
-        node_probability = 1.0# - float(len(failed_inx))/float(S.shape[0])
+        node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
 
         return {'node_probability': node_probability}
 
@@ -255,8 +255,8 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         a = np.array(req.action)
 
         if (len(S) == 1):
-            # p, _ = self.probability(S[0,:],a)
-            node_probability = 1.0 # - p
+            p, _ = self.probability(S[0,:],a)
+            node_probability = 1.0 - p
             sa = np.concatenate((S[0,:],a), axis=0)
             sa = self.normz(sa)
             sa_normz = self.one_predict(sa)
@@ -376,8 +376,8 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        # p, _ = self.probability(s, a)
-        node_probability = 1.0 # - p
+        p, _ = self.probability(s, a)
+        node_probability = 1.0 - p
 
         # Propagate
         sa = np.concatenate((s, a), axis=0)
