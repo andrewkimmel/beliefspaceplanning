@@ -21,7 +21,7 @@ class vs_controller():
     goal = np.array([0.,0.])
     goal_prev = np.array([0.,0.])
     A = np.array([[1.,1.],[-1.,-1.],[-1.,1.],[1.,-1.],[1.,0.],[-1.,0.],[0.,-1.],[0.,1.]])
-    vel_magnitude = 1.0
+    vel_magnitude = 1.4
     J = np.array([[1., 1.], [-1., 1.]])
 
     def __init__(self):

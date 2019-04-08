@@ -21,7 +21,7 @@ class gp_controller():
     action = np.array([0.,0.])
     exclude_action = np.array([0.,0.])
     goal = np.array([0.,0.,0.,0.])
-    A = np.array([[1.,1.],[-1.,-1.],[-1.,1.],[1.,-1.],[1.,0.],[-1.,0.],[0.,-1.],[0.,1.]])
+    A = np.array([[1.,1.],[-1.,-1.],[-1.,1.],[1.,-1.],[1.5,0.],[-1.5,0.],[0.,-1.5],[0.,1.5]])
 
     def __init__(self):
         rospy.init_node('gp_controller', anonymous=True)

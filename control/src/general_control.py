@@ -23,7 +23,7 @@ class general_control():
     actionGP = np.array([0., 0.])
     actionVS = np.array([0., 0.])
     gripper_closed = 'open'
-    tol = 1.5
+    tol = 0.4
     goal_tol = 7.0
     horizon = 1
 
@@ -118,11 +118,10 @@ class general_control():
                 msg.data = S[i_path,:]
                 count = 0
                 change = True
-                self.tol = 1.5
                 dd_count = 0
                 Controller = 'GP'
-            elif count > 100:# and i_path < S.shape[0]-1:
-                self.tol = 2.5
+            elif count > 1000:# and i_path < S.shape[0]-1:
+                # self.tol = 2.5
                 Controller == 'VS'
             self.pub_current_goal.publish(msg)
 
