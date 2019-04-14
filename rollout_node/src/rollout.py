@@ -82,7 +82,7 @@ class rollout():
                 action = A[i,:]
                 i += 1
                 n = stepSize
-                print i
+                # print i
             
             msg.data = action
             self.action_pub.publish(msg)

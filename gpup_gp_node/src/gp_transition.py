@@ -25,7 +25,7 @@ plotRegData = False
 diffORspec = 'diff'
 
 
-class Spin_gp(data_load, mean_shift):#, svm_failure):
+class Spin_gp(data_load, mean_shift, svm_failure):
 
     OBS = False
 
@@ -49,7 +49,7 @@ class Spin_gp(data_load, mean_shift):#, svm_failure):
             print('[gp_transition] No diffusion maps used, K=%d.'%self.K)
             data_load.__init__(self, simORreal = simORreal, discreteORcont = discreteORcont, K = self.K, dr = 'spec')
 
-        # svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
+        svm_failure.__init__(self, discrete = (True if discreteORcont=='discrete' else False))
         mean_shift.__init__(self)
 
         rospy.Service('/gp/transition', batch_transition, self.GetTransition)

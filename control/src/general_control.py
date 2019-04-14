@@ -113,16 +113,16 @@ class general_control():
             state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
             if i_path == S.shape[0]-1:
                 msg.data = S[-1,:]
-            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or (self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]) and self.weightedL2(state[:]-S[i_path+1,:])):# < self.tol*3):
+            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or (self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]) and self.weightedL2(state[:]-S[i_path+1,:]) < self.tol*3):
                 i_path += 1
                 msg.data = S[i_path,:]
                 count = 0
                 change = True
                 dd_count = 0
-                Controller = 'GP'
-            elif count > 1000:# and i_path < S.shape[0]-1:
+                # Controller = 'GP'
+            # elif count > 1000:# and i_path < S.shape[0]-1:
                 # self.tol = 2.5
-                Controller == 'VS'
+                # Controller == 'VS'
             self.pub_current_goal.publish(msg)
 
             dd = self.weightedL2(state[:]-S[i_path,:]) - d_prev
