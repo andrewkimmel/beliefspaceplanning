@@ -32,7 +32,7 @@ rospy.init_node('verification_gazebo', anonymous=True)
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
 
-TR = ['2','3','4'] #'1',
+TR = [tr]#['1','2','3','4'] #
 for tr in TR:
 
     #####################################################################################################
@@ -119,6 +119,7 @@ for tr in TR:
                 pickle.dump(Pro, f)
 
     f = path + 'ver_rollout_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize)
+    print f
     with open(f + '.pkl') as f:  
         Pro = pickle.load(f) 
 
@@ -311,8 +312,11 @@ for tr in TR:
     with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
         Ypred_mean_gp, Ypred_std_gp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
+    print 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl'
+
     # Closed loop
     if 0:
+        Cro = []
         track_srv = rospy.ServiceProxy('/control', pathTrackReq)
         S = Ypred_mean_gp.reshape((-1,))
         Pro = []
@@ -320,7 +324,7 @@ for tr in TR:
             print("Rollout closed loop number " + str(j) + ' with path ' + tr + "...")
             
             R = track_srv(S.reshape((-1,)))
-            Sreal = np.array(R.real_path).reshape(-1, S.shape[1])
+            Sreal = np.array(R.real_path).reshape(-1, Ypred_mean_gp.shape[1])
 
             Cro.append(Sreal)
             
@@ -405,19 +409,19 @@ if 0:
 
 def align_curves(Sref, S):
 
-    from sklearn.neighbors import KDTree
+    from sklearn.neighbors import NearestNeighbors
 
     tref = np.array(range(Sref.shape[0]))
-    t = np.zeros(S.shape[0],1)
+    t = np.zeros((S.shape[0],1))
     
     n = 4
-    kdt = KDTree(Sref, leaf_size=30, metric='euclidean')
+    nbrs = NearestNeighbors(n_neighbors=n, algorithm='ball_tree').fit(Sref.reshape(-1,1))
     idx_prev = 0
     for i in range(t.shape[0]):
-        _, idx =kdt.query(S[i], k=n, return_distance=True)
+        _, idx =nbrs.kneighbors(S[i])
 
         mn = 1e9
-        for j in idx:
+        for j in idx[0]:
             if Sref[j] < mn and j >= idx_prev and np.abs(j-idx_prev) < 10:
                 jdx = j
                 mn = Sref[j]
@@ -425,28 +429,18 @@ def align_curves(Sref, S):
         t[i] = jdx
         idx_prev = jdx
 
+    return t
+
          
-
-
-
-
-
-
-
-
-
-
-
-
-
 t = range(A.shape[0]+1)
 ix = [0, 1]
 plt.figure(1)
 for i in range(1,5):
     ax = plt.subplot(2,2,i)
 
-    # for s in Cro:
-        # ax.plot(range(Smean.shape[0]), Smean[:,i-1], '-b', label='rollout mean')
+    for S in Cro:
+        ts = align_curves(Ypred_mean_gp[:,i-1], S[:,i-1])
+        ax.plot(ts, S[:,i-1], '-m', label='closed loop')
 
     ax.plot(range(Smean.shape[0]), Smean[:,i-1], '-b', label='rollout mean')
     # ax.fill_between(t[:-1], Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[0]]-Sstd[:,ix[0]], facecolor='blue', alpha=0.5, label='rollout std.')
@@ -458,6 +452,7 @@ for i in range(1,5):
     # ax.plot(t, Ypred_bmean[:,0], '-m', label='Batch mean')
     ax.legend()
 plt.title('Path ' + tr)
+
 
 plt.figure(2)
 ax1 = plt.subplot(1,2,1)

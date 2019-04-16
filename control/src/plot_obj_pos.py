@@ -8,6 +8,10 @@ from std_msgs.msg import Float32MultiArray
 from std_srvs.srv import Empty, EmptyResponse
 from control.srv import pathTrackReq
 
+import sys
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+import var
+
 
 class Plot():
 
@@ -56,7 +60,7 @@ class Plot():
             # plt.plot(self.start_pos[0], self.start_pos[1],'*b')
             plt.plot(self.goal[0], self.goal[1],'*g')
             plt.axis("equal")
-            plt.axis([-60, 60, 60, 177])
+            plt.axis([-100, 100, 50, 120])
             plt.xlabel('x')
             plt.ylabel('y')
             plt.title('Real-time object position:' + str(self.obj_pos))
@@ -76,7 +80,7 @@ class Plot():
         self.goal = np.array(msg.data)
 
     def callbackPlot(self, req):
-        self.Sref = np.array(req.desired_path).reshape(-1,4)
+        self.Sref = np.array(req.desired_path).reshape(-1,var.state_dim_)
         self.ref_flag = True
 
         return {'real_path': [], 'success' : True}

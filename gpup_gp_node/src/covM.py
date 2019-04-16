@@ -72,7 +72,7 @@ class Covariance(object):
                     self.AlphaHat = np.linalg.inv(self.L.T).dot( np.linalg.inv(self.L).dot(self.Y) )
                     break
                 except:
-                    Theta = np.copy(self.theta) + (2*np.random.uniform(self.theta.shape) - 1)/15
+                    Theta = np.copy(self.theta) + (2*np.random.uniform(self.theta.shape) - 1)
 
 
         return self.AlphaHat

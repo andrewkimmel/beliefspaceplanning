@@ -106,6 +106,7 @@ class general_control():
         action = np.array([0.,0.])
         dd_count = 0
         Controller = 'GP'
+        sk = 2
         
         print("[control] Tracking path...")
         while 1:
@@ -113,7 +114,7 @@ class general_control():
             state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
             if i_path == S.shape[0]-1:
                 msg.data = S[-1,:]
-            elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or (self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]) and self.weightedL2(state[:]-S[i_path+1,:]) < self.tol*3):
+            elif self.weightedL2(state[:sk]-S[i_path,:sk]) < self.tol or (self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.weightedL2(state[:sk]-S[i_path,:sk]) and self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.tol*3):
                 i_path += 1
                 msg.data = S[i_path,:]
                 count = 0
@@ -125,7 +126,7 @@ class general_control():
                 # Controller == 'VS'
             self.pub_current_goal.publish(msg)
 
-            dd = self.weightedL2(state[:]-S[i_path,:]) - d_prev
+            dd = self.weightedL2(state[:sk]-S[i_path,:sk]) - d_prev
             dd_count = dd_count + 1 if dd > 0 else 0
             msge.data = action if dd_count > 3 else np.array([0.,0.])
             self.pub_exclude.publish(msge)
@@ -141,9 +142,9 @@ class general_control():
                 n = self.stepSize
                 dd_count = 0
 
-            print total_count, count, i_path, action, self.weightedL2(state[:]-S[i_path,:]), self.weightedL2(state[:]-S[-1,:]), self.weightedL2(state[:]-S[i_path,:]) - d_prev
+            print total_count, count, i_path, action, self.weightedL2(state[:sk]-S[i_path,:sk]), self.weightedL2(state[:sk]-S[-1,:sk]), self.weightedL2(state[:sk]-S[i_path,:sk]) - d_prev
             
-            d_prev =  self.weightedL2(state[:]-S[i_path,:])
+            d_prev =  self.weightedL2(state[:sk]-S[i_path,:sk])
 
             suc = self.move_srv(action).success
             n -= 1
@@ -153,7 +154,7 @@ class general_control():
                 success = False
                 break
 
-            if np.linalg.norm(state[:2]-S[-1,:2]) < self.goal_tol:
+            if np.linalg.norm(state[:sk]-S[-1,:sk]) < self.goal_tol and S.shape[0] - i_path < 3:
                 print("[control] Reached GOAL!!!")
                 success = True
                 break

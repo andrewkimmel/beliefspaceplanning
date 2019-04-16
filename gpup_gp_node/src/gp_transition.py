@@ -112,7 +112,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             dS_next[:,i] = mm
             std_next[:,i] = np.sqrt(np.diag(vv))
 
-        S_next = SA[:,:self.state_dim] + dS_next#np.random.normal(dS_next, std_next)
+        S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
 
         if plotRegData:
             if np.random.uniform() < 0.1:
@@ -165,7 +165,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             ds_next[i] = mm
             std_next[i] = np.sqrt(vv)
 
-        s_next = sa[:self.state_dim] + ds_next#np.random.normal(ds_next, std_next)
+        s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
 
         if plotRegData:
             # fig = plt.gcf()
