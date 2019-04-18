@@ -1,0 +1,6 @@
+/robust_particles_pc_goal0_run0, 0.0, 0.0, 0.0, 0.0, 43
+/robust_particles_pc_goal1_run0, 0.0, 0.0, 0.0, 0.0, 97
+/robust_particles_pc_goal2_run0, 0.0, 0.0, 0.0, 0.0, 110
+/robust_particles_pc_goal3_run0, 0.0, 0.0, 0.0, 0.0, 110
+/robust_particles_pc_goal4_run0, 0.0, 0.0, 0.0, 0.0, 70
+/robust_particles_pc_goal5_run0,20.5535,77.9006,0,0,5
