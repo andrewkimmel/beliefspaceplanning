@@ -13,7 +13,7 @@ from diffusionMaps import DiffusionMap
 from spectralEmbed import spectralEmbed
 from mean_shift import mean_shift
 import matplotlib.pyplot as plt
-
+from sklearn.neighbors import NearestNeighbors
 
 # np.random.seed(10)
 
@@ -147,6 +147,43 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         return S_next 
 
+    # Particles prediction
+    def batch_predict_iterative(self, SA):
+
+        S_next = []
+        while SA.shape[0]:
+            sa = np.copy(SA[np.random.randint(SA.shape[0]), :])
+            D, idx = self.kdt.query(sa.reshape(1, -1), k = self.K, return_distance=True)
+            r = np.max(D)*1.1
+            X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
+            Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+
+            neigh = NearestNeighbors(radius=r)
+            neigh.fit(SA)
+            idx_local = neigh.radius_neighbors(sa.reshape(1,-1),return_distance=False)[0]
+            SA_local = np.copy(SA[idx_local, :])
+            SA = np.delete(SA, idx_local, axis = 0)
+
+            if useDiffusionMaps:
+                X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
+
+            Theta = self.get_theta(sa) # Get hyper-parameters for this query point
+
+            dS_next = np.zeros((SA_local.shape[0], self.state_dim))
+            std_next = np.zeros((SA_local.shape[0], self.state_dim))
+            for i in range(self.state_dim):
+                gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i], algorithm = 'Matlab')
+                mm, vv = gp_est.batch_predict(SA_local[:,:self.state_action_dim])
+                dS_next[:,i] = mm
+                std_next[:,i] = np.sqrt(np.diag(vv))
+
+            S_next_local = SA_local[:,:self.state_dim] + np.random.normal(dS_next, std_next)
+
+            for s in S_next_local:
+                S_next.append(s)
+
+        return np.array(S_next)
+
     def one_predict(self, sa):
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
@@ -218,6 +255,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         SA = self.normz_batch( SA )    
         SA_normz = self.batch_predict(SA)
+        # SA_normz = self.batch_predict_iterative(SA)
         S_next = self.denormz_batch( SA_normz )
 
         return S_next

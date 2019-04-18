@@ -74,7 +74,6 @@ class Covariance(object):
                 except:
                     Theta = np.copy(self.theta) + (2*np.random.uniform(self.theta.shape) - 1)
 
-
         return self.AlphaHat
 
     # def _get_w(self):

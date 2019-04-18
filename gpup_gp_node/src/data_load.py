@@ -100,19 +100,19 @@ class data_load(object):
 
     def normz(self, x):
         d = len(x)
-        return (x-self.x_min_X[:d])/(self.x_max_X[:d]-self.x_min_X[:d])
+        return (x-self.x_min_X[:d])/(self.x_max_X[:d] - self.x_min_X[:d])
 
     def denormz(self, x):
         d = len(x)
-        return  x*(self.x_max_X[:d]-self.x_min_X[:d])+self.x_min_X[:d]
+        return  x*(self.x_max_X[:d]-self.x_min_X[:d]) + self.x_min_X[:d]
 
     def normz_change(self, dx):
         d = len(dx)
-        return dx/(self.x_max_X[:d]-self.x_min_X[:d])
+        return dx/(self.x_max_X[:d] - self.x_min_X[:d])
 
     def denormz_change(self, dx):
         d = len(dx)
-        return  dx*(self.x_max_X[:d]-self.x_min_X[:d])
+        return  dx*(self.x_max_X[:d] - self.x_min_X[:d])
 
     def normz_batch(self, X):
         d = X.shape[1]
