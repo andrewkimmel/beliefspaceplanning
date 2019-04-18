@@ -18,7 +18,7 @@ class data_load(object):
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.prefix =  simORreal + '_'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
-        self.path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.dr = dr
         self.K = K
@@ -100,19 +100,19 @@ class data_load(object):
 
     def normz(self, x):
         d = len(x)
-        return (x-self.x_min_X[:d])/(self.x_max_X[:d]-self.x_min_X[:d])
+        return (x-self.x_min_X[:d])/(self.x_max_X[:d] - self.x_min_X[:d])
 
     def denormz(self, x):
         d = len(x)
-        return  x*(self.x_max_X[:d]-self.x_min_X[:d])+self.x_min_X[:d]
+        return  x*(self.x_max_X[:d]-self.x_min_X[:d]) + self.x_min_X[:d]
 
     def normz_change(self, dx):
         d = len(dx)
-        return dx/(self.x_max_X[:d]-self.x_min_X[:d])
+        return dx/(self.x_max_X[:d] - self.x_min_X[:d])
 
     def denormz_change(self, dx):
         d = len(dx)
-        return  dx*(self.x_max_X[:d]-self.x_min_X[:d])
+        return  dx*(self.x_max_X[:d] - self.x_min_X[:d])
 
     def normz_batch(self, X):
         d = X.shape[1]

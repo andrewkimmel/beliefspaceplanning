@@ -8,13 +8,14 @@ from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
 from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import gets
 
-state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
+state_form = 'pos_load_vel' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_joints', or 'pos_joints'
 
 class rolloutRec():
     discrete_actions = True
 
     gripper_pos = np.array([0., 0.])
     gripper_load = np.array([0., 0.])
+    gripper_load_prev = np.array([0., 0.])
     obj_pos = np.array([0., 0.])
     obj_vel = np.array([0., 0.])
     drop = True
@@ -23,6 +24,7 @@ class rolloutRec():
     action = np.array([0.,0.])
     state = np.array([0.,0., 0., 0.])
     joint_states = np.array([0., 0., 0., 0.])
+    D_load = np.array([0., 0.])
     n = 0
     S = []
     A = []
@@ -43,12 +45,14 @@ class rolloutRec():
 
         rate = rospy.Rate(2)
         while not rospy.is_shutdown():
+            self.D_load = np.copy(self.gripper_load) - np.copy(self.gripper_load_prev)
+            self.gripper_load_prev = np.copy(self.gripper_load)
 
             if self.running:
                 if state_form == 'pos_load':
                     self.state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
                 elif state_form == 'pos_load_vel':   
-                    self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel), axis=0)
+                    self.state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.D_load), axis=0)
                 elif state_form == 'pos_load_joints':   
                     self.state = np.concatenate((self.obj_pos, self.gripper_load, self.joint_states), axis=0)
                 elif state_form == 'pos_joints':   
