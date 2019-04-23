@@ -185,14 +185,14 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         return np.array(S_next)
 
     def one_predict(self, sa):
+        Theta = self.get_theta(sa) # Get hyper-parameters for this query point      
+
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
-
-        Theta = self.get_theta(sa) # Get hyper-parameters for this query point
 
         ds_next = np.zeros((self.state_dim,))
         std_next = np.zeros((self.state_dim,))

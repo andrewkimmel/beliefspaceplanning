@@ -18,7 +18,7 @@ class data_load(object):
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.prefix =  simORreal + '_'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
-        self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        self.path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.dr = dr
         self.K = K
@@ -26,7 +26,7 @@ class data_load(object):
 
         if os.path.exists(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj'):
             with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
-                _, self.theta_opt, self.opt_kdt = pickle.load(f)
+                _, self.theta_opt, self.K_opt, self.opt_kdt = pickle.load(f)
             print('[data_load] Loaded hyper-parameters data for data in ' + self.file)
         else:
             self.precompute_hyperp(K, K_manifold, sigma, dim, simORreal, discreteORcont)
@@ -147,49 +147,65 @@ class data_load(object):
 
         SA_opt = []
         theta_opt = []
+        K_opt = []
         # [theta_opt.append([]) for _ in range(self.state_dim)] # List for each dimension
         N = 10000
         for i in range(N):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
+            best = {'k': 0, 'loglike': 1e9, 'theta': 0}
+            for jj in range(2):
+                Kcandidate = range(2, 253, 50) if jj == 0 else range(max(best['k'] - 50, 2), best['k'] + 50, 10)
+                for k in Kcandidate:
+                    print('[data_load] Running with k = %d (i=%d)...'%(k,i))
 
-            idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
-            X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
-            Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+                    idx = self.kdt.query(sa.reshape(1,-1), k = k, return_distance=False)
+                    X_nn = self.Xtrain[idx,:].reshape(k, self.state_action_dim)
+                    Y_nn = self.Ytrain[idx,:].reshape(k, self.state_dim)
 
-            if K_manifold > 0:
-                X_nn, Y_nn = reduction(sa, X_nn, Y_nn, K_manifold)
+                    if K_manifold > 0:
+                        X_nn, Y_nn = reduction(sa, X_nn, Y_nn, K_manifold)
 
-            fail = False
-            Theta = []
-            for d in range(self.state_dim):
-                try:
-                    gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,d], optimize = True, theta=None) # Optimize to get hyper-parameters
-                except:
-                    print('[data_load] Singular!')
-                    fail = True
-                    break
-                Theta.append(gp_est.cov.theta)
-            if fail:
-                continue
+                    fail = False
+                    Theta = []
+                    LogLikeAvg = 0
+                    for d in range(self.state_dim):
+                        try:
+                            gp_est = GaussianProcess(X_nn[:,:self.state_action_dim], Y_nn[:,d], optimize = True, theta=None) # Optimize to get hyper-parameters
+                        except:
+                            print('[data_load] Singular!')
+                            fail = True
+                            break
+                        Theta.append(gp_est.cov.theta)
+                        LogLikeAvg += gp_est.cov.neg_log_marginal_likelihood_value
+                    if fail:
+                        continue
 
+                    LogLikeAvg /= self.state_dim
+                    if LogLikeAvg < best['loglike']:
+                        best['loglike'] = LogLikeAvg
+                        best['k'] = k
+                        best['theta'] = Theta
+            print "Best: ", best['k'], best['loglike']    
             SA_opt.append(sa)
-            theta_opt.append(Theta)
+            theta_opt.append(best['theta'])
+            K_opt.append(best['k'])
 
             if not (i % 50):
                 self.SA_opt = np.array(SA_opt)
                 self.theta_opt = np.array(theta_opt)
+                self.K_opt = np.array(K_opt)
 
                 self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
 
                 with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
-                    pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
+                    pickle.dump([self.SA_opt, self.theta_opt, self.K_opt, self.opt_kdt], f)
                 print('[data_load] Saved hyper-parameters data.')
 
     def get_theta(self, sa):
         idx = self.opt_kdt.query(sa.reshape(1,-1), k = 1, return_distance=False)    
 
-        return self.theta_opt[idx,:][0][0]
+        return self.theta_opt[idx,:][0][0], self.K_opt[idx]
 
 
 

@@ -154,8 +154,9 @@ class Covariance(object):
         bounds = [(-100.,100.) for _ in range(3)]
 
         from scipy.optimize import minimize
-        res = minimize(self.neg_log_marginal_likelihood, self.theta, method='Nelder-Mead', bounds=bounds, tol=1e-20, options={'disp':False,'eps':1e-10})
+        res = minimize(self.neg_log_marginal_likelihood, self.theta, method='Nelder-Mead', bounds=bounds, tol=1e-6, options={'disp':False,'eps':1e-10})
         self.theta = res['x']
+        self.neg_log_marginal_likelihood_value = res['fun']
 
         # from Utilities import minimize
         # self.theta = minimize(self.neg_log_marginal_likelihood, self.theta, bounds = bounds, constr = None,fprime = None, method=["l_bfgs_b"]) # all, tnc, l_bfgs_b, cobyla, slsqp, bfgs, powell, cg, simplex or list of some of them
