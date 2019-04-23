@@ -5,6 +5,7 @@ gpup_gp_node/src/verf/
 gpup_gp_node/src/results/
 gpup_gp_node/data/*.*
 gpup_gp_node/data/
+gpup_gp_node/data/*.txt
 
 # Prerequisites
 *.d
