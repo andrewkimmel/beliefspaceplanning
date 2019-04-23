@@ -219,7 +219,7 @@ class transition_experience():
         if stepSize > 1:
             D = multiStep(D, done, stepSize)
 
-        D = D[np.random.choice(D.shape[0], int(0.3*D.shape[0]), replace=False),:] # Dillute
+        D = D[np.random.choice(D.shape[0], int(0.16*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
         savemat(self.path + 'acrobot_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})

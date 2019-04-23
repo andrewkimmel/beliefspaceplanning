@@ -250,7 +250,7 @@ class data_load(object):
 
                 self.opt_kdt = KDTree(SA_opt, leaf_size=20, metric='euclidean')
 
-                with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + 'b.obj', 'wb') as f: 
+                with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'wb') as f: 
                     pickle.dump([self.SA_opt, self.theta_opt, self.opt_kdt], f)
                 print('[data_load] Saved hyper-parameters data.')
 

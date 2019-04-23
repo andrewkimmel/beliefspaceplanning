@@ -16,14 +16,15 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '3'
+tr = '1'
 stepSize = var.stepSize_
 
+rospy.wait_for_service('/gp/transition')
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_test/discrete/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_tests/cont/'
 action_file = 'acrobot_ao_rrt_plan' + tr + '.txt'
 traj_file = 'acrobot_ao_rrt_traj' + tr + '.txt'
 
@@ -47,7 +48,7 @@ sigma_start = np.ones((state_dim,))*1e-5
 # plt.show()
 # exit(1)
 
-if 0:   
+if 1:   
     Np = 100 # Number of particles
 
     ######################################## GP propagation ##################################################
@@ -86,9 +87,9 @@ if 0:
         Ypred_mean_gp = np.append(Ypred_mean_gp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_gp = np.append(Ypred_std_gp, s_std_next.reshape(1,state_dim), axis=0)
 
-    ######################################## Bruth GP propagation ##################################################
+    ######################################## Brute GP propagation ##################################################
 
-    print "Running bruth GP."
+    print "Running brute GP."
     
     s = np.copy(s_start)
     S = np.tile(s, (Np,1))# + np.random.normal(0, sigma_start, (Np, state_dim))
@@ -99,7 +100,7 @@ if 0:
     p_gp = 1.
     print("Running (open loop) path...")
     for i in range(0, A.shape[0]):
-        print("[Bruth GP] Step " + str(i) + " of " + str(A.shape[0]) + ", action: " + str(A[i]))
+        print("[Brute GP] Step " + str(i) + " of " + str(A.shape[0]) + ", action: " + str(A[i]))
         Pbgp.append(S)
         a = np.array([A[i]])
 
