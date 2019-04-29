@@ -23,8 +23,8 @@ class general_control():
     actionGP = np.array([0., 0.])
     actionVS = np.array([0., 0.])
     gripper_closed = 'open'
-    tol = 0.3
-    goal_tol = 1.0
+    tol = 0.2
+    goal_tol = 0.3
     horizon = 1
 
     def __init__(self):
@@ -114,7 +114,7 @@ class general_control():
             state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
             if i_path == S.shape[0]-1:
                 msg.data = S[-1,:]
-            elif self.weightedL2(state[:sk]-S[i_path,:sk]) < self.tol or (self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.weightedL2(state[:sk]-S[i_path,:sk])):# and self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.tol*3):
+            elif self.weightedL2(state[:sk]-S[i_path,:sk]) < self.tol or (self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.weightedL2(state[:sk]-S[i_path,:sk]) and self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.tol*2.5):
                 i_path += 1
                 msg.data = S[i_path,:]
                 count = 0
@@ -135,7 +135,7 @@ class general_control():
             #     n = 1
             #     print "Extended..."
             if n <= 0:# or dd_count > 5:
-                if 0:#Controller == 'GP':
+                if 1:#Controller == 'GP':
                     action = self.actionGP
                 else:
                     action = self.actionVS

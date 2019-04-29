@@ -17,11 +17,14 @@ class gp_controller():
 
     drop = True
     obj_pos = np.array([0., 0.])
+    obj_vel = np.array([0., 0.])
     gripper_load = np.array([0., 0.])
+    gripper_load_prev = np.array([0., 0.])
     action = np.array([0.,0.])
     exclude_action = np.array([0.,0.])
     goal = np.array([0.,0.,0.,0.])
     A = np.array([[1.,1.],[-1.,-1.],[-1.,1.],[1.,-1.],[1.5,0.],[-1.5,0.],[0.,-1.5],[0.,1.5]])
+    D_load = np.array([0., 0.])
 
     def __init__(self):
         rospy.init_node('gp_controller', anonymous=True)
@@ -29,6 +32,7 @@ class gp_controller():
         self.gp = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
+        rospy.Subscriber('/hand/obj_vel', Float32MultiArray, self.callbackObjVel)
         rospy.Subscriber('/gripper/load', Float32MultiArray, self.callbackGripperLoad)
 
         pub_best_action = rospy.Publisher('/gp_controller/action', Float32MultiArray, queue_size=10)
@@ -40,7 +44,10 @@ class gp_controller():
 
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
-            state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
+            self.D_load = np.copy(self.gripper_load) - np.copy(self.gripper_load_prev)
+            self.gripper_load_prev = np.copy(self.gripper_load)
+
+            state = np.concatenate((self.obj_pos, self.gripper_load, self.obj_vel, self.D_load), axis=0)
 
             self.action = self.check_all_action(state)
 
@@ -80,6 +87,10 @@ class gp_controller():
     def callbackObj(self, msg):
         Obj_pos = np.array(msg.data)
         self.obj_pos = Obj_pos[:2] * 1000
+
+    def callbackObjVel(self, msg):
+        Obj_vel = np.array(msg.data)
+        self.obj_vel = Obj_vel[:2] * 1000 # m/s to mm/s
 
     def callbackGripperLoad(self, msg):
         self.gripper_load = np.array(msg.data)

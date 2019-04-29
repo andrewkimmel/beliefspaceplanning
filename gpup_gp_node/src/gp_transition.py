@@ -95,14 +95,14 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     # Particles prediction
     def batch_predict(self, SA):
         sa = np.mean(SA, 0)
-        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
-        X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
-        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+        Theta, K = self.get_theta(sa) # Get hyper-parameters for this query point
+
+        idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
+        X_nn = self.Xtrain[idx,:].reshape(K, self.state_action_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(K, self.state_dim)
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
-
-        Theta = self.get_theta(sa) # Get hyper-parameters for this query point
 
         dS_next = np.zeros((SA.shape[0], self.state_dim))
         std_next = np.zeros((SA.shape[0], self.state_dim))
@@ -114,37 +114,6 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         S_next = SA[:,:self.state_dim] + np.random.normal(dS_next, std_next)
 
-        if plotRegData:
-            if np.random.uniform() < 0.1:
-                ia = [0, 1]
-                ax = plt.subplot(131)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Position')
-                ia = [2, 3]
-                ax = plt.subplot(132)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Load')
-                ia = [4, 5]
-                ax = plt.subplot(133)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Velocity')
-                plt.show()
-
         return S_next 
 
     # Particles prediction
@@ -153,10 +122,11 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         S_next = []
         while SA.shape[0]:
             sa = np.copy(SA[np.random.randint(SA.shape[0]), :])
-            D, idx = self.kdt.query(sa.reshape(1, -1), k = self.K, return_distance=True)
+            Theta, K = self.get_theta(sa) # Get hyper-parameters for this query point
+            D, idx = self.kdt.query(sa.reshape(1, -1), k = K, return_distance=True)
             r = np.max(D)*1.1
-            X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
-            Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+            X_nn = self.Xtrain[idx,:].reshape(K, self.state_action_dim)
+            Y_nn = self.Ytrain[idx,:].reshape(K, self.state_dim)
 
             neigh = NearestNeighbors(radius=r)
             neigh.fit(SA)
@@ -166,8 +136,6 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
             if useDiffusionMaps:
                 X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
-
-            Theta = self.get_theta(sa) # Get hyper-parameters for this query point
 
             dS_next = np.zeros((SA_local.shape[0], self.state_dim))
             std_next = np.zeros((SA_local.shape[0], self.state_dim))
@@ -185,11 +153,11 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         return np.array(S_next)
 
     def one_predict(self, sa):
-        Theta = self.get_theta(sa) # Get hyper-parameters for this query point      
+        Theta, K = self.get_theta(sa) # Get hyper-parameters for this query point      
 
-        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
-        X_nn = self.Xtrain[idx,:].reshape(self.K, self.state_action_dim)
-        Y_nn = self.Ytrain[idx,:].reshape(self.K, self.state_dim)
+        idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
+        X_nn = self.Xtrain[idx,:].reshape(K, self.state_action_dim)
+        Y_nn = self.Ytrain[idx,:].reshape(K, self.state_dim)
 
         if useDiffusionMaps:
             X_nn, Y_nn = self.reduction(sa, X_nn, Y_nn)
@@ -203,42 +171,6 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             std_next[i] = np.sqrt(vv)
 
         s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
-
-        if plotRegData:
-            # fig = plt.gcf()
-            # fig.set_size_inches(24,15)
-            # fig.set_figheight(15)
-            # fig.set_figwidth(24)
-            # print sa
-            if np.random.uniform() < 1.1:
-                ia = [0, 1]
-                ax = plt.subplot(121)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([sa[ia[0]], s_next[ia[0]]], [sa[ia[1]], s_next[ia[1]]], '-y')
-                # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Position' + str(sa[-2:]))
-                ia = [2, 3]
-                ax = plt.subplot(122)
-                ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                ax.plot([sa[ia[0]], s_next[ia[0]]], [sa[ia[1]], s_next[ia[1]]], '-y')
-                # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                plt.title('Load - DF')
-                # ia = [4, 5]
-                # ax = plt.subplot(133)
-                # ax.plot(sa[ia[0]], sa[ia[1]], 'og')
-                # ax.plot(SA[:,ia[0]], SA[:,ia[1]], '.k')
-                # ax.plot(X_nn[:,ia[0]], X_nn[:,ia[1]], '.m')
-                # ax.plot([X_nn[:,ia[0]], X_nn[:,ia[0]]+Y_nn[:,ia[0]]], [X_nn[:,ia[1]], X_nn[:,ia[1]]+Y_nn[:,ia[1]]], '.-b')
-                # ax.plot([SA[:,ia[0]], S_next[:,ia[0]]], [SA[:,ia[1]], S_next[:,ia[1]]], '-y')
-                # ax.plot([SA[:,ia[0]], SA[:,ia[0]]+dS_next[:,ia[0]]], [SA[:,ia[1]], SA[:,ia[1]]+dS_next[:,ia[1]]], '-c')
-                # plt.title('Velocity')
-                # plt.show()
-                plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/pic_' + str(rospy.get_time()) + '.png')
-                plt.clf()
 
         return s_next 
 
@@ -371,7 +303,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                     dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                     S_next[failed_inx, :] = S_next[dup_inx,:]
 
-            mean = self.get_mean_shift(S_next)
+            mean = np.mean(S_next, 0) #self.get_mean_shift(S_next)
             
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action}
 

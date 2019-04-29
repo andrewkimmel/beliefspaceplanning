@@ -17,7 +17,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '1'
+tr = '3'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -163,9 +163,10 @@ for tr in TR:
     # from gp import GaussianProcess
     # from data_load import data_load
     # DL = data_load(simORreal = 'sim', discreteORcont = 'discrete', K = 100)
+    # j = 40
 
-    # s = np.copy(Smean[20,:])
-    # a = A[20,:]
+    # s = np.copy(Smean[j,:])
+    # a = A[j,:]
     # sa = np.concatenate((s, a), axis=0)
     # sa = DL.normz( sa ) 
 
@@ -174,7 +175,7 @@ for tr in TR:
     # Y_nn = DL.Ytrain[idx,:].reshape(DL.K, DL.state_dim)
     # ds_next = np.zeros((DL.state_dim,))
     # std_next_normz = np.zeros((DL.state_dim,))
-    # Theta = DL.get_theta(sa)
+    # Theta, _ = DL.get_theta(sa)
     # for i in range(DL.state_dim):
     #     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
     #     mm, vv = gp_est.predict(sa[:DL.state_action_dim])
@@ -187,8 +188,8 @@ for tr in TR:
     # print s_next, std_next
     # print "-----"
 
-    # S = np.tile(Smean[20,:], (5,1))#.reshape(1,-1)
-    # a = np.tile(A[20,:], (5,1))
+    # S = np.tile(Smean[j,:], (1000,1))#.reshape(1,-1)
+    # a = np.tile(A[j,:], (1000,1))
     # SA = np.concatenate((S, a), axis=1)#.reshape(2,-1)
     # SA = DL.normz_batch( SA )
     # sa = np.mean(SA, 0)
@@ -199,19 +200,20 @@ for tr in TR:
 
     # dS_next = np.zeros((SA.shape[0], DL.state_dim))
     # std_next_normz = np.zeros((SA.shape[0], DL.state_dim))
-    # Theta = DL.get_theta(sa)
+    # Theta, _ = DL.get_theta(sa)
     # for i in range(DL.state_dim):
     #     gp_est = GaussianProcess(X_nn[:,:DL.state_action_dim], Y_nn[:,i], optimize = False, theta = Theta[i])
     #     mm, vv = gp_est.batch_predict(SA[:,:DL.state_action_dim])
     #     dS_next[:,i] = mm
     #     std_next_normz[:,i] = np.sqrt(np.diag(vv))
-    # SA_normz = SA[:,:DL.state_dim] + dS_next
+    # SA_normz = SA[:,:DL.state_dim] + np.random.normal(dS_next, std_next_normz)
     # S_next = DL.denormz_batch( SA_normz )
     # std_next = np.zeros(std_next_normz.shape)
     # for i in range(std_next_normz.shape[0]):
     #     std_next[i] = DL.denormz_change(std_next_normz[i])
     
-    # print S_next, std_next
+    # # print S_next, std_next
+    # print np.mean(S_next, 0)
 
     # exit(1)
 
@@ -310,16 +312,16 @@ for tr in TR:
             print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
             a = A[i,:]
 
-            st = time.time()
-            res = naive_srv(s.reshape(-1,1), a)
-            t_naive += (time.time() - st) 
+            # st = time.time()
+            # res = naive_srv(s.reshape(-1,1), a)
+            # t_naive += (time.time() - st) 
 
-            if res.node_probability < p_naive:
-                p_naive = res.node_probability
-            s_next = np.array(res.next_state)
-            s = np.copy(s_next)
+            # if res.node_probability < p_naive:
+            #     p_naive = res.node_probability
+            # s_next = np.array(res.next_state)
+            # s = np.copy(s_next)
 
-            # s_next = np.ones((1,state_dim))
+            s_next = np.ones((1,state_dim))
 
             Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
 
@@ -339,8 +341,6 @@ for tr in TR:
 
     with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
         Ypred_mean_gp, Ypred_std_gp, Ypred_mean_bgp, Ypred_std_bgp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
-
-    print 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl'
 
     # Closed loop
     if 0:
@@ -435,7 +435,7 @@ def align_curves(Sref, S):
 
         mn = 1e9
         for j in idx[0]:
-            if np.abs(S[j]-Sref[i]) < mn and j > jdx_prev and np.abs(j-jdx_prev) < 150:
+            if np.abs(S[j]-Sref[i]) < mn and np.abs(j-jdx_prev) < 500:# j >= jdx_prev:# and np.abs(j-jdx_prev) < 150:
                 jdx = j
                 mn = np.abs(S[j]-Sref[i])
         jdx_prev = jdx
@@ -471,19 +471,26 @@ for i in range(1,3):
 
     # for S in CLro:
     #     ax.plot(t, S[:,i-1], '.-r', label='closed loop')
+    for j in range(Pgp[0].shape[0]):
+        G = []
+        for k in range(len(Pgp)):
+            G.append(Pgp[k][j,:])
+        G = np.array(G)
+        ax.plot(np.array(range(G.shape[0]))*freq, G[:,i-1], '-k')#, label='particle')
+
 
     ax.plot(np.array(range(n))*freq, Smean[:n,i-1], '-b', label='rollout mean')
     ax.fill_between(t[:n], Smean[:n,i-1]+Sstd[:n,i-1], Smean[:n,i-1]-Sstd[:n,i-1], facecolor='blue', alpha=0.5, label='rollout std.')
-    # ax.plot(t, Ypred_mean_gp[:,i-1], '-r', label='BPP mean')
-    # ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='green', alpha=0.5, label='BGP std.')
-    ax.plot(t[:n], Ypred_mean_bgp[:n,i-1], '-c', label='BPP - mean')
-    ax.fill_between(t[:n], Ypred_mean_bgp[:n,i-1]+Ypred_std_bgp[:n,i-1], Ypred_mean_bgp[:n,i-1]-Ypred_std_bgp[:n,i-1], facecolor='magenta', alpha=0.5, label='BGP std.')
+    ax.plot(t, Ypred_mean_gp[:,i-1], '-r', label='BPP mean')
+    ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='red', alpha=0.5, label='BPP std.')
+    ax.plot(t[:n], Ypred_mean_bgp[:n,i-1], '-c', label='BPPb - mean')
+    ax.fill_between(t[:n], Ypred_mean_bgp[:n,i-1]+Ypred_std_bgp[:n,i-1], Ypred_mean_bgp[:n,i-1]-Ypred_std_bgp[:n,i-1], facecolor='magenta', alpha=0.5, label='BPPb std.')
     # ax.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
     # ax.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
     # ax.plot(t[:n], Ypred_naive[:n,i-1], '.-k', label='Naive')
     # ax.plot(t, Ypred_bmean[:,0], '-m', label='Batch mean')
-    ax.plot(t[:n], CLmean[:n,i-1], '-r', label='CL mean')
-    ax.fill_between(t[:n], CLmean[:n,i-1]+CLstd[:n,i-1], CLmean[:n,i-1]-CLstd[:n,i-1], facecolor='red', alpha=0.5, label='CL std.')
+    # ax.plot(t[:n], CLmean[:n,i-1], '-r', label='CL mean')
+    # ax.fill_between(t[:n], CLmean[:n,i-1]+CLstd[:n,i-1], CLmean[:n,i-1]-CLstd[:n,i-1], facecolor='red', alpha=0.5, label='CL std.')
 
     ax.legend()
 plt.title('Path ' + tr)
@@ -491,35 +498,35 @@ plt.title('Path ' + tr)
 ix = [0,1]
 
 # plt.figure(2)
-# ax1 = plt.subplot(1,2,1)
+# # ax1 = plt.subplot(1,2,1)
 # for Sro in Pro: 
 #     plt.plot(Sro[:,0], Sro[:,1], ':y')
 # for s in Cro:
 #     plt.plot(s[:,0], s[:,1], '--c')
 # plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
-# plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
+# plt.plot(Ypred_mean_bgp[:,ix[0]], Ypred_mean_bgp[:,ix[1]], '.-r', label='BPP mean')
 # plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
 # # plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')
 # plt.legend()
 
-# ax2 = plt.subplot(1,2,2)
-# for Sro in Pro: 
-#     plt.plot(Sro[:,2], Sro[:,3], ':y')
-# for s in Cro:
-#     plt.plot(s[:,2], s[:,3], '--c')
-# plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
-# plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
-# plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
-# # plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], ':y', label='Inter')
+# # ax2 = plt.subplot(1,2,2)
+# # for Sro in Pro: 
+# #     plt.plot(Sro[:,2], Sro[:,3], ':y')
+# # for s in Cro:
+# #     plt.plot(s[:,2], s[:,3], '--c')
+# # plt.plot(Smean[:,ix[0]+2], Smean[:,ix[1]+2], '-b', label='rollout mean')
+# # plt.plot(Ypred_mean_gp[:,ix[0]+2], Ypred_mean_gp[:,ix[1]+2], '-r', label='BPP mean')
+# # plt.plot(Ypred_naive[:,2], Ypred_naive[:,3], '--k', label='Naive')
+# # # plt.plot(Ypred_inter[:,2], Ypred_inter[:,3], ':y', label='Inter')
 
-plt.figure(3)
-ec = [np.linalg.norm(c[:2]-g[:2]) for g, c in zip(Ypred_mean_bgp, CLmean)]
-el = [np.linalg.norm(c[:2]-g[:2]) for g, c in zip(Ypred_mean_bgp, Smean)]
-plt.plot(t[:n], ec[:n], label='closed-loop')
-plt.plot(t[:n], el[:n], label='open-loop')
-plt.legend()
-plt.xlabel('time (sec)')
-plt.ylabel('error (mm)')
+# plt.figure(3)
+# ec = [np.linalg.norm(c[:2]-g[:2]) for g, c in zip(Ypred_mean_bgp, CLmean)]
+# el = [np.linalg.norm(c[:2]-g[:2]) for g, c in zip(Ypred_mean_bgp, Smean)]
+# plt.plot(t[:n], ec[:n], label='closed-loop')
+# plt.plot(t[:n], el[:n], label='open-loop')
+# plt.legend()
+# plt.xlabel('time (sec)')
+# plt.ylabel('error (mm)')
 
 # plt.savefig('/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/temp2/path' + str(np.random.randint(100000)) + '.png', dpi=300)
 plt.show()

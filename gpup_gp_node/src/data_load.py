@@ -18,7 +18,7 @@ class data_load(object):
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.prefix =  simORreal + '_'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
-        self.path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.dr = dr
         self.K = K
@@ -155,7 +155,7 @@ class data_load(object):
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
             best = {'k': 0, 'loglike': 1e9, 'theta': 0}
             for jj in range(2):
-                Kcandidate = range(2, 253, 50) if jj == 0 else range(max(best['k'] - 50, 2), best['k'] + 50, 10)
+                Kcandidate = [K] #range(2, 253, 50) if jj == 0 else range(max(best['k'] - 50, 2), best['k'] + 50, 10)
                 for k in Kcandidate:
                     print('[data_load] Running with k = %d (i=%d)...'%(k,i))
 
@@ -205,7 +205,7 @@ class data_load(object):
     def get_theta(self, sa):
         idx = self.opt_kdt.query(sa.reshape(1,-1), k = 1, return_distance=False)    
 
-        return self.theta_opt[idx,:][0][0], self.K_opt[idx]
+        return self.theta_opt[idx,:][0][0], self.K_opt[idx][0][0]
 
 
 
