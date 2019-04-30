@@ -244,7 +244,7 @@ class data_load(object):
             SA_opt.append(sa)
             theta_opt.append(Theta)
 
-            if not (i % 100):
+            if not (i % 50):
                 self.SA_opt = np.array(SA_opt)
                 self.theta_opt = np.array(theta_opt)
 

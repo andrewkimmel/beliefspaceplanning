@@ -24,8 +24,9 @@ class transition_experience():
 
         self.recorder_data = True if postfix == '_bu' else False
             
-        self.file = 'acrobot_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
-        self.file_name = self.path + self.file # + '.obj
+        # self.file = 'acrobot_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
+        self.file_name = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noisy_acrobot_discrete_withObstacles/acrobot_data'
+        # self.path + self.file # + '.obj
 
         if Load:
             self.load()
@@ -49,8 +50,8 @@ class transition_experience():
             for d in D:
                 state = np.array(d[:4])
                 action = np.array(d[4])
-                next_state = np.array(d[5:])
-                done = False
+                next_state = np.array(d[5:-1])
+                done = d[-1]==0
                 self.memory += [(state, action, next_state, done)]
 
             print('Loaded transition data of size %d.'%self.getSize())
@@ -201,10 +202,6 @@ class transition_experience():
                     s[i] += 2*np.pi if s[i] < -np.pi else 0.0
                     s[i] -= 2*np.pi if s[i] >  np.pi else 0.0
 
-        for i in range(done.shape[0]):
-            if done[i]:
-                done[i-2:i] = True
-
         # states = states[:, [0, 1, 2, 3]]
         # next_states = next_states[:, [0, 1, 2, 3]]
         self.state_dim = states.shape[1]
@@ -219,7 +216,7 @@ class transition_experience():
         if stepSize > 1:
             D = multiStep(D, done, stepSize)
 
-        D = D[np.random.choice(D.shape[0], int(0.16*D.shape[0]), replace=False),:] # Dillute
+        D = D[np.random.choice(D.shape[0], int(0.2*D.shape[0]), replace=False),:] # Dillute
         self.D = D
 
         savemat(self.path + 'acrobot_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
@@ -264,16 +261,13 @@ class transition_experience():
                 s[i] += 2*np.pi if s[i] < -np.pi else 0.0
                 s[i] -= 2*np.pi if s[i] >  np.pi else 0.0
 
-        for i in range(done.shape[0]):
-            if done[i]:
-                done[i-2:i] = True
-
-        SA = np.concatenate((states, actions), axis=1)
+        SA = np.concatenate((states, actions.reshape(-1,1)), axis=1)
         if stepSize > 1:
             SA, done = multiStep(SA, done, stepSize)
         print('Transition data with steps size %d has now %d points'%(stepSize, SA.shape[0]))
 
         inx_fail = np.where(done)[0]
+        inx_fail = inx_fail[np.random.choice(inx_fail.shape[0], 15000, replace=False)]
         print "Number of failed states " + str(inx_fail.shape[0])
         T = np.where(np.logical_not(done))[0]
         inx_suc = T[np.random.choice(T.shape[0], inx_fail.shape[0], replace=False)]
