@@ -2,7 +2,7 @@
 
 data_version_ = 0
 
-N_dillute_ = 2000 # Number of points to randomly select from data
+N_dillute_ = 0*200000 # Number of points to randomly select from data
 stepSize_ = 1
 dim_ = 4
 

@@ -35,7 +35,7 @@ class data_load(object):
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
         self.prefix =  simORreal + '_'
         self.file = simORreal + '_data_' + discreteORcont + self.postfix + '.mat'
-        self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        self.path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         # self.path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
         self.dr = dr
         self.K = K

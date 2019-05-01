@@ -281,8 +281,8 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         SA = np.concatenate((S, np.tile(a, (S.shape[0],1))), axis=1)
 
         SA = self.normz_batch( SA )    
-        # SA_normz = self.batch_predict(SA)
-        SA_normz = self.batch_predict_iterative(SA)
+        SA_normz = self.batch_predict(SA)
+        # SA_normz = self.batch_predict_iterative(SA)
         S_next = self.denormz_batch( SA_normz )
 
         return S_next

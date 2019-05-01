@@ -16,7 +16,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '1'
+tr = '3'
 stepSize = var.stepSize_
 
 rospy.wait_for_service('/gp/transition')
@@ -24,7 +24,7 @@ gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_tests/cont/'
+path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_tests/discrete/'
 action_file = 'acrobot_ao_rrt_plan' + tr + '.txt'
 traj_file = 'acrobot_ao_rrt_traj' + tr + '.txt'
 
@@ -92,32 +92,29 @@ if 1:
     print "Running brute GP."
     
     s = np.copy(s_start)
-    S = np.tile(s, (Np,1))# + np.random.normal(0, sigma_start, (Np, state_dim))
+    S = np.tile(s, (10,1))# + np.random.normal(0, sigma_start, (Np, state_dim))
     Ypred_mean_bgp = s.reshape(1,state_dim)
     Ypred_std_bgp = sigma_start.reshape(1,state_dim)
 
     Pbgp = []; 
-    p_gp = 1.
     print("Running (open loop) path...")
     for i in range(0, A.shape[0]):
         print("[Brute GP] Step " + str(i) + " of " + str(A.shape[0]) + ", action: " + str(A[i]))
         Pbgp.append(S)
         a = np.array([A[i]])
 
-        S_next = []
-        for s in S:
-            res = naive_srv(s.reshape(-1,1), a)
-            S_next.append(np.array(res.next_state))
+        # S_next = []
+        # for s in S:
+        #     res = naive_srv(s.reshape(-1,1), a)
+        #     S_next.append(np.array(res.next_state))
 
-        S_next = np.array(S_next)
-        if res.node_probability < p_gp:
-            p_gp = res.node_probability
-        s_mean_next = np.mean(S_next, 0)
-        s_std_next = np.std(S_next, 0)
-        S = S_next
+        # S_next = np.array(S_next)
+        # s_mean_next = np.mean(S_next, 0)
+        # s_std_next = np.std(S_next, 0)
+        # S = S_next
 
-        # s_mean_next = np.zeros((1,state_dim))
-        # s_std_next = np.zeros((1,state_dim))
+        s_mean_next = np.zeros((1,state_dim))
+        s_std_next = np.zeros((1,state_dim))
 
         Ypred_mean_bgp = np.append(Ypred_mean_bgp, s_mean_next.reshape(1,state_dim), axis=0)
         Ypred_std_bgp = np.append(Ypred_std_bgp, s_std_next.reshape(1,state_dim), axis=0)
@@ -168,6 +165,8 @@ if 1:
 with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
     Ypred_mean_gp, Ypred_std_gp, Ypred_mean_bgp, Ypred_std_bgp, Ypred_mean_gpup, Ypred_std_gpup, Pgp, Ypred_naive, Ypred_bmean, stats, A = pickle.load(f)  
 
+print "p(gp) = " + str(stats[1,0])
+print "p(naive) = " + str(stats[1,1])
 
 t = range(A.shape[0]+1)
 t = list(np.array(t)*stepSize)
@@ -176,12 +175,20 @@ plt.figure(1)
 for i in range(1,5):
     ax = plt.subplot(2,2,i)
 
+    #     ax.plot(t, S[:,i-1], '.-r', label='closed loop')
+    for j in range(Pgp[0].shape[0]):
+        G = []
+        for k in range(len(Pgp)):
+            G.append(Pgp[k][j,:])
+        G = np.array(G)
+        ax.plot(np.array(range(G.shape[0]))*1, G[:,i-1], ':k')#, label='particle')
+
     ax.plot(range(Smean.shape[0]), Smean[:,i-1], '-b', label='rollout mean')
     # ax.fill_between(t[:-1], Smean[:,ix[0]]+Sstd[:,ix[0]], Smean[:,ix[0]]-Sstd[:,ix[0]], facecolor='blue', alpha=0.5, label='rollout std.')
     ax.plot(t, Ypred_mean_gp[:,i-1], '-r', label='BPP - mean')
-    ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='green', alpha=0.5, label='BGP std.')
-    ax.plot(t, Ypred_mean_bgp[:,i-1], '-c', label='BPP bruth - mean')
-    ax.fill_between(t, Ypred_mean_bgp[:,i-1]+Ypred_std_bgp[:,i-1], Ypred_mean_bgp[:,i-1]-Ypred_std_bgp[:,i-1], facecolor='magenta', alpha=0.5, label='BGP bruth std.')
+    ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='green', alpha=0.5, label='BPP std.')
+    # ax.plot(t, Ypred_mean_bgp[:,i-1], '-c', label='BPP brute - mean')
+    # ax.fill_between(t, Ypred_mean_bgp[:,i-1]+Ypred_std_bgp[:,i-1], Ypred_mean_bgp[:,i-1]-Ypred_std_bgp[:,i-1], facecolor='magenta', alpha=0.5, label='BPP brute std.')
     # ax.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
     # ax.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
     ax.plot(t, Ypred_naive[:,i-1], '-k', label='Naive')
