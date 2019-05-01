@@ -9,6 +9,8 @@ import var
 
 # np.random.seed(1)
 
+extend_previous_opt = False
+
 class data_load(object):
     # Dillute = 100000
 
@@ -24,7 +26,7 @@ class data_load(object):
         self.K = K
         self.load()
 
-        if os.path.exists(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj'):
+        if not extend_previous_opt and os.path.exists(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj'):
             with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
                 _, self.theta_opt, self.K_opt, self.opt_kdt = pickle.load(f)
             print('[data_load] Loaded hyper-parameters data for data in ' + self.file)
@@ -145,16 +147,23 @@ class data_load(object):
         from gp import GaussianProcess
         import pickle
 
-        SA_opt = []
-        theta_opt = []
-        K_opt = []
+        if extend_previous_opt and os.path.exists(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj'):
+            with open(self.path + self.prefix + 'opt_data_' + discreteORcont + self.postfix + '_k' + str(K) + '.obj', 'rb') as f: 
+                SA_opt, theta_opt, K_opt, _ = pickle.load(f)
+            SA_opt = list(SA_opt)
+            theta_opt = list(theta_opt)
+            K_opt = list(K_opt)
+        else:
+            SA_opt = []
+            theta_opt = []
+            K_opt = []
         # [theta_opt.append([]) for _ in range(self.state_dim)] # List for each dimension
         N = 10000
         for i in range(N):
             print('[data_load] Computing hyper-parameters for data point %d out of %d.'% (i, N))
             sa = self.Xtrain[np.random.randint(self.Xtrain.shape[0]), :]
             best = {'k': 0, 'loglike': 1e9, 'theta': 0}
-            for jj in range(2):
+            for jj in range(1):
                 Kcandidate = [K] #range(2, 253, 50) if jj == 0 else range(max(best['k'] - 50, 2), best['k'] + 50, 10)
                 for k in Kcandidate:
                     print('[data_load] Running with k = %d (i=%d)...'%(k,i))
@@ -186,10 +195,11 @@ class data_load(object):
                         best['loglike'] = LogLikeAvg
                         best['k'] = k
                         best['theta'] = Theta
-            print "Best: ", best['k'], best['loglike']    
+            print "Best: k = ", best['k'], ", log-likelihood = ", best['loglike']    
             SA_opt.append(sa)
             theta_opt.append(best['theta'])
             K_opt.append(best['k'])
+            print('[data_load] %d optimization points exist.'%len(SA_opt))
 
             if not (i % 50):
                 self.SA_opt = np.array(SA_opt)

@@ -17,7 +17,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '3'
+tr = '1'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -99,7 +99,7 @@ for tr in TR:
                 np.array([[ 1., -1.] for _ in range(int(70*1./stepSize))]) ), axis=0 )
 
     if tr == '4':
-        A = np.array([[1., -1.] for _ in range(int(400*1./stepSize))])
+        A = np.array([[1., -1.] for _ in range(int(250*1./stepSize))])
 
     ######################################## Roll-out ##################################################
 
@@ -107,7 +107,7 @@ for tr in TR:
     if 0:
         Af = A.reshape((-1,))
         Pro = []
-        for j in range(10):
+        for j in range(1):
             print("Rollout number " + str(j) + ' with path ' + tr + "...")
             
             R = rollout_srv(Af)
@@ -293,8 +293,8 @@ for tr in TR:
             Ypred_mean_bgp = np.append(Ypred_mean_bgp, s_mean_next.reshape(1,state_dim), axis=0)
             Ypred_std_bgp = np.append(Ypred_std_bgp, s_std_next.reshape(1,state_dim), axis=0)
 
-        with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
-            _, _, Ypred_mean_bgp, Ypred_std_bgp, _, _, _, _, _, _, _ = pickle.load(f)  
+        # with open(path + 'ver_pred_' + tr + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.pkl') as f:  
+        #     _, _, Ypred_mean_bgp, Ypred_std_bgp, _, _, _, _, _, _, _ = pickle.load(f)  
 
 
         ######################################## naive propagation ###############################################
@@ -312,16 +312,16 @@ for tr in TR:
             print("[Naive] Step " + str(i) + " of " + str(A.shape[0]))
             a = A[i,:]
 
-            # st = time.time()
-            # res = naive_srv(s.reshape(-1,1), a)
-            # t_naive += (time.time() - st) 
+            st = time.time()
+            res = naive_srv(s.reshape(-1,1), a)
+            t_naive += (time.time() - st) 
 
-            # if res.node_probability < p_naive:
-            #     p_naive = res.node_probability
-            # s_next = np.array(res.next_state)
-            # s = np.copy(s_next)
+            if res.node_probability < p_naive:
+                p_naive = res.node_probability
+            s_next = np.array(res.next_state)
+            s = np.copy(s_next)
 
-            s_next = np.ones((1,state_dim))
+            # s_next = np.ones((1,state_dim))
 
             Ypred_naive = np.append(Ypred_naive, s_next.reshape(1,state_dim), axis=0)
 
@@ -439,9 +439,9 @@ def align_curves(Sref, S):
                 jdx = j
                 mn = np.abs(S[j]-Sref[i])
         jdx_prev = jdx
-        Snew.append(S[jdx])
-    # Snew.append(S[-1])
-    
+    0
+    0
+    0
     return np.array(Snew)
 
 CLro = []
@@ -471,23 +471,22 @@ for i in range(1,3):
 
     # for S in CLro:
     #     ax.plot(t, S[:,i-1], '.-r', label='closed loop')
-    for j in range(Pgp[0].shape[0]):
-        G = []
-        for k in range(len(Pgp)):
-            G.append(Pgp[k][j,:])
-        G = np.array(G)
-        ax.plot(np.array(range(G.shape[0]))*freq, G[:,i-1], '-k')#, label='particle')
-
+    # for j in range(Pgp[0].shape[0]):
+    #     G = []
+    #     for k in range(len(Pgp)):
+    #         G.append(Pgp[k][j,:])
+    #     G = np.array(G)
+    #     ax.plot(np.array(range(G.shape[0]))*freq, G[:,i-1], '-k')#, label='particle')
 
     ax.plot(np.array(range(n))*freq, Smean[:n,i-1], '-b', label='rollout mean')
     ax.fill_between(t[:n], Smean[:n,i-1]+Sstd[:n,i-1], Smean[:n,i-1]-Sstd[:n,i-1], facecolor='blue', alpha=0.5, label='rollout std.')
     ax.plot(t, Ypred_mean_gp[:,i-1], '-r', label='BPP mean')
     ax.fill_between(t, Ypred_mean_gp[:,i-1]+Ypred_std_gp[:,i-1], Ypred_mean_gp[:,i-1]-Ypred_std_gp[:,i-1], facecolor='red', alpha=0.5, label='BPP std.')
-    ax.plot(t[:n], Ypred_mean_bgp[:n,i-1], '-c', label='BPPb - mean')
-    ax.fill_between(t[:n], Ypred_mean_bgp[:n,i-1]+Ypred_std_bgp[:n,i-1], Ypred_mean_bgp[:n,i-1]-Ypred_std_bgp[:n,i-1], facecolor='magenta', alpha=0.5, label='BPPb std.')
+    # ax.plot(t[:n], Ypred_mean_bgp[:n,i-1], '-c', label='BPPb - mean')
+    # ax.fill_between(t[:n], Ypred_mean_bgp[:n,i-1]+Ypred_std_bgp[:n,i-1], Ypred_mean_bgp[:n,i-1]-Ypred_std_bgp[:n,i-1], facecolor='magenta', alpha=0.5, label='BPPb std.')
     # ax.plot(t, Ypred_mean_gpup[:,0], '--c', label='GPUP mean')
     # ax.fill_between(t, Ypred_mean_gpup[:,0]+Ypred_std_gpup[:,0], Ypred_mean_gpup[:,0]-Ypred_std_gpup[:,0], facecolor='cyan', alpha=0.5, label='GPUP std.')
-    # ax.plot(t[:n], Ypred_naive[:n,i-1], '.-k', label='Naive')
+    ax.plot(t[:n], Ypred_naive[:n,i-1], '.-k', label='Naive')
     # ax.plot(t, Ypred_bmean[:,0], '-m', label='Batch mean')
     # ax.plot(t[:n], CLmean[:n,i-1], '-r', label='CL mean')
     # ax.fill_between(t[:n], CLmean[:n,i-1]+CLstd[:n,i-1], CLmean[:n,i-1]-CLstd[:n,i-1], facecolor='red', alpha=0.5, label='CL std.')
@@ -497,17 +496,27 @@ plt.title('Path ' + tr)
 
 ix = [0,1]
 
-# plt.figure(2)
-# # ax1 = plt.subplot(1,2,1)
-# for Sro in Pro: 
-#     plt.plot(Sro[:,0], Sro[:,1], ':y')
+# For Juntao
+if 0:
+    # gp_path = Ypred_naive[:,:4]
+    gp_path = Ypred_mean_gp[:,:4]
+    rollout_path = Smean[:,:4]
+    action_path = A
+    with open(path + 'jt_path' + tr + '_v' + str(var.data_version_) + '_m' + str(stepSize) + '.pkl', 'w') as f: 
+        pickle.dump([rollout_path, gp_path, action_path], f)
+
+
+plt.figure(2)
+# ax1 = plt.subplot(1,2,1)
+for Sro in Pro: 
+    plt.plot(Sro[:,0], Sro[:,1], ':y')
 # for s in Cro:
 #     plt.plot(s[:,0], s[:,1], '--c')
-# plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
-# plt.plot(Ypred_mean_bgp[:,ix[0]], Ypred_mean_bgp[:,ix[1]], '.-r', label='BPP mean')
-# plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
-# # plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')
-# plt.legend()
+plt.plot(Smean[:,ix[0]], Smean[:,ix[1]], '.-b', label='rollout mean')
+plt.plot(Ypred_mean_gp[:,ix[0]], Ypred_mean_gp[:,ix[1]], '.-r', label='BPP mean')
+plt.plot(Ypred_naive[:,0], Ypred_naive[:,1], '.-k', label='Naive')
+# plt.plot(Ypred_inter[:,0], Ypred_inter[:,1], '.-y', label='Inter')
+plt.legend()
 
 # # ax2 = plt.subplot(1,2,2)
 # # for Sro in Pro: 

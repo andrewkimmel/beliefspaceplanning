@@ -170,7 +170,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             ds_next[i] = mm
             std_next[i] = np.sqrt(vv)
 
-        s_next = sa[:self.state_dim] + np.random.normal(ds_next, std_next)
+        s_next = sa[:self.state_dim] + ds_next#np.random.normal(ds_next, std_next)
 
         return s_next 
 
