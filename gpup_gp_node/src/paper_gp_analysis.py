@@ -24,7 +24,7 @@ gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 
-path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_tests/discrete/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/acrobot_tests/discrete/'
 action_file = 'acrobot_ao_rrt_plan' + tr + '.txt'
 traj_file = 'acrobot_ao_rrt_traj' + tr + '.txt'
 
