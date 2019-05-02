@@ -1,5 +1,7 @@
 float32[] actions
+float32[] start_state
 ---
 float32[] states
 float32[] actions_res
 bool success
+bool collided

@@ -1,0 +1,10 @@
+<launch>
+
+  <node pkg="acrobot_control" name="general_control" type="general_control.py" output="screen"/>
+  <node pkg="acrobot_control" name="controller" type="controller.py" output="screen"/>
+  <node pkg="acrobot_control" name="test" type="test_control.py" output="screen"/>
+
+  <!-- <node pkg="acrobot_control" name="plot_state" type="plot_state.py" output="screen"/> -->
+
+
+</launch>

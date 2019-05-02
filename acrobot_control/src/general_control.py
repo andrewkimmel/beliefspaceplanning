@@ -2,14 +2,14 @@
 
 import rospy
 from std_srvs.srv import Empty, EmptyResponse
-from std_msgs.msg import Bool, String, Float32MultiArray
+from std_msgs.msg import Bool, String, Float32MultiArray, Float32
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-from rollout_node.srv import observation, IsDropped, TargetAngles
 from gpup_gp_node.srv import one_transition
-from control.srv import pathTrackReq
+from acrobot_control.srv import pathTrackReq
 from rollout_node.srv import gets
+from prx_simulation.srv import simulation_observation_srv, simulation_valid_srv, simulation_reset_srv, simulation_action_srv
 
 import sys
 sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
@@ -19,24 +19,25 @@ class general_control():
 
     drop = True
     state = np.array([0., 0., 0., 0.])
-    action = np.array([0.])
-    tol = 0.2
-    goal_tol = 0.2
+    action = 0.
+    tol = 0.02
+    goal_tol = 0.02
     horizon = 1
 
     def __init__(self):
         rospy.init_node('control', anonymous=True)
 
-        self.gp = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
-
-        rospy.Subscriber('/acrobot/state', Float32MultiArray, self.callbackState)
-
         rospy.Service('/control', pathTrackReq, self.CallbackTrack)
-        rospy.Subscriber('/controller/action', Float32MultiArray, self.CallbackBestAction)
+        rospy.Subscriber('/controller/action', Float32, self.CallbackBestAction)
         self.pub_current_goal = rospy.Publisher('/control/goal', Float32MultiArray, queue_size=10)
 
         self.plot_clear_srv = rospy.ServiceProxy('/plot/clear', Empty)
         self.plot_ref_srv = rospy.ServiceProxy('/plot/ref', pathTrackReq)
+
+        self.obs_srv = rospy.ServiceProxy('/getObservation', simulation_observation_srv)
+        self.reset_srv = rospy.ServiceProxy('/reset', simulation_reset_srv)
+        self.action_srv = rospy.ServiceProxy('/sendAction', simulation_action_srv)
+        self.valid_srv = rospy.ServiceProxy('/isValid', simulation_valid_srv)
 
         self.state_dim = var.state_dim_
         self.action_dim = var.state_action_dim_-var.state_dim_
@@ -61,20 +62,22 @@ class general_control():
     def run_tracking(self, S):
         
         # Reset Acrobot
-        #### ???? ####
+        self.reset_srv()
 
-        i_path = 1
+        S[-1,:] = np.array([np.pi,0,0,0])
+
+        i_path = S.shape[0]-1# 1
         msg = Float32MultiArray()
         msg.data = S[i_path,:]
         msge = Float32MultiArray()
-        for i in range(5):
+        for i in range(2):
             self.pub_current_goal.publish(msg)
             self.rate.sleep()
 
         rospy.sleep(1.0)
         
-        self.plot_clear_srv()
-        self.plot_ref_srv(S.reshape((-1,)))
+        # self.plot_clear_srv()
+        # self.plot_ref_srv(S.reshape((-1,)))
         
         # Trigger recording here
 
@@ -82,10 +85,13 @@ class general_control():
         total_count = 0
         action = np.array([0.,0.])
         dd_count = 0
-        
+
         print("[control] Tracking path...")
+        Sreal = []
+        Areal = []
         while 1:
-            state = self.state
+            state = self.obs_srv().state
+            Sreal.append(state)
             if i_path == S.shape[0]-1:
                 msg.data = S[-1,:]
             elif self.weightedL2(state[:]-S[i_path,:]) < self.tol or (self.weightedL2(state[:]-S[i_path+1,:]) < self.weightedL2(state[:]-S[i_path,:]) and self.weightedL2(state[:]-S[i_path+1,:]) < self.tol*3):
@@ -96,32 +102,48 @@ class general_control():
             self.pub_current_goal.publish(msg)
 
             action = self.action
-            print total_count, count, i_path, action, self.weightedL2(state[:]-S[i_path,:]), self.weightedL2(state[:]-S[-1,:])
+            # print action, state, S[i_path,:]
+            raw_input()
+            # print total_count, count, i_path, action, self.weightedL2(state[:]-S[i_path,:]), self.weightedL2(state[:]-S[-1,:])
             
-            suc = self.move_srv(action).success # Command the action here
+            Areal.append(action)
+            self.action_srv(np.array([action])) # Command the action here
 
-            if not suc or self.drop or count > 1000:
+            if count > 10000000:# not self.valid_srv().valid_state or count > 1000:
                 print("[control] Fail.")
                 success = False
                 break
 
-            if np.linalg.norm(state[:2]-S[-1,:2]) < self.goal_tol:
+            if np.linalg.norm(state[:]-S[-1,:]) < self.goal_tol:
                 print("[control] Reached GOAL!!!")
                 success = True
-                break
+                print "State: ", state
+                # break
 
             count += 1
             total_count += 1
-            self.rate.sleep()
+            # self.rate.sleep()
 
-        # return Sreal, Areal, success
+        Sreal = np.array(Sreal).reshape(-1)
+        Areal = np.array(Areal).reshape(-1)
+        return Sreal, Areal, success
 
-    def callbackState(self, msg):
-        self.state = np.array(msg.data)
+    # def wrapEuclidean(self, x, y):
+    #     v = np.pi
+
+    #     d = 0
+    #     s = 0
+    #     for i in range(len(x)):
+    #         d = np.abs(x[i]-y[i])
+    #         if i < 2:
+    #             d = 2*v - d if d > v else d
+    #         s += d**2
+
+    #     return np.sqrt( s )
+
 
     def CallbackBestAction(self, msg):
-        self.action = np.array(msg.data)
-
+        self.action = msg.data
 
 
 if __name__ == '__main__':

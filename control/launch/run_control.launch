@@ -1,9 +1,0 @@
-<launch>
-
-  <node pkg="control" name="general_control" type="general_control.py" output="screen"/>
-  <node pkg="control" name="controller" type="controller.py" output="screen"/>
-
-  <node pkg="control" name="plot_state" type="plot_state.py" output="screen"/>
-
-
-</launch>

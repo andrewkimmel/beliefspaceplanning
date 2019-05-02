@@ -7,7 +7,7 @@ import matplotlib.image as mpimg
 from std_msgs.msg import Float32MultiArray
 from std_srvs.srv import Empty, EmptyResponse
 from control.srv import pathTrackReq
-
+from prx_simulation.srv import simulation_observation_srv
 
 class Plot():
 
@@ -22,41 +22,40 @@ class Plot():
 
     def __init__(self):
         
-        rospy.Subscriber('/acrobot/state', Float32MultiArray, self.callbackState)
         rospy.Service('/plot/clear', Empty, self.callbackClear)
         rospy.Service('/plot/ref', pathTrackReq, self.callbackPlot)
         rospy.Subscriber('/control/goal', Float32MultiArray, self.callbackGoal)
+        obs_srv = rospy.ServiceProxy('/getObservation', simulation_observation_srv)
 
         rospy.init_node('Plot_state', anonymous=True)
         rate = rospy.Rate(self.freq) # 15hz
-        rospy.spin()
+        
+        while 1:
+            self.state = np.array(obs_srv().state)
 
-    def callbackState(self, msg):
-        self.state = np.array(msg.data)
+            if self.counter % 100 == 0:
+                if self.clear:
+                    plt.gcf().clear()
+                    self.clear = False
+                if self.ref_flag:
+                    plt.plot(self.Sref[:,0], self.Sref[:,1],'--k')
+                    self.ref_flag = False
 
-        if self.counter % 100 == 0:
-            if self.clear:
-                plt.gcf().clear()
-                self.clear = False
-            if self.ref_flag:
-                plt.plot(self.Sref[:,0], self.Sref[:,1],'--k')
-                self.ref_flag = False
+                plt.plot(self.state[0], self.state[1],'.r')
+                # plt.plot(self.start_pos[0], self.start_pos[1],'*b')
+                plt.plot(self.goal[0], self.goal[1],'*g')
+                plt.axis("equal")
+                plt.axis([-np.pi, np.pi, -np.pi, np.pi])
+                plt.xlabel('x')
+                plt.ylabel('y')
+                plt.title('Real-time object position:' + str(self.state))
+                plt.draw()
+                plt.pause(0.00000000001)
 
-            plt.plot(self.state[0], self.state[1],'.r')
-            # plt.plot(self.start_pos[0], self.start_pos[1],'*b')
-            plt.plot(self.goal[0], self.goal[1],'*g')
-            plt.axis("equal")
-            plt.axis([-np.pi, np.pi, -np.pi, np.pi])
-            plt.xlabel('x')
-            plt.ylabel('y')
-            plt.title('Real-time object position:' + str(self.state))
-            plt.draw()
-            plt.pause(0.00000000001)
+            self.counter += 1
 
-        self.counter += 1
-
-        if self.counter <= 5:
-            self.start_pos = self.state
+            if self.counter <= 5:
+                self.start_pos = self.state
 
     def callbackClear(self, msg):
         self.clear = True
