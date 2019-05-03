@@ -107,5 +107,5 @@ plt.savefig(path + File, dpi=300)
 # plt.plot(S[:-1,2],S[:-1,3],'-r', label='reference')
 # plt.plot(Sreal[:,2],Sreal[:,3],'-k', label='Rolled-out')
 
-# plt.show()
+plt.show()
 

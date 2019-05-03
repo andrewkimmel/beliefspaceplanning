@@ -31,7 +31,7 @@ class vs_controller():
     action = 0.
     goal = np.array([0., 0., 0., 0.])
     controller = 'lqr' # 'lqr' or 'pd'
-    max_torque = 1.0
+    max_torque = 7.0
 
     def __init__(self):
         rospy.init_node('vs_controller', anonymous=True)
@@ -43,7 +43,7 @@ class vs_controller():
 
         msg = Float32()
 
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(100)
         while not rospy.is_shutdown():
             self.state = get_obs_srv().state
             self.state = [(0.0 if np.abs(s) < 1e-6 else s) for s in self.state]
@@ -71,8 +71,8 @@ class vs_controller():
             dx/dt = A x + B u
             cost = integral x.T*Q*x + u.T*R*u
             """
-            Q = np.diag([10., 10.0, 1.0, 1.0])*1.
-            R = 1000.*np.diag([1.])
+            Q = np.diag([10., 10.0, 1.0, 1.0])*100.
+            R = 1.*np.diag([1.])
             invR = 1./R # scipy.linalg.inv(R)
             A, B = self.linear_acrobot_system(self.state)
             try:
@@ -89,7 +89,6 @@ class vs_controller():
                     action = 1e-1
                 else:
                     action = 0.0
-            print action, e, self.state, self.goal
             return action
 
     # def callbackState(self, msg):
@@ -127,9 +126,11 @@ class vs_controller():
         s = 0
         e = []
         for i in range(len(x)):
-            d = np.abs(x[i]-y[i])
-            if i < 2:
-                d = 2*v - d if d > v else d
+            d = x[i]-y[i]
+            if i < 2 and np.abs(d) > v:
+                d = 2*v - np.abs(d)
+                if x[i] > 0.0 and y[i] < 0.0:
+                    d *= -1.0                
             e.append(d)
 
         return np.array(e)

@@ -20,8 +20,8 @@ class general_control():
     drop = True
     state = np.array([0., 0., 0., 0.])
     action = 0.
-    tol = 0.02
-    goal_tol = 0.02
+    tol = 0.03
+    goal_tol = 0.03
     horizon = 1
 
     def __init__(self):
@@ -44,7 +44,7 @@ class general_control():
         self.stepSize = var.stepSize_
 
         print("[control] Ready to track path...")
-        self.rate = rospy.Rate(2) 
+        self.rate = rospy.Rate(100) 
         rospy.spin()
 
     def CallbackTrack(self, req):
@@ -102,10 +102,8 @@ class general_control():
             self.pub_current_goal.publish(msg)
 
             action = self.action
-            # print action, state, S[i_path,:]
-            raw_input()
-            # print total_count, count, i_path, action, self.weightedL2(state[:]-S[i_path,:]), self.weightedL2(state[:]-S[-1,:])
-            
+            print total_count, count, i_path, action, self.wrapEuclidean(state[:], S[i_path,:]), self.wrapEuclidean(state[:], S[-1,:])
+
             Areal.append(action)
             self.action_srv(np.array([action])) # Command the action here
 
@@ -114,11 +112,11 @@ class general_control():
                 success = False
                 break
 
-            if np.linalg.norm(state[:]-S[-1,:]) < self.goal_tol:
+            if self.wrapEuclidean(state[:], S[-1,:]) < self.goal_tol:
                 print("[control] Reached GOAL!!!")
                 success = True
                 print "State: ", state
-                # break
+                break
 
             count += 1
             total_count += 1
@@ -128,18 +126,18 @@ class general_control():
         Areal = np.array(Areal).reshape(-1)
         return Sreal, Areal, success
 
-    # def wrapEuclidean(self, x, y):
-    #     v = np.pi
+    def wrapEuclidean(self, x, y):
+        v = np.pi
 
-    #     d = 0
-    #     s = 0
-    #     for i in range(len(x)):
-    #         d = np.abs(x[i]-y[i])
-    #         if i < 2:
-    #             d = 2*v - d if d > v else d
-    #         s += d**2
+        d = 0
+        s = 0
+        for i in range(len(x)):
+            d = np.abs(x[i]-y[i])
+            if i < 2:
+                d = 2*v - d if d > v else d
+            s += d**2
 
-    #     return np.sqrt( s )
+        return np.sqrt( s )
 
 
     def CallbackBestAction(self, msg):
