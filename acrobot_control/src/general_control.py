@@ -20,8 +20,8 @@ class general_control():
     drop = True
     state = np.array([0., 0., 0., 0.])
     action = 0.
-    tol = 0.03
-    goal_tol = 0.03
+    tol = 0.02
+    goal_tol = 0.07
     horizon = 1
 
     def __init__(self):
@@ -64,9 +64,7 @@ class general_control():
         # Reset Acrobot
         self.reset_srv()
 
-        S[-1,:] = np.array([np.pi,0,0,0])
-
-        i_path = S.shape[0]-1# 1
+        i_path = 1
         msg = Float32MultiArray()
         msg.data = S[i_path,:]
         msge = Float32MultiArray()
@@ -79,8 +77,6 @@ class general_control():
         # self.plot_clear_srv()
         # self.plot_ref_srv(S.reshape((-1,)))
         
-        # Trigger recording here
-
         count = 0
         total_count = 0
         action = np.array([0.,0.])
@@ -102,20 +98,21 @@ class general_control():
             self.pub_current_goal.publish(msg)
 
             action = self.action
-            print total_count, count, i_path, action, self.wrapEuclidean(state[:], S[i_path,:]), self.wrapEuclidean(state[:], S[-1,:])
+            print total_count, count, i_path, action, self.wrapEuclidean(state[:2], S[i_path,:2]), self.wrapEuclidean(state[:2], S[-1,:2])
 
             Areal.append(action)
             self.action_srv(np.array([action])) # Command the action here
 
-            if count > 10000000:# not self.valid_srv().valid_state or count > 1000:
+            if count > 200:# not self.valid_srv().valid_state or count > 1000:
                 print("[control] Fail.")
                 success = False
                 break
 
-            if self.wrapEuclidean(state[:], S[-1,:]) < self.goal_tol:
+            if self.wrapEuclidean(state[:2], S[-1,:2]) < self.goal_tol:
                 print("[control] Reached GOAL!!!")
                 success = True
                 print "State: ", state
+                print "goal: ", S[-1,:]
                 break
 
             count += 1

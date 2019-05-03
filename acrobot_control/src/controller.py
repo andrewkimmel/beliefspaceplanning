@@ -30,7 +30,7 @@ class vs_controller():
     state = np.array([0., 0., 0., 0.])
     action = 0.
     goal = np.array([0., 0., 0., 0.])
-    controller = 'lqr' # 'lqr' or 'pd'
+    controller = 'pd' # 'lqr' or 'pd'
     max_torque = 7.0
 
     def __init__(self):
@@ -55,14 +55,13 @@ class vs_controller():
             rate.sleep()
 
     def get_action(self):
-        self.goal = np.array([np.pi,0.,0.,0.])
 
         e = self.wrapEuclidean(self.state, self.goal)
         e = [0.0 if np.abs(ee) < 1e-4 else ee for ee in e]
 
         if self.controller == 'pd':
-            K = np.array([1., 1., 0.5, 0.5])*1000.
-            action = np.dot( K, e)
+            K = np.array([1000., 500., 110.0, 120.0])
+            action = -np.dot( K, e)
             # print action, e, self.state, self.goal
             return action.item()
         
@@ -71,8 +70,8 @@ class vs_controller():
             dx/dt = A x + B u
             cost = integral x.T*Q*x + u.T*R*u
             """
-            Q = np.diag([10., 10.0, 1.0, 1.0])*100.
-            R = 1.*np.diag([1.])
+            Q = np.diag([100., 100.0, 1.0, 1.0])*1000.
+            R = 1.0*np.diag([1.])
             invR = 1./R # scipy.linalg.inv(R)
             A, B = self.linear_acrobot_system(self.state)
             try:
@@ -83,7 +82,6 @@ class vs_controller():
                 action = -np.dot(K, e)[0] 
                 # action = self.max_torque if action > self.max_torque else action.item()
                 # action = -self.max_torque if action < -self.max_torque else action
-
             except:
                 if np.all(np.abs(self.state)<1e-8):
                     action = 1e-1
@@ -103,19 +101,31 @@ class vs_controller():
         I2 = 1.0
         l = 1.0
         g = 9.8
-        u = 0.0
+
+        # M = np.zeros((2,2))
+        # M[1,1] = m * lc2 + m * (l2 + lc2 + 2 * l * lc * cos(theta2)) + I1 + I2
+        # M[2,2] = m * lc2 + I2
+        # M[1,2] = m * (lc2 + l * lc * cos(theta2)) + I2
+        # M[2,1] = M[1,2]
+        # C = np.zeros((2,1))
+        # C[1] = -m * l * lc * theta2dot * theta2dot * sin(theta2) - (2 * m * l * lc * theta1dot * theta2dot * sin(theta2))
+        # C[2] = m * l * lc * theta1dot * theta1dot * sin(theta2)
+        # G = np.zeros((2,1))
+        # G[1] = (m * lc + m * l) * g * cos(theta1) + (m * lc * g * cos(theta1 + theta2))
+        # G[2] = m * lc * g * cos(theta1 + theta2)
 
         theta1 = x[0] - np.pi/2
         theta2 = x[1] 
         theta1dot = x[2]
         theta2dot = x[3]
 
+        u = g*lc*m*cos(theta1 + theta2)
+
         A = np.array([[ 0, 0, 1, 0],[ 0, 0, 0, 1],
             [((g*sin(theta1)*(l*m + lc*m) + g*lc*m*sin(theta1 + theta2))*(I2 + lc2*m) - g*lc*m*sin(theta1 + theta2)*(I2 + m*(lc2 + l*lc*cos(theta2))))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2),                                                                                                                                                                                                                                                                  - ((- l*lc*m*cos(theta2)*theta1dot**2 + g*lc*m*sin(theta1 + theta2))*(I2 + m*(lc2 + l*lc*cos(theta2))) - (I2 + lc2*m)*(l*lc*m*cos(theta2)*theta2dot**2 + 2*l*lc*m*theta1dot*cos(theta2)*theta2dot + g*lc*m*sin(theta1 + theta2)) + l*lc*m*sin(theta2)*(l*lc*m*sin(theta2)*theta1dot**2 + theta2dot/10 - u + g*lc*m*cos(theta1 + theta2)))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2) - ((2*l*lc*m*sin(theta2)*(I2 + lc2*m) - 2*l*lc*m*sin(theta2)*(I2 + m*(lc2 + l*lc*cos(theta2))))*((I2 + lc2*m)*(- l*lc*m*sin(theta2)*theta2dot**2 - 2*l*lc*m*theta1dot*sin(theta2)*theta2dot + theta1dot/10 + g*cos(theta1)*(l*m + lc*m) + g*lc*m*cos(theta1 + theta2)) - (I2 + m*(lc2 + l*lc*cos(theta2)))*(l*lc*m*sin(theta2)*theta1dot**2 + theta2dot/10 - u + g*lc*m*cos(theta1 + theta2))))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2)**2,                                           ((2*l*lc*m*theta2dot*sin(theta2) - 1/10)*(I2 + lc2*m) + 2*l*lc*m*theta1dot*sin(theta2)*(I2 + m*(lc2 + l*lc*cos(theta2))))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2),                                                   (I2/10 + (m*(lc2 + l*lc*cos(theta2)))/10 + 2*l*lc*m*sin(theta2)*(theta1dot + theta2dot)*(I2 + lc2*m))/(I1*I2 + lc2**2*m**2 + l2*lc2*m**2 + I2*l2*m + I1*lc2*m + I2*lc2*m - l**2*lc**2*m**2*cos(theta2)**2)],
             [ -((g*sin(theta1)*(l*m + lc*m) + g*lc*m*sin(theta1 + theta2))*(I2 + m*(lc2 + l*lc*cos(theta2))) - g*lc*m*sin(theta1 + theta2)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2), - ((I2 + m*(lc2 + l*lc*cos(theta2)))*(l*lc*m*cos(theta2)*theta2dot**2 + 2*l*lc*m*theta1dot*cos(theta2)*theta2dot + g*lc*m*sin(theta1 + theta2)) - (- l*lc*m*cos(theta2)*theta1dot**2 + g*lc*m*sin(theta1 + theta2))*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - 2*l*lc*m*sin(theta2)*(l*lc*m*sin(theta2)*theta1dot**2 + theta2dot/10 - u + g*lc*m*cos(theta1 + theta2)) + l*lc*m*sin(theta2)*(- l*lc*m*sin(theta2)*theta2dot**2 - 2*l*lc*m*theta1dot*sin(theta2)*theta2dot + theta1dot/10 + g*cos(theta1)*(l*m + lc*m) + g*lc*m*cos(theta1 + theta2)))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2) - (((I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m)*(l*lc*m*sin(theta2)*theta1dot**2 + theta2dot/10 - u + g*lc*m*cos(theta1 + theta2)) - (I2 + m*(lc2 + l*lc*cos(theta2)))*(- l*lc*m*sin(theta2)*theta2dot**2 - 2*l*lc*m*theta1dot*sin(theta2)*theta2dot + theta1dot/10 + g*cos(theta1)*(l*m + lc*m) + g*lc*m*cos(theta1 + theta2)))*(2*l*lc*m*sin(theta2)*(I2 + lc2*m) - 2*l*lc*m*sin(theta2)*(I2 + m*(lc2 + l*lc*cos(theta2)))))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2)**2, -((I2 + m*(lc2 + l*lc*cos(theta2)))*(2*l*lc*m*theta2dot*sin(theta2) - 1/10) + 2*l*lc*m*theta1dot*sin(theta2)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2), -(I1/10 + I2/10 + (m*(l2 + lc2 + 2*l*lc*cos(theta2)))/10 + (lc2*m)/10 + 2*l*lc*m*sin(theta2)*(theta1dot + theta2dot)*(I2 + lc2*m + l*lc*m*cos(theta2)))/(I1*I2 + lc2**2*m**2 + l2*lc2*m**2 + I2*l2*m + I1*lc2*m + I2*lc2*m - l**2*lc**2*m**2*cos(theta2)**2)]])
  
         B = np.array([0, 0, -(I2 + m*(lc2 + l*lc*cos(theta2)))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2), (I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m)/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2)])
- 
 
         return A, B
  

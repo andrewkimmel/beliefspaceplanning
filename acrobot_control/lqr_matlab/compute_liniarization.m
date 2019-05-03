@@ -1,8 +1,9 @@
-syms theta1 theta2 theta1dot theta2dot
+clear all
+syms theta1 theta2 theta1dot theta2dot u
 syms m lc lc2 l2 I1 I2 l g
 
-phi = [t1, t2].';
-dphi = [dt1, dt2].';
+% phi = [t1, t2].';
+% dphi = [dt1, dt2].';
 
 M = sym('M', [2,2]);
 M(1,1) = m * lc2 + m * (l2 + lc2 + 2 * l * lc * cos(theta2)) + I1 + I2;
@@ -28,10 +29,15 @@ u2 = u - 1*0.1*theta2dot;
 ddx = [theta1dot; theta2dot;
     (M(2,2) * (u1 - C(1) - G(1)) - M(1,2) * (u2 - C(2) - G(2))) / (M(1,1) * M(2,2) - M(1,2) * M(2,1));
        (M(1,1) * (u2 - C(2) - G(2)) - M(2,1) * (u1 - C(1) - G(1))) / (M(1,1) * M(2,2) - M(1,2) * M(2,1))];
-
 A = jacobian(ddx, x);
 B = jacobian(ddx, u);
 % A = subs(A, {theta1, theta2, theta1dot, theta2dot}, {0,0,0,0});
 % % A = subs(A, {l1,l2,m1,m2, g}, {1,1,1,1,10});
 A = simplify(A);
 B = simplify(B);
+
+%%
+% a = -M\(C+G) + M\[u1;u2];
+a = G - [0;u];
+% ua1 = solve(a(1), u);
+% ua2 = solve(a(2), u);
