@@ -30,8 +30,8 @@ class general_control():
     drop = True
     state = np.array([0., 0., 0., 0.])
     action = 0.
-    tol = 0.03
-    goal_tol = 0.05
+    tol = 0.02
+    goal_tol = 0.3
     horizon = 1
     goal = np.array([0., 0., 0., 0.])
 
@@ -65,6 +65,7 @@ class general_control():
 
         path = np.array(req.desired_path).reshape(-1, self.state_dim)
         Apath = np.array(req.action_path)
+        self.openOrClosed = req.closed
         
         real_path, actions, success = self.run_tracking(path, Apath)
 
@@ -116,34 +117,20 @@ class general_control():
                 self.cumError = np.array([0.,0.,0.,0.])
             # self.pub_current_goal.publish(msg)
 
-            action = self.get_action(state, self.ueq)
-
-            # if self.wrapEuclideanNorm(state[:2], S[i_path,:2]) < 4*self.tol and i_path < A.shape[0]-1:
-            #     action = A[i_path]
-            #     print 0, i_path, A.shape[0], state[:]
-            # elif self.wrapEuclideanNorm(state[:2], S[-1,:2]) < 10*self.tol:
-            #     self.controller = 'lqr'
-            #     action = self.get_action(state, 0.0)
-            #     print 1, i_path, A.shape[0]
-            # elif i_path < A.shape[0]:
-            #     self.controller = 'pd'
-            #     action = self.get_action(state, A[i_path])
-            #     print 2, i_path, A.shape[0], state
-            # else:
-            #     self.controller = 'pd'
-            #     action = self.get_action(state, 0.0)
-            #     print 3, i_path, A.shape[0], self.wrapEuclideanNorm(state[:2], S[-1,:2])
-            # print total_count, count, i_path, action, self.wrapEuclideanNorm(state[:2], S[i_path,:2]), self.wrapEuclideanNorm(state[:2], S[-1,:2])
+            if self.openOrClosed:
+                action = self.get_action(state, self.ueq)
+            else:
+                action = self.ueq
 
             Areal.append(action)
             self.action_srv(np.array([action])) # Command the action here
 
-            if count > 200:# not self.valid_srv().valid_state or count > 1000:
+            if count > 50:# not self.valid_srv().valid_state or count > 1000:
                 print("[control] Fail.")
                 success = False
                 break
 
-            if self.wrapEuclideanNorm(state[:2], S[-1,:2]) < self.goal_tol:
+            if self.wrapEuclideanNorm(state[:], S[-1,:]) < self.goal_tol:
                 print("[control] Reached GOAL!!!")
                 success = True
                 print "State: ", state
@@ -164,7 +151,7 @@ class general_control():
         e = [0.0 if np.abs(ee) < 1e-4 else ee for ee in e]
 
         self.cumError += e
-        Ki = np.array([100.,100.,10.,10.])
+        # Ki = np.array([100.,100.,10.,10.]) # case 1, 2
 
         if self.controller == 'pd':
             K = np.array([1000., 1000., 110.0, 120.0])
@@ -176,13 +163,15 @@ class general_control():
             dx/dt = A x + B u
             cost = integral x.T*Q*x + u.T*R*u
             """
-            Q = np.diag([100., 100.0, 1.0, 1.0])*100.
+            # H = 1000. # case 3, Ki = K
+            H = 100. # case 1, 2, Ki
+            Q = np.diag([100., 100.0, 1.0, 1.0])*H
             R = 1.0*np.diag([1.])
             invR = 1./R # scipy.linalg.inv(R)
             A, B = self.linear_acrobot_system(state, ueq)
             try:
                 K, _, _ = lqr(A, np.matrix(B).reshape(-1,1), Q, R)
-                action = -np.dot(K, e)[0] + ueq - np.dot(Ki, self.cumError)
+                action = -np.dot(K, e)[0] + ueq - np.dot(Ki, self.cumError) # Added integrator action, Murray: https://www.cds.caltech.edu/~murray/courses/cds110/wi06/lqr.pdf
             except:
                 if np.all(np.abs(state)<1e-8):
                     action = 1e-1

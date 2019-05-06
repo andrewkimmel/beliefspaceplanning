@@ -38,7 +38,7 @@ track_srv = rospy.ServiceProxy('/control', pathTrackReq)
 # File = 'naive_with_svm_goal1_run0_traj'
 # File = 'robust_particles_pc_goal0_run0_traj'
 # File = 'naive_with_svm_goal2_run1_traj'
-tr = '1'
+tr = '3'
 File = 'acrobot_ao_rrt_traj' + tr
 
 traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_traj' + tr + '.txt'  
@@ -64,25 +64,37 @@ A = np.array(A)[:n]
 
 ctr = S[-1,:]
 
-if 1:
-    res = track_srv(S.reshape((-1,)),  A.reshape((-1,)))
-    Sreal = np.array(res.real_path).reshape(-1, S.shape[1])
-    Areal = np.array(res.actions).reshape(-1, 1)
+if 0:
+    res = track_srv(S.reshape((-1,)),  A.reshape((-1,)), True)
+    Scl = np.array(res.real_path).reshape(-1, S.shape[1])
+    Acl = np.array(res.actions).reshape(-1, 1)
     success = res.success
 
-    with open(path + 'control_' + File + '.pkl', 'w') as f: 
-        pickle.dump([Sreal, Areal, success], f)
+    with open(path + 'cl_' + File + '.pkl', 'w') as f: 
+        pickle.dump([Scl, Acl, success], f)
 else:
-    with open(path + 'control_' + File + '.pkl', 'r') as f: 
-        Sreal, Areal, success = pickle.load(f)
+    with open(path + 'cl_' + File + '.pkl', 'r') as f: 
+        Scl, Acl, success = pickle.load(f)
+
+if 0:
+    res = track_srv(S.reshape((-1,)),  A.reshape((-1,)), False)
+    Sol = np.array(res.real_path).reshape(-1, S.shape[1])
+    Aol = np.array(res.actions).reshape(-1, 1)
+    success = res.success
+
+    with open(path + 'ol_' + File + '.pkl', 'w') as f: 
+        pickle.dump([Sol, Aol, success], f)
+else:
+    with open(path + 'ol_' + File + '.pkl', 'r') as f: 
+        Sol, Aol, success = pickle.load(f)
 
 ## Plot ##
 
-# print Sreal.shape
-# print Areal.shape
+# print Scl.shape
+# print Acl.shape
 
-# S = Sreal[800:1200,:]
-# A = Areal[800:1200,:]
+# S = Scl[800:1200,:]
+# A = Acl[800:1200,:]
 
 # from gpup_gp_node.srv import one_transition
 # gp = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
@@ -112,7 +124,8 @@ ax1.add_artist(goal_plan)
 
 plt.plot(S[:,0],S[:,1],'.-r', label='reference')
 plt.plot(S[-1,0],S[-1,1],'dm', label='reference')
-plt.plot(Sreal[:,0],Sreal[:,1],'.-k', label='Rolled-out')
+plt.plot(Sol[:,0],Sol[:,1],'.-b', label='Rolled-out')
+plt.plot(Scl[:,0],Scl[:,1],'.-k', label='Closed-loop')
 plt.title(File + ", success: " + str(success))
 plt.legend()
 plt.axis('equal')
@@ -121,7 +134,8 @@ plt.savefig(path + File, dpi=300)
 ax = plt.subplot(1,2,2)
 plt.plot(S[:,2],S[:,3],'.-r', label='reference')
 plt.plot(S[-1,2],S[-1,3],'dm', label='reference')
-plt.plot(Sreal[:,2],Sreal[:,3],'.-k', label='Rolled-out')
+plt.plot(Sol[:,2],Sol[:,3],'.-b', label='Rolled-out')
+plt.plot(Scl[:,2],Scl[:,3],'.-k', label='Closed-loop')
 plt.title(File + ", success: " + str(success))
 plt.legend()
 plt.axis('equal')
@@ -129,11 +143,32 @@ plt.axis('equal')
 
 # plt.figure(2)
 # plt.plot(S[:-1,2],S[:-1,3],'-r', label='reference')
-# plt.plot(Sreal[:,2],Sreal[:,3],'-k', label='Rolled-out')
+# plt.plot(Scl[:,2],Scl[:,3],'-k', label='Rolled-out')
 
-# plt.figure(3)
-# plt.plot(S[:,0], 'r', label='1')
-# plt.plot(S[:,1], 'b', label='2')
+plt.figure(3)
+ax = plt.subplot(2,2,1)
+plt.plot(S[:,0], '--r', label='reference')
+plt.plot(Sol[:,0], 'b', label='Rolled-out')
+plt.plot(Scl[:,0], 'k', label='closed-loop')
+plt.ylabel('x')
+plt.xlabel('time')
+
+ax = plt.subplot(2,2,2)
+plt.plot(S[:,1], '--r', label='reference')
+plt.plot(Sol[:,1], 'b', label='Rolled-out')
+plt.plot(Scl[:,1], 'k', label='closed-loop')
+plt.ylabel('x')
+plt.xlabel('time')
+
+ax = plt.subplot(2,2,3)
+plt.plot(A, '--r', label='reference')
+plt.plot(Acl, 'b', label='closed-loop')
+plt.ylabel('Actions')
+plt.xlabel('time')
+
+
+
+
 
 
 plt.show()
