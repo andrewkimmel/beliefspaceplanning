@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from control.srv import pathTrackReq
+from acrobot_control.srv import pathTrackReq
 from std_srvs.srv import Empty, EmptyResponse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,21 +38,34 @@ track_srv = rospy.ServiceProxy('/control', pathTrackReq)
 # File = 'naive_with_svm_goal1_run0_traj'
 # File = 'robust_particles_pc_goal0_run0_traj'
 # File = 'naive_with_svm_goal2_run1_traj'
-File = 'acrobot_ao_rrt_traj1'
+tr = '1'
+File = 'acrobot_ao_rrt_traj' + tr
 
-traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/' + File + '.txt'  
+traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_traj' + tr + '.txt'  
+plan = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_plan' + tr + '.txt'  
+
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/acrobot_control/results/'
 
 # ctr = np.concatenate((C[int(traj[traj.find('goal')+4]), :], np.array([0,0])), axis=0)
 
-S = np.loadtxt(traj, delimiter=',')[:300,:]
+S = np.loadtxt(traj, delimiter=',')
+n = S.shape[0] - 3
+S = S[:n,:]
+At = np.loadtxt(plan, delimiter=',')
+At[:,1] = (At[:,1]*100).astype(int)
+
+A = []
+for a in At:
+    for i in range(int(a[1])):
+        A.append(a[0])
+A = np.array(A)[:n]
 # S = medfilter(S, 20)
 # S = np.append(S, [ctr], axis=0)
 
 ctr = S[-1,:]
 
 if 1:
-    res = track_srv(S.reshape((-1,)))
+    res = track_srv(S.reshape((-1,)),  A.reshape((-1,)))
     Sreal = np.array(res.real_path).reshape(-1, S.shape[1])
     Areal = np.array(res.actions).reshape(-1, 1)
     success = res.success
@@ -87,11 +100,11 @@ else:
 # Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
 plt.figure(1)
-ax = plt.subplot()
+ax1 = plt.subplot(1,2,1)
 goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
-ax.add_artist(goal)
+ax1.add_artist(goal)
 goal_plan = plt.Circle((ctr[0], ctr[1]), rp, color='w')
-ax.add_artist(goal_plan)
+ax1.add_artist(goal_plan)
 
 # for o in Obs:
 #     obs = plt.Circle(o[:2], o[2])#, zorder=10)
@@ -104,6 +117,15 @@ plt.title(File + ", success: " + str(success))
 plt.legend()
 plt.axis('equal')
 plt.savefig(path + File, dpi=300)
+
+ax = plt.subplot(1,2,2)
+plt.plot(S[:,2],S[:,3],'.-r', label='reference')
+plt.plot(S[-1,2],S[-1,3],'dm', label='reference')
+plt.plot(Sreal[:,2],Sreal[:,3],'.-k', label='Rolled-out')
+plt.title(File + ", success: " + str(success))
+plt.legend()
+plt.axis('equal')
+# plt.savefig(path + File, dpi=300)
 
 # plt.figure(2)
 # plt.plot(S[:-1,2],S[:-1,3],'-r', label='reference')

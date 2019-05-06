@@ -28,10 +28,11 @@ class vs_controller():
 
     drop = True
     state = np.array([0., 0., 0., 0.])
-    action = 0.
+    action = 0.0
     goal = np.array([0., 0., 0., 0.])
-    controller = 'pd' # 'lqr' or 'pd'
+    controller = 'lqr' # 'lqr' or 'pd'
     max_torque = 7.0
+    planned_action = 0.0
 
     def __init__(self):
         rospy.init_node('vs_controller', anonymous=True)
@@ -40,6 +41,7 @@ class vs_controller():
         get_obs_srv = rospy.ServiceProxy('/getObservation', simulation_observation_srv)
         pub_best_action = rospy.Publisher('/controller/action', Float32, queue_size=10)
         rospy.Subscriber('/control/goal', Float32MultiArray, self.callbackGoal)
+        rospy.Subscriber('/control/planned_action', Float32, self.callbackPlannedAction)
 
         msg = Float32()
 
@@ -70,16 +72,17 @@ class vs_controller():
             dx/dt = A x + B u
             cost = integral x.T*Q*x + u.T*R*u
             """
-            Q = np.diag([100., 100.0, 1.0, 1.0])*1000.
+            Q = np.diag([100., 100.0, 1.0, 1.0])*100.
             R = 1.0*np.diag([1.])
             invR = 1./R # scipy.linalg.inv(R)
-            A, B = self.linear_acrobot_system(self.state)
+            A, B, ueq = self.linear_acrobot_system(self.state)
+
             try:
                 # X = np.matrix(scipy.linalg.solve_continuous_are(A, B.reshape(-1,1), Q, R))
                 # K = np.matrix(invR*(B*X).reshape(-1,1))
                 # K = np.squeeze(np.asarray(K))
                 K, _, _ = lqr(A, np.matrix(B).reshape(-1,1), Q, R)
-                action = -np.dot(K, e)[0] 
+                action = -np.dot(K, e)[0] + ueq
                 # action = self.max_torque if action > self.max_torque else action.item()
                 # action = -self.max_torque if action < -self.max_torque else action
             except:
@@ -119,7 +122,8 @@ class vs_controller():
         theta1dot = x[2]
         theta2dot = x[3]
 
-        u = g*lc*m*cos(theta1 + theta2)
+        u = self.planned_action
+        # g*lc*m*cos(theta1 + theta2)
 
         A = np.array([[ 0, 0, 1, 0],[ 0, 0, 0, 1],
             [((g*sin(theta1)*(l*m + lc*m) + g*lc*m*sin(theta1 + theta2))*(I2 + lc2*m) - g*lc*m*sin(theta1 + theta2)*(I2 + m*(lc2 + l*lc*cos(theta2))))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2),                                                                                                                                                                                                                                                                  - ((- l*lc*m*cos(theta2)*theta1dot**2 + g*lc*m*sin(theta1 + theta2))*(I2 + m*(lc2 + l*lc*cos(theta2))) - (I2 + lc2*m)*(l*lc*m*cos(theta2)*theta2dot**2 + 2*l*lc*m*theta1dot*cos(theta2)*theta2dot + g*lc*m*sin(theta1 + theta2)) + l*lc*m*sin(theta2)*(l*lc*m*sin(theta2)*theta1dot**2 + theta2dot/10 - u + g*lc*m*cos(theta1 + theta2)))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2) - ((2*l*lc*m*sin(theta2)*(I2 + lc2*m) - 2*l*lc*m*sin(theta2)*(I2 + m*(lc2 + l*lc*cos(theta2))))*((I2 + lc2*m)*(- l*lc*m*sin(theta2)*theta2dot**2 - 2*l*lc*m*theta1dot*sin(theta2)*theta2dot + theta1dot/10 + g*cos(theta1)*(l*m + lc*m) + g*lc*m*cos(theta1 + theta2)) - (I2 + m*(lc2 + l*lc*cos(theta2)))*(l*lc*m*sin(theta2)*theta1dot**2 + theta2dot/10 - u + g*lc*m*cos(theta1 + theta2))))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2)**2,                                           ((2*l*lc*m*theta2dot*sin(theta2) - 1/10)*(I2 + lc2*m) + 2*l*lc*m*theta1dot*sin(theta2)*(I2 + m*(lc2 + l*lc*cos(theta2))))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2),                                                   (I2/10 + (m*(lc2 + l*lc*cos(theta2)))/10 + 2*l*lc*m*sin(theta2)*(theta1dot + theta2dot)*(I2 + lc2*m))/(I1*I2 + lc2**2*m**2 + l2*lc2*m**2 + I2*l2*m + I1*lc2*m + I2*lc2*m - l**2*lc**2*m**2*cos(theta2)**2)],
@@ -127,7 +131,7 @@ class vs_controller():
  
         B = np.array([0, 0, -(I2 + m*(lc2 + l*lc*cos(theta2)))/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2), (I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m)/((I2 + lc2*m)*(I1 + I2 + m*(l2 + lc2 + 2*l*lc*cos(theta2)) + lc2*m) - (I2 + m*(lc2 + l*lc*cos(theta2)))**2)])
 
-        return A, B
+        return A, B, u
  
     def wrapEuclidean(self, x, y):
         v = np.pi
@@ -147,6 +151,9 @@ class vs_controller():
 
     def callbackGoal(self, msg):
         self.goal = np.array(msg.data)
+
+    def callbackPlannedAction(self, msg):
+        self.planned_action = msg.data
 
 if __name__ == '__main__':
     try:
