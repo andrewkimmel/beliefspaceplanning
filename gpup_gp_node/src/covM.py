@@ -64,9 +64,12 @@ class Covariance(object):
         return self.SigmaLowerBound + np.exp(self.theta[2])
     def get_AlphaHat(self):
         if self.AlphaHat is None:
-            K = self.cov_matrix_ij(self.X, self.X, self.theta)
-            self.L = np.linalg.cholesky(K)
-            self.AlphaHat = np.linalg.inv(self.L.T).dot( np.linalg.inv(self.L).dot(self.Y) )
+            try:
+                K = self.cov_matrix_ij(self.X, self.X, self.theta)
+                self.L = np.linalg.cholesky(K)
+                self.AlphaHat = np.linalg.inv(self.L.T).dot( np.linalg.inv(self.L).dot(self.Y) )
+            except:
+                self.optimize()
 
         return self.AlphaHat
 
