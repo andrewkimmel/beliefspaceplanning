@@ -152,6 +152,7 @@ class general_control():
 
         self.cumError += e
         # Ki = np.array([100.,100.,10.,10.]) # case 1, 2
+        Ki = np.array([100.,100.,10.,10.])*100.
 
         if self.controller == 'pd':
             K = np.array([1000., 1000., 110.0, 120.0])
@@ -166,17 +167,19 @@ class general_control():
             # H = 1000. # case 3, Ki = K
             H = 100. # case 1, 2, Ki
             Q = np.diag([100., 100.0, 1.0, 1.0])*H
-            R = 1.0*np.diag([1.])
+            R = 0.1*np.diag([1.])
             invR = 1./R # scipy.linalg.inv(R)
             A, B = self.linear_acrobot_system(state, ueq)
             try:
                 K, _, _ = lqr(A, np.matrix(B).reshape(-1,1), Q, R)
                 action = -np.dot(K, e)[0] + ueq - np.dot(Ki, self.cumError) # Added integrator action, Murray: https://www.cds.caltech.edu/~murray/courses/cds110/wi06/lqr.pdf
             except:
+                rospy.logerr('[general_control] Error in action computation!')
                 if np.all(np.abs(state)<1e-8):
                     action = 1e-1
                 else:
                     action = 0.0
+
             return action
 
     def wrapEuclideanNorm(self, x, y):

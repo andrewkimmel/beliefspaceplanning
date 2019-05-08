@@ -32,24 +32,28 @@ def medfilter(X, W):
 rp = .01
 r = .02
 
-rospy.wait_for_service('/control')
+# rospy.wait_for_service('/control')
 track_srv = rospy.ServiceProxy('/control', pathTrackReq)
 
 # File = 'naive_with_svm_goal1_run0_traj'
 # File = 'robust_particles_pc_goal0_run0_traj'
 # File = 'naive_with_svm_goal2_run1_traj'
-tr = '3'
-File = 'acrobot_ao_rrt_traj' + tr
+tr = '1'
 
-traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_traj' + tr + '.txt'  
-plan = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_plan' + tr + '.txt'  
+# File = 'acrobot_ao_rrt_traj' + tr
+# traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_traj' + tr + '.txt'  
+# plan = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_plan' + tr + '.txt'  
+
+File = 'naive_with_svm_goal0_run' + tr + '_traj'
+traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noisy_acrobot_discrete_withObstacles/paths/naive_with_svm_goal0_run' + tr + '_traj' + '.txt'  
+plan = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noisy_acrobot_discrete_withObstacles/paths/naive_with_svm_goal0_run' + tr + '_plan' + '.txt'  
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/acrobot_control/results/'
 
 # ctr = np.concatenate((C[int(traj[traj.find('goal')+4]), :], np.array([0,0])), axis=0)
 
 S = np.loadtxt(traj, delimiter=',')
-n = S.shape[0] - 3
+n = S.shape[0] - 1
 S = S[:n,:]
 At = np.loadtxt(plan, delimiter=',')
 At[:,1] = (At[:,1]*100).astype(int)
@@ -145,30 +149,28 @@ plt.axis('equal')
 # plt.plot(S[:-1,2],S[:-1,3],'-r', label='reference')
 # plt.plot(Scl[:,2],Scl[:,3],'-k', label='Rolled-out')
 
-plt.figure(3)
-ax = plt.subplot(2,2,1)
-plt.plot(S[:,0], '--r', label='reference')
-plt.plot(Sol[:,0], 'b', label='Rolled-out')
-plt.plot(Scl[:,0], 'k', label='closed-loop')
-plt.ylabel('x')
-plt.xlabel('time')
+# plt.figure(3)
+# ax = plt.subplot(1,2,1)
+# plt.plot(S[:,0], '--r', label='reference')
+# plt.plot(Sol[:,0], 'b', label='open-loop')
+# plt.plot(Scl[:,0], 'k', label='closed-loop')
+# plt.ylabel('angle')
+# plt.xlabel('time')
+# plt.title('Path ' + tr)
 
-ax = plt.subplot(2,2,2)
-plt.plot(S[:,1], '--r', label='reference')
-plt.plot(Sol[:,1], 'b', label='Rolled-out')
-plt.plot(Scl[:,1], 'k', label='closed-loop')
-plt.ylabel('x')
-plt.xlabel('time')
+# ax = plt.subplot(1,2,2)
+# plt.plot(S[:,1], '--r', label='reference')
+# plt.plot(Sol[:,1], 'b', label='open-loop')
+# plt.plot(Scl[:,1], 'k', label='closed-loop')
+# plt.ylabel('angular velocity')
+# plt.xlabel('time')
+# plt.legend()
 
-ax = plt.subplot(2,2,3)
-plt.plot(A, '--r', label='reference')
-plt.plot(Acl, 'b', label='closed-loop')
-plt.ylabel('Actions')
-plt.xlabel('time')
-
-
-
-
+# ax = plt.subplot(2,2,3)
+# plt.plot(A, '--r', label='reference')
+# plt.plot(Acl, 'b', label='closed-loop')
+# plt.ylabel('Actions')
+# plt.xlabel('time')
 
 
 plt.show()
