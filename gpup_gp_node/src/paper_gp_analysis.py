@@ -17,7 +17,7 @@ import var
 # np.random.seed(10)
 
 state_dim = var.state_dim_
-tr = '1'
+tr = '3'
 stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
@@ -217,7 +217,7 @@ for tr in TR:
 
     # exit(1)
 
-    if 0:   
+    if 1:   
         Np = 100 # Number of particles
 
         ######################################## GP propagation ##################################################
