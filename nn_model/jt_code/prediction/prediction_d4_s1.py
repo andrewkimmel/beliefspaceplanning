@@ -5,6 +5,7 @@ import scipy.io
 import matplotlib.pyplot as plt
 import pickle
 from data_normalization import z_score_normalize, z_score_denormalize
+import time
 
 
 tf.keras.backend.set_floatx('float64')  # for input weights of NN
@@ -23,7 +24,7 @@ with open('../data/delta_mean_arr', 'rb') as pickle_file:
 with open('../data/delta_std_arr', 'rb') as pickle_file:
     delta_std_arr = pickle.load(pickle_file)
 
-with open('../data/jt_path1_v14_m10.pkl', 'rb') as pickle_file:
+with open('../data/jt_path2_v14_m10.pkl', 'rb') as pickle_file:
     traj_data = pickle.load(pickle_file, encoding='latin1')
 
 gt = traj_data[0]
@@ -33,7 +34,6 @@ acts = traj_data[2]
 validation_data = np.asarray(gt[:-1])
 validation_data = np.append(validation_data, np.asarray(acts), axis=1)
 # validation_data = z_score_normalize(validation_data, mean_arr, std_arr)
-
 
 VAR_POS = [0.00001, 0.00001]
 VAR_LOAD = [0.00001, 0.00001]
@@ -75,18 +75,24 @@ with tf.Session() as sess:
     sess.run(init)
     pre_trajectory.append(validation_data[0][:2])
     next_state = validation_data[0]
+    print('s', next_state)
     next_input = z_score_normalize(np.asarray([next_state]), state_mean_arr, state_std_arr)
-    print('next', next_input)
+    # print('next', next_input)
     for i in range(PRE_STEP):
-        (pos_delta, load_delta) = sess.run((y_pos_delta_pre, y_load_delta_pre), feed_dict={x: next_input})
-        print('1', pos_delta, load_delta)
-        pos_delta = z_score_denormalize(pos_delta, delta_mean_arr, delta_std_arr)[0]  # denormalize
-        load_delta = z_score_denormalize(load_delta, delta_mean_arr, delta_std_arr)[0]
-        print(pos_delta, load_delta)
-        next_pos = next_state[0:2] + pos_delta
-        pre_trajectory.append(next_pos)
-        next_state = np.append(next_state[:4] + np.concatenate((pos_delta, load_delta), axis=0), validation_data[i + 1][4:6])
-        next_input = z_score_normalize(np.asarray([next_state]), state_mean_arr, state_std_arr)
+        for _ in range(10):
+            # st = time.time()
+            (pos_delta, load_delta) = sess.run((y_pos_delta_pre, y_load_delta_pre), feed_dict={x: next_input})
+            # print('1', pos_delta, load_delta)
+            pos_delta = z_score_denormalize(pos_delta, delta_mean_arr, delta_std_arr)[0]  # denormalize
+            load_delta = z_score_denormalize(load_delta, delta_mean_arr, delta_std_arr)[0]
+            # print(pos_delta, load_delta)
+            next_pos = next_state[0:2] + pos_delta
+            pre_trajectory.append(next_pos)
+            next_state = np.append(next_state[:4] + np.concatenate((pos_delta, load_delta), axis=0), validation_data[i + 1][4:6])
+            next_input = z_score_normalize(np.asarray([next_state]), state_mean_arr, state_std_arr)
+            print('sn', next_state)
+            # print(time.time() - st)
+
 
 
 pre_trajectory = np.asarray(pre_trajectory)
