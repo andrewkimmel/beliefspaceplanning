@@ -68,11 +68,11 @@ y_pos_delta_pre = y_pos_distribution.sample()
 y_load_delta_pre = y_load_distribution.sample()
 
 with tf.Session() as sess:
-    neural_net_pos.load_weights("../model/d4_s1_pos/BNN_weights")  # load NN parameters
-    neural_net_load.load_weights("../model/d4_s1_load/BNN_weights")
     pre_trajectory = []
     init = tf.global_variables_initializer()
     sess.run(init)
+    neural_net_pos.load_weights("../model/d4_s1_pos/BNN_weights")  # load NN parameters   Model load should after session initial.
+    neural_net_load.load_weights("../model/d4_s1_load/BNN_weights")
     pre_trajectory.append(validation_data[0][:2])
     next_state = validation_data[0]
     print('s', next_state)
@@ -84,7 +84,7 @@ with tf.Session() as sess:
             (pos_delta, load_delta) = sess.run((y_pos_delta_pre, y_load_delta_pre), feed_dict={x: next_input})
             # print('1', pos_delta, load_delta)
             pos_delta = z_score_denormalize(pos_delta, delta_mean_arr, delta_std_arr)[0]  # denormalize
-            load_delta = z_score_denormalize(load_delta, delta_mean_arr, delta_std_arr)[0]
+            load_delta = z_score_denormalize(load_delta, delta_mean_arr[2:4], delta_std_arr[2:4])[0]
             # print(pos_delta, load_delta)
             next_pos = next_state[0:2] + pos_delta
             pre_trajectory.append(next_pos)
