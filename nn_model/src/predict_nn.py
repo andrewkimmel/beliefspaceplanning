@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import time
 from common.data_normalization import z_score_normalize, z_score_denormalize
 import pickle
+from keras import backend as K
 
 
 class predict_nn:
@@ -66,25 +67,22 @@ class predict_nn:
         self.x = tf.placeholder(tf.float64, shape=[None, self.state_action_dim])
         self.y_pos_mean_pre = self.neural_net_pos(self.x)
         self.y_load_mean_pre = self.neural_net_load(self.x)
-        y_pos_distribution = tfd.Normal(loc=self.y_pos_mean_pre, scale=self.VAR_POS)
-        y_load_distribution = tfd.Normal(loc=self.y_load_mean_pre, scale=self.VAR_LOAD)
+        self.y_pos_distribution = tfd.Normal(loc=self.y_pos_mean_pre, scale=self.VAR_POS)
+        self.y_load_distribution = tfd.Normal(loc=self.y_load_mean_pre, scale=self.VAR_LOAD)
 
-        self.y_pos_delta_pre = y_pos_distribution.sample()
-        self.y_load_delta_pre = y_load_distribution.sample()
+        self.y_pos_delta_pre = self.y_pos_distribution.sample()
+        self.y_load_delta_pre = self.y_load_distribution.sample()
 
-        # self.sess = tf.Session()
-        # init = tf.global_variables_initializer()
-        # self.sess.run(init)
 
-        # # Restore variables from disk.
-        # self.neural_net_pos.load_weights(model_path + "d4_s1_pos/BNN_weights")  # load NN parameters
-        # self.neural_net_load.load_weights(model_path + "d4_s1_load/BNN_weights")
+        self.sess = tf.Session()
+        init = tf.global_variables_initializer()
+        self.sess.run(init) 
 
-        with tf.Session() as sess:
-            init = tf.global_variables_initializer()
-            sess.run(init)
+        # Restore variables from disk.
+        with self.sess.as_default():
             self.neural_net_pos.load_weights(self.model_path + "d4_s1_pos/BNN_weights")  # load NN parameters
             self.neural_net_load.load_weights(self.model_path + "d4_s1_load/BNN_weights")
+
 
     def normalize(self, sa):
         return z_score_normalize(np.asarray([sa]), self.state_mean_arr, self.state_std_arr)
@@ -97,10 +95,7 @@ class predict_nn:
     def predict(self, sa):
 
         next_input = self.normalize(sa)
-        with tf.Session() as sess:
-            self.neural_net_pos.load_weights(self.model_path + "d4_s1_pos/BNN_weights")  # load NN parameters
-            self.neural_net_load.load_weights(self.model_path + "d4_s1_load/BNN_weights")
-            (pos_delta, load_delta) = sess.run((self.y_pos_delta_pre, self.y_load_delta_pre), feed_dict={self.x: next_input})
+        (pos_delta, load_delta) = self.sess.run((self.y_pos_delta_pre, self.y_load_delta_pre), feed_dict={self.x: next_input})
         pos_delta, load_delta = self.denormalize(pos_delta, load_delta)
 
         next_state = sa[:4] + np.concatenate((pos_delta, load_delta), axis=0)
@@ -110,27 +105,33 @@ class predict_nn:
 if __name__ == "__main__":
     NN = predict_nn()
 
-    with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/jt_path2_v14_m10.pkl', 'rb') as pickle_file:
-        traj_data = pickle.load(pickle_file, encoding='latin1')
-    S = np.asarray(traj_data[0])#[:-1,:]
-    A = traj_data[2]
-    # with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/jt_rollout_1_v14_d8_m1.pkl', 'rb') as pickle_file:
+    # with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/jt_path3_v14_m10.pkl', 'rb') as pickle_file:
     #     traj_data = pickle.load(pickle_file, encoding='latin1')
-    # S = np.asarray(traj_data[0])[:,:4]
-    # A = traj_data[1]
+    # S = np.asarray(traj_data[0])#[:-1,:]
+    # A = traj_data[2]
+    with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/jt_rollout_3_v14_d8_m1.pkl', 'rb') as pickle_file:
+        traj_data = pickle.load(pickle_file, encoding='latin1')
+    S = np.asarray(traj_data[0])[:,:4]
+    A = traj_data[1]
 
     s = S[0,:]
     SP = []
     SP.append(s)
+    t = 0.
+    k = 0
     for a in A:
-        for i in range(10):
-            print(i, a)
+        for i in range(1):
+            print(k, i, a)
             sa = np.concatenate((s, a), axis=0)
-            print(sa)
+            st = time.time()
             s_next = NN.predict(sa)
+            t += time.time() - st
+            k += 1
 
             SP.append(s_next)
             s = np.copy(s_next)
+
+    print("Avg. time: %f"%(t/k))
 
     SP = np.array(SP)
 
