@@ -20,7 +20,7 @@ rollout = 0
 # comp = 'juntao'
 comp = 'pracsys'
 
-Set = '6'
+Set = '8'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 set_modes = ['mean_only_particles']
 
@@ -63,7 +63,7 @@ if rollout:
                 for j in range(10):
                     print("Rollout number " + str(j) + ".")
                     
-                    Sro = np.array(rollout_srv(Af).states).reshape(-1,state_dim)
+                    Sro = np.array(rollout_srv(Af, [0,0,0,0,0,0,0,0,0]).states).reshape(-1,state_dim)
 
                     Pro.append(Sro)
 

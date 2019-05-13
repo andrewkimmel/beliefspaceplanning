@@ -27,7 +27,7 @@ diffORspec = 'diff'
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
-    OBS = True
+    OBS = False
 
     def __init__(self):
         # Number of NN

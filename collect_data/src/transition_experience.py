@@ -273,10 +273,10 @@ class transition_experience():
             D = multiStep(D, done, stepSize, mode)
 
         # D = D[np.random.choice(D.shape[0], int(0.6*D.shape[0]), replace=False),:] # Dillute
-        D = uniform_actions(D)
+        # D = uniform_actions(D)
         self.D = D
 
-        savemat(self.path + 'sim_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
+        savemat(self.path + 'sim_data_discrete_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '_J.mat', {'D': D, 'is_start': is_start, 'is_end': is_end})
         print "Saved mat file with " + str(D.shape[0]) + " transition points."
 
         if plot:
