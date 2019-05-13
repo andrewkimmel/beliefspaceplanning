@@ -4,8 +4,8 @@
   <node pkg="rollout_node" name="rollout_recorder" type="rollout_recorder.py" output="screen"/>
 
   <node pkg="control" name="general_control" type="general_control.py" output="screen"/>
-  <node pkg="control" name="gp_controller" type="gp_controller.py" output="screen"/>
-  <!-- <node pkg="control" name="vs_controller" type="vs_controller.py" output="screen"/> -->
+  <!-- <node pkg="control" name="gp_controller" type="gp_controller.py" output="screen"/> -->
+  <node pkg="control" name="vs_controller" type="vs_controller.py" output="screen"/>
 
   <node pkg="control" name="plot_obj_pos" type="plot_obj_pos.py" output="screen"/>
 

@@ -9,7 +9,7 @@ from std_srvs.srv import Empty, EmptyResponse
 from control.srv import pathTrackReq
 
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 
@@ -60,7 +60,7 @@ class Plot():
             # plt.plot(self.start_pos[0], self.start_pos[1],'*b')
             plt.plot(self.goal[0], self.goal[1],'*g')
             plt.axis("equal")
-            plt.axis([-100, 100, 50, 120])
+            plt.axis([-100, 100, 90, 150])
             plt.xlabel('x')
             plt.ylabel('y')
             plt.title('Real-time object position:' + str(self.obj_pos))

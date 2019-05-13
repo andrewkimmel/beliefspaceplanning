@@ -97,7 +97,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         sa = np.mean(SA, 0)
         Theta, K = self.get_theta(sa) # Get hyper-parameters for this query point
 
-        idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
+        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(K, self.state_dim)
 
@@ -155,7 +155,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     def one_predict(self, sa):
         Theta, K = self.get_theta(sa) # Get hyper-parameters for this query point      
 
-        idx = self.kdt.query(sa.reshape(1,-1), k = K, return_distance=False)
+        idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         X_nn = self.Xtrain[idx,:].reshape(K, self.state_action_dim)
         Y_nn = self.Ytrain[idx,:].reshape(K, self.state_dim)
 
@@ -234,7 +234,6 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
             if self.OBS and self.obstacle_check(s_next):
                 node_probability = 0.0
-
             return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability}
         else:       
 
@@ -304,7 +303,6 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                     S_next[failed_inx, :] = S_next[dup_inx,:]
 
             mean = np.mean(S_next, 0) #self.get_mean_shift(S_next)
-            
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action}
 
     def obstacle_check(self, s):

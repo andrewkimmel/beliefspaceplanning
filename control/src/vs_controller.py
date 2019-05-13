@@ -9,7 +9,7 @@ import pickle
 from control.srv import pathTrackReq
 
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 class vs_controller():
@@ -21,7 +21,7 @@ class vs_controller():
     goal = np.array([0.,0.])
     goal_prev = np.array([0.,0.])
     A = np.array([[1.,1.],[-1.,-1.],[-1.,1.],[1.,-1.],[1.,0.],[-1.,0.],[0.,-1.],[0.,1.]])
-    vel_magnitude = 1.4
+    vel_magnitude = 1.6
     J = np.array([[1., 1.], [-1., 1.]])
 
     def __init__(self):

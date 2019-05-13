@@ -65,15 +65,15 @@ class Covariance(object):
     def get_AlphaHat(self):
         if self.AlphaHat is None:
             Theta = np.copy(self.theta)
-            while 1:
-                try:
-                    K = self.cov_matrix_ij(self.X, self.X, Theta)
-                    self.L = np.linalg.cholesky(K)
-                    self.AlphaHat = np.linalg.inv(self.L.T).dot( np.linalg.inv(self.L).dot(self.Y) )
-                    break
-                except:
-                    Theta = np.copy(self.theta) + (2*np.random.uniform(self.theta.shape) - 1)
-
+            # for i in range(3):
+            try:
+                K = self.cov_matrix_ij(self.X, self.X, Theta)
+                self.L = np.linalg.cholesky(K)
+                self.AlphaHat = np.linalg.inv(self.L.T).dot( np.linalg.inv(self.L).dot(self.Y) )
+                # return self.AlphaHat
+            except:
+                # Theta = np.copy(self.theta) + (2*np.random.uniform(self.theta.shape) - 1)
+                self.optimize()
         return self.AlphaHat
 
     # def _get_w(self):

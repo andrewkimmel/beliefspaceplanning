@@ -12,7 +12,7 @@ from control.srv import pathTrackReq
 from rollout_node.srv import gets
 
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 class general_control():
@@ -23,8 +23,8 @@ class general_control():
     actionGP = np.array([0., 0.])
     actionVS = np.array([0., 0.])
     gripper_closed = 'open'
-    tol = 0.2
-    goal_tol = 0.3
+    tol = 0.7
+    goal_tol = 4.0
     horizon = 1
 
     def __init__(self):
@@ -86,7 +86,7 @@ class general_control():
             if np.abs(self.obj_pos[0]-3.30313851e-02) < 0.01831497*2. and np.abs(self.obj_pos[1]-1.18306790e+02) < 0.10822673*2.:
                 break
 
-        i_path = 1
+        i_path = 10
         msg = Float32MultiArray()
         msg.data = S[i_path,:]
         msge = Float32MultiArray()
@@ -104,6 +104,7 @@ class general_control():
         total_count = 0
         d_prev = 1000
         action = np.array([0.,0.])
+        excluded_action = np.array([0.,0.])
         dd_count = 0
         Controller = 'GP'
         sk = 2
@@ -114,12 +115,13 @@ class general_control():
             state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
             if i_path == S.shape[0]-1:
                 msg.data = S[-1,:]
-            elif self.weightedL2(state[:sk]-S[i_path,:sk]) < self.tol or (self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.weightedL2(state[:sk]-S[i_path,:sk]) and self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.tol*2.5):
+            elif self.weightedL2(state[:sk]-S[i_path,:sk]) < self.tol or (self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.weightedL2(state[:sk]-S[i_path,:sk])):# and self.weightedL2(state[:sk]-S[i_path+1,:sk]) < self.tol*2.5):
                 i_path += 1
                 msg.data = S[i_path,:]
                 count = 0
                 change = True
                 dd_count = 0
+                print "Distance to next waypoint: " + str(self.weightedL2(state[:sk]-S[i_path,:sk])) + ", moving to the next one # " + str(i_path) + "."
                 # Controller = 'GP'
             # elif count > 1000:# and i_path < S.shape[0]-1:
                 # self.tol = 2.5
@@ -127,22 +129,29 @@ class general_control():
             self.pub_current_goal.publish(msg)
 
             dd = self.weightedL2(state[:sk]-S[i_path,:sk]) - d_prev
-            dd_count = dd_count + 1 if dd > 0 else 0
-            msge.data = action if dd_count > 3 else np.array([0.,0.])
+            dd_count = dd_count + 1 if dd > 0.  else 0
+            if np.any(action != np.array([0.,0.])):
+                excluded_action = action if dd_count > 7 else np.array([0.,0.])
+            msge.data = excluded_action
             self.pub_exclude.publish(msge)
 
             # if n == 0 and not change and dd < 0:
             #     n = 1
             #     print "Extended..."
             if n <= 0:# or dd_count > 5:
-                if 1:#Controller == 'GP':
+                if 0 and dd_count <= 7:#Controller == 'GP':
                     action = self.actionGP
+                    if np.all(action == excluded_action):
+                        action = np.array([0.,0.])
+                    else:
+                        dd_count = 0
                 else:
                     action = self.actionVS
                 n = self.stepSize
                 dd_count = 0
 
-            print total_count, count, i_path, action, self.weightedL2(state[:sk]-S[i_path,:sk]), self.weightedL2(state[:sk]-S[-1,:sk]), self.weightedL2(state[:sk]-S[i_path,:sk]) - d_prev
+            print "\n"
+            print total_count, count, i_path, action, dd_count, excluded_action, self.weightedL2(state[:sk]-S[i_path,:sk]), self.weightedL2(state[:sk]-S[-1,:sk]), self.weightedL2(state[:sk]-S[i_path,:sk]) - d_prev
             
             d_prev =  self.weightedL2(state[:sk]-S[i_path,:sk])
 
