@@ -1,0 +1,2 @@
+model_checkpoint_path: "BNN_weights"
+all_model_checkpoint_paths: "BNN_weights"
