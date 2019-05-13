@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -164,11 +164,11 @@ if not rollout and 1:
     Q = loadmat(path + file)
     Data = Q['D']
 
-    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
+    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + 'o/results/'
 
     for set_mode in set_modes:
 
-        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
+        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + 'o/'
 
         fo  = open(results_path + set_mode + '.txt', 'wt') 
 
@@ -182,8 +182,11 @@ if not rollout and 1:
             if pklfile.find(set_mode) < 0:
                 continue
             print "\nRunning pickle file: " + pklfile
-            ctr = C[int(pklfile[pklfile.find('goal')+4]), :] # Goal center
-            print ctr
+            
+            ja = pklfile.find('goal')+4
+            num = int(pklfile[ja]) if pklfile[ja+1] == '_' else int(pklfile[ja:ja+2])
+            ctr = C[num, :] # Goal center
+            print(("Goal number %d with center: "%num), ctr)
             # exit(1)
 
             for j in range(len(pklfile)-1, 0, -1):
@@ -198,12 +201,7 @@ if not rollout and 1:
             
             with open(pklfile) as f:  
                 Pro = pickle.load(f)
-
-            # if file_name == 'robust_particles_pc_goal1_run1_plan':
-            #     for s in Pro:
-            #         print s
-            #         raw_input()
-
+            
             i = 0
             while i < len(Pro):
                 if Pro[i].shape[0] == 1:
