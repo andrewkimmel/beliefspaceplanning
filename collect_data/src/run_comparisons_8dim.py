@@ -75,9 +75,9 @@ from collect_data.srv import sparse_goal
 
 nodes =[
 # "robust_particles_pc_svmHeuristic", 
-# "robust_particles_pc", 
-"naive_with_svm",
-"mean_only_particles"
+"robust_particles_pc", 
+# "naive_with_svm",
+# "mean_only_particles"
 ]
 ## ROBUST PLUS GOALS part 1
 # goals = [

@@ -11,17 +11,18 @@ import time
 import glob
 from scipy.io import loadmat
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
-Set = '6'
+Set = '7'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-set_modes = ['mean_only_particles']
+set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
+control_met = '_gpc'
 
 # if Set == '1':
 #     # Goal centers - set 1
@@ -62,7 +63,7 @@ if Set == '3':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
-if Set == '4' or Set == '6':
+if Set == '4' or Set == '6' or Set == '7':
     # Goal centers
     C = np.array([
         [-37, 119],
@@ -81,11 +82,13 @@ if Set == '5':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
+
+
 ############################# Rollout ################################
 if rollout:
     track_srv = rospy.ServiceProxy('/control', pathTrackReq)
     rospy.init_node('run_control_set', anonymous=True)
-    state_dim = 4
+    state_dim = 8
 
     while 1:
         for set_mode in set_modes:
@@ -102,11 +105,11 @@ if rollout:
                 path_file = files[i]
                 if path_file[80:].find('plan') > 0:
                     continue
-                if any(path_file[:-3] + 'pkl' in f for f in files_pkl):
+                if any(path_file[:-4] + control_met + '.pkl' in f for f in files_pkl):
                     continue
-                pklfile = path_file[:-3] + 'pkl'
+                pklfile = path_file[:-4] + control_met + '.pkl'
 
-                ctr = np.concatenate((C[int(pklfile[pklfile.find('goal')+4]), :], np.array([0,0])), axis=0) # Goal center
+                ctr = np.concatenate((C[int(pklfile[pklfile.find('goal')+4]), :], np.array([0,0,0,0,0,0])), axis=0) # Goal center
 
                 # To distribute rollout files between computers
                 # ja = pklfile.find('goal')+4
@@ -115,7 +118,7 @@ if rollout:
 
                 print('Rolling-out file number ' + str(i+1) + ': ' + path_file + '.')
 
-                S = np.loadtxt(path_file, delimiter=',', dtype=float)[:,:4]
+                S = np.loadtxt(path_file, delimiter=',', dtype=float)[:,:state_dim]
                 S = np.append(S, [ctr], axis=0)
 
                 Pro = []
@@ -133,7 +136,6 @@ if rollout:
                     Aro.append(Areal)
                     Suc.append(success)
 
-
                     with open(pklfile, 'w') as f: 
                         pickle.dump([Pro, Aro, Suc], f)
 
@@ -143,12 +145,12 @@ rp = 7.
 r = 10.
 
 set_num = Set
-set_modes = ['robust_particles_pc', 'mean_only_particles']#, 'mean_only_particles' , 'naive_with_svm']
+set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
 
 if not rollout and 1:
 
-    file = 'sim_data_discrete_v13_d4_m10.mat'
-    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    file = 'sim_data_discrete_v14_d8_m10.mat'
+    path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     Q = loadmat(path + file)
     Data = Q['D']
 
@@ -167,8 +169,9 @@ if not rollout and 1:
             pklfile = files[k]
             if pklfile[80:].find('plan') > 0:
                 continue
-            if pklfile.find(set_mode) < 0:
+            if pklfile.find(set_mode) < 0 or pklfile.find(control_met) < 0:
                 continue
+            print "\nRunning pickle file: " + pklfile
             ctr = C[int(pklfile[pklfile.find('goal')+4]), :] # Goal center
             print ctr
             # exit(1)
@@ -178,7 +181,7 @@ if not rollout and 1:
                     break
             file_name = pklfile[j+1:-4]
 
-            trajfile = pklfile[:-8] + 'traj.txt'
+            trajfile = pklfile[:-(12 if control_met == '_gpc' else 8)] + 'traj.txt'
             Straj = np.loadtxt(trajfile, delimiter=',', dtype=float)[:,:2]
 
             print('Plotting file number ' + str(k+1) + ': ' + file_name)
@@ -198,7 +201,7 @@ if not rollout and 1:
                 else:
                     i += 1 
 
-            A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
+            A = np.loadtxt(pklfile[:-8] + '.txt', delimiter=',', dtype=float)[:,:2]
             maxR = A.shape[0]+1
             maxX = np.max([x.shape[0] for x in Pro])
             

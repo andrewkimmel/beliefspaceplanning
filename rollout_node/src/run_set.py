@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -22,13 +22,13 @@ comp = 'pracsys'
 
 Set = '8'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-set_modes = ['mean_only_particles']
+set_modes = ['robust_particles_pc']#,'naive_with_svm','mean_only_particles']
 
 ############################# Rollout ################################
 if rollout:
     rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
     rospy.init_node('run_rollout_set', anonymous=True)
-    state_dim = 4
+    state_dim = 8
 
     while 1:
         for set_mode in set_modes:
@@ -50,9 +50,10 @@ if rollout:
                 pklfile = action_file[:-3] + 'pkl'
 
                 # To distribute rollout files between computers
-                # ja = pklfile.find('goal')+4
-                # if int(pklfile[ja]) <= 4:
-                #     continue
+                ja = pklfile.find('goal')+4
+                num = int(pklfile[ja]) if pklfile[ja+1] == '_' else int(pklfile[ja:ja+2])
+                if num > 9:
+                    continue
 
                 print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
@@ -71,6 +72,7 @@ if rollout:
                         pickle.dump(Pro, f)
 
 ############################# Plot ################################
+
 
 # if Set == '1':
 #     # Goal centers - set 1
@@ -111,7 +113,7 @@ if Set == '3':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
-if Set == '4' or Set == '6':
+if Set == '4' or Set == '6' or Set == '7':
     # Goal centers
     C = np.array([
         [-37, 119],
@@ -130,16 +132,35 @@ if Set == '5':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
+if Set == '8':
+    C = np.array([[-37, 119],
+    [-33, 102],
+    [-60, 90],
+    [-40, 100],
+    [-80, 65],
+    [-80, 80],
+    [-50, 90],
+    [60, 90],
+    [80, 80],
+    [50, 90],
+    [40, 100],
+    [80, 65],
+    [-52, 112],
+    [67, 80],
+    [-63, 91]])
+
+    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
+
 rp = 7.
 r = 10.
 
 set_num = Set
-set_modes = ['robust_particles_pc', 'mean_only_particles']#, 'mean_only_particles' , 'naive_with_svm']
+set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
 
 if not rollout and 1:
 
-    file = 'sim_data_discrete_v13_d4_m10.mat'
-    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+    file = 'sim_data_discrete_v14_d8_m10.mat'
+    path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     Q = loadmat(path + file)
     Data = Q['D']
 
@@ -160,6 +181,7 @@ if not rollout and 1:
                 continue
             if pklfile.find(set_mode) < 0:
                 continue
+            print "\nRunning pickle file: " + pklfile
             ctr = C[int(pklfile[pklfile.find('goal')+4]), :] # Goal center
             print ctr
             # exit(1)

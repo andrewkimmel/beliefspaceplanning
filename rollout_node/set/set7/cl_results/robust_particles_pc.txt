@@ -1,0 +1,4 @@
+robust_particles_pc_goal4_run0_traj_gpc: 0.0, 0.0
+robust_particles_pc_goal0_run0_traj_gpc: 0.0, 100.0
+robust_particles_pc_goal3_run0_traj_gpc: 0.0, 100.0
+robust_particles_pc_goal1_run0_traj_gpc: 50.0, 50.0

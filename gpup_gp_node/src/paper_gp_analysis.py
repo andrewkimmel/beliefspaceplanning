@@ -29,7 +29,7 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
 
 TR = [tr]#['1','2','3'] #

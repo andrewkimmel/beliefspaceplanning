@@ -1,0 +1,1 @@
+mean_only_particles_goal2_run0_plan: 100.0, 0.0

@@ -10,7 +10,7 @@ from gpup_gp_node.srv import one_transition
 from control.srv import pathTrackReq
 
 import sys
-sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 class gp_controller():
@@ -22,7 +22,7 @@ class gp_controller():
     gripper_load_prev = np.array([0., 0.])
     action = np.array([0.,0.])
     exclude_action = np.array([0.,0.])
-    goal = np.array([0.,0.,0.,0.])
+    goal = np.array([0.,0.,0.,0.,0.,0.,0.,0.])
     A = np.array([[1.,1.],[-1.,-1.],[-1.,1.],[1.,-1.],[1.5,0.],[-1.5,0.],[0.,-1.5],[0.,1.5]])
     D_load = np.array([0., 0.])
 
@@ -42,7 +42,7 @@ class gp_controller():
 
         msg = Float32MultiArray()
 
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(100)
         while not rospy.is_shutdown():
             self.D_load = np.copy(self.gripper_load) - np.copy(self.gripper_load_prev)
             self.gripper_load_prev = np.copy(self.gripper_load)
@@ -58,23 +58,24 @@ class gp_controller():
 
     def check_all_action(self, s):
         goal = self.goal
+        d = 4
         
         D = []
         # print "---------"
         for a in self.A:
             if np.all(a == self.exclude_action):
-                D.append(1000)
+                D.append(1000000)
                 print "Action " + str(a) + " excluded."
                 continue
             # print "Checking state ", s, " with action ", a, " size ", len(D)
-            horizon = 15 if np.all(a == self.A[0]) or np.all(a == self.A[0]) else 1
+            horizon = 10 if np.all(a == self.A[0]) or np.all(a == self.A[0]) else 2
             cur_s = np.copy(s)
             for i in range(horizon):
                 res = self.gp(cur_s.reshape(-1,1), a)
                 s_next = np.array(res.next_state)
                 cur_s = np.copy(s_next)
-                
-            D.append(np.linalg.norm(goal-s_next))
+            
+            D.append(np.linalg.norm(goal[:d]-s_next[:d]))
         D = np.array(D)
         
         action = np.copy(self.A[np.argmin(D)])
