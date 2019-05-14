@@ -7,3 +7,7 @@
 /naive_with_svm_goal7_run0, 0.0, 0.0, 0.0, 0.0, 43
 /naive_with_svm_goal8_run0, 0.0, 0.0, 0.0, 0.0, 50
 /naive_with_svm_goal9_run0,36.938,67.4947,0,0,51
+/naive_with_svm_goal10_run0,125.035,45.2564,0,0,45
+/naive_with_svm_goal11_run0, 0.0, 0.0, 0.0, 0.0, 264
+/naive_with_svm_goal12_run0,141.851,70.3972,0,0,104
+/naive_with_svm_goal13_run0, 0.0, 0.0, 0.0, 0.0, 36
