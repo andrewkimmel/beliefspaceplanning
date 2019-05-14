@@ -1,0 +1,4 @@
+robust_particles_pc_goal12_run0_plan: 100.0, 100.0
+robust_particles_pc_goal9_run0_plan: 100.0, 100.0
+robust_particles_pc_goal14_run0_plan: 100.0, 100.0
+robust_particles_pc_goal8_run0_plan: 100.0, 0.0
