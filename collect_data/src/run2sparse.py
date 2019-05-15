@@ -48,6 +48,6 @@ for i in range(1,100000):
         print "Running random episode..."
         rand_epi_srv()
         
-    if not (i % 10):
-        save_srv()
+    # if not (i % 10):
+    #     save_srv()
 

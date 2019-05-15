@@ -20,7 +20,7 @@ rollout = 0
 # comp = 'juntao'
 comp = 'pracsys'
 
-Set = '8'
+Set = '9'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 set_modes = ['robust_particles_pc']#,'naive_with_svm','mean_only_particles']
 
@@ -132,7 +132,7 @@ if Set == '5':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
-if Set == '8':
+if Set == '8' or Set == '9':
     C = np.array([[-37, 119],
     [-33, 102],
     [-60, 90],
@@ -151,8 +151,19 @@ if Set == '8':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
+def tracking_error(S1, S2):
+    Sum = 0.
+    for s1, s2 in zip(S1, S2):
+        Sum += np.linalg.norm(s1[:2]-s2[:2])**2
+
+    l = 0.
+    for i in range(1,S1.shape[0]):
+        l += np.linalg.norm(S1[i,:2] - S1[i-1,:2])
+
+    return np.sqrt(Sum / S1.shape[0]), l
+
 rp = 7.
-r = 10.
+r = 11.
 
 set_num = Set
 set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
@@ -164,11 +175,13 @@ if not rollout and 1:
     Q = loadmat(path + file)
     Data = Q['D']
 
-    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + 'o/results/'
+    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
+
+    Sum = {set_mode[:set_mode.find('_')]: np.zeros((C.shape[0],4)) for set_mode in set_modes} 
 
     for set_mode in set_modes:
 
-        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + 'o/'
+        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
         fo  = open(results_path + set_mode + '.txt', 'wt') 
 
@@ -193,6 +206,8 @@ if not rollout and 1:
                 if pklfile[j] == '/':
                     break
             file_name = pklfile[j+1:-4]
+
+            planner = file_name[:file_name.find('_')]
 
             trajfile = pklfile[:-8] + 'traj.txt'
             Straj = np.loadtxt(trajfile, delimiter=',', dtype=float)[:,:2]
@@ -273,6 +288,12 @@ if not rollout and 1:
                 if pklfile[i] == '/':
                     break
 
+            Sum[planner][num, 0] = 100 - c # Percent failures
+            Sum[planner][num, 1] = p # Success rate
+            e, l = tracking_error(Smean, Straj)
+            Sum[planner][num, 2] = e # Tracking error
+            Sum[planner][num, 3] = l # Planned path length
+
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=300)
             # plt.show()
@@ -280,6 +301,26 @@ if not rollout and 1:
         fo.close()
         
     # plt.show()
+
+    download_dir = results_path + '/summary.csv' 
+    csv = open(download_dir, "w") 
+    csv.write("Goal #,")
+    for key in Sum.keys():
+        for _ in range(Sum[key].shape[1]):
+            csv.write(key + ',')
+    csv.write('\n')
+    csv.write(',fail rate, reached goal, tracking RMSE, path length, fail rate, reached goal, tracking RMSE, path length, fail rate, reached goal, tracking RMSE, path length\n')
+    for goal in range(C.shape[0]):
+        csv.write(str(goal) + ',')
+        for key in Sum.keys():
+            if np.all(Sum[key][goal,:] == 0):
+                csv.write('-,-,-,-,')
+            else:
+                for j in range(Sum[key].shape[1]):
+                    csv.write(str(Sum[key][goal, j]) + ',')
+        csv.write('\n')
+
+
 
 if not rollout and 0:
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results_goal/'
