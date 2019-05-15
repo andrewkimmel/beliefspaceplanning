@@ -1,0 +1,19 @@
+/robust_particles_pc_goal0_run0,153.748,106.324,0,0,405
+/robust_particles_pc_goal1_run0,36.8838,39.9753,0,0,85
+/robust_particles_pc_goal2_run0,101.387,47.1209,0,0,198
+/robust_particles_pc_goal3_run0,65.9688,89.1932,0,0,16
+/robust_particles_pc_goal4_run0,760.169,62.2149,0,0,123
+/robust_particles_pc_goal5_run0,153.533,87.661,0,0,316
+/robust_particles_pc_goal6_run0,199.107,102.074,0,0,80
+/robust_particles_pc_goal7_run0,236.292,201.706,0,0,290
+/robust_particles_pc_goal8_run0,150.38,84.2325,0,0,460
+/robust_particles_pc_goal0_run1,182.345,181.321,0,0,289
+/robust_particles_pc_goal1_run1,54.8786,74.5392,0,0,48
+/robust_particles_pc_goal2_run1,186.841,61.449,0,0,6
+/robust_particles_pc_goal3_run1, 0.0, 0.0, 0.0, 0.0, 92
+/robust_particles_pc_goal4_run1, 0.0, 0.0, 0.0, 0.0, 923
+/robust_particles_pc_goal5_run1,275.714,121.423,0,0,300
+/robust_particles_pc_goal6_run1,5.62374,46.2594,0,0,150
+/robust_particles_pc_goal7_run1,352.143,79.5485,0,0,308
+/robust_particles_pc_goal8_run1,19.884,80.0563,0,0,241
+/robust_particles_pc_goal9_run1, 0.0, 0.0, 0.0, 0.0, 43

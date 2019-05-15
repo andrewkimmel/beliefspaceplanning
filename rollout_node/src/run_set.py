@@ -17,12 +17,12 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
-Set = '8'
+Set = '10'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-set_modes = ['robust_particles_pc']#,'naive_with_svm','mean_only_particles']
+set_modes = ['naive_with_svm']
 
 ############################# Rollout ################################
 if rollout:
@@ -52,8 +52,8 @@ if rollout:
                 # To distribute rollout files between computers
                 ja = pklfile.find('goal')+4
                 num = int(pklfile[ja]) if pklfile[ja+1] == '_' else int(pklfile[ja:ja+2])
-                if num > 9:
-                    continue
+                # if num > 9:
+                #     continue
 
                 print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
 
@@ -132,7 +132,7 @@ if Set == '5':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
-if Set == '8':
+if Set == '8' or Set == '9':
     C = np.array([[-37, 119],
     [-33, 102],
     [-60, 90],
@@ -151,6 +151,18 @@ if Set == '8':
 
     Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
+if Set == '10':
+    C = np.array([[-37, 119], 
+    [-33, 102],
+    [-40, 100],
+    [-80, 80],
+    [-50, 90],
+    [50, 90],
+    [40, 100],
+    [-52, 112],
+    [67, 80],
+    [-63, 91]])
+
 rp = 7.
 r = 10.
 
@@ -164,11 +176,11 @@ if not rollout and 1:
     Q = loadmat(path + file)
     Data = Q['D']
 
-    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + 'o/results/'
+    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
     for set_mode in set_modes:
 
-        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + 'o/'
+        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
         fo  = open(results_path + set_mode + '.txt', 'wt') 
 
@@ -181,6 +193,8 @@ if not rollout and 1:
                 continue
             if pklfile.find(set_mode) < 0:
                 continue
+            # if int(pklfile[pklfile.find('run')+3]) != 1:
+            #     continue
             print "\nRunning pickle file: " + pklfile
             
             ja = pklfile.find('goal')+4

@@ -30,7 +30,7 @@ class hand_control():
     D_load = np.array([0., 0.])
     R = []
     count = 1
-    OBS = True
+    OBS = False
 
     gripper_status = 'open'
 
