@@ -1,0 +1,11 @@
+/mean_only_particles_goal2_run0, 0.0, 0.0, 0.0, 0.0, 51
+/mean_only_particles_goal3_run0, 0.0, 0.0, 0.0, 0.0, 27
+/mean_only_particles_goal4_run0, 0.0, 0.0, 0.0, 0.0, 105
+/mean_only_particles_goal5_run0, 0.0, 0.0, 0.0, 0.0, 24
+/mean_only_particles_goal6_run0, 0.0, 0.0, 0.0, 0.0, 34
+/mean_only_particles_goal7_run0, 0.0, 0.0, 0.0, 0.0, 12
+/mean_only_particles_goal8_run0, 0.0, 0.0, 0.0, 0.0, 35
+/mean_only_particles_goal9_run0, 0.0, 0.0, 0.0, 0.0, 95
+/mean_only_particles_goal10_run0, 0.0, 0.0, 0.0, 0.0, 67
+/mean_only_particles_goal11_run0, 0.0, 0.0, 0.0, 0.0, 95
+/mean_only_particles_goal14_run0, 0.0, 0.0, 0.0, 0.0, 9
