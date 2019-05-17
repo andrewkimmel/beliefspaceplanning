@@ -30,7 +30,7 @@ class hand_control():
     D_load = np.array([0., 0.])
     R = []
     count = 1
-    OBS = False
+    OBS = True
 
     gripper_status = 'open'
 
@@ -67,7 +67,6 @@ class hand_control():
 
             self.D_load = np.copy(self.gripper_load) - np.copy(self.gripper_load_prev)
             self.gripper_load_prev = np.copy(self.gripper_load)
-            
 
             # print(self.obj_pos)
             # rospy.spin()
@@ -188,8 +187,10 @@ class hand_control():
 
         # Obs1 = np.array([42, 90, 12.])
         # Obs2 = np.array([-45, 101, 7.])
-        Obs1 = np.array([33, 110, 4.]) # Right
-        Obs2 = np.array([-27, 118, 2.5]) # Left
+        # Obs1 = np.array([33, 110, 4.]) # Right
+        # Obs2 = np.array([-27, 118, 2.5]) # Left
+        Obs1 = np.array([-12, 118, 2.55]) # Upper
+        Obs2 = np.array([-11, 111, 2.6]) # Lower
         if self.OBS and (np.linalg.norm(self.obj_pos-Obs1[:2]) < Obs1[2] or np.linalg.norm(self.obj_pos-Obs2[:2]) < Obs2[2]):
             print('[hand_control_sim] Collision.')
             return False

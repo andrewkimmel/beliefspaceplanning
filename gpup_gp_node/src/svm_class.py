@@ -25,7 +25,7 @@ class svm_failure():
     def load_data(self):
 
         # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
-        path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
         File = 'svm_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_) + '.obj' # <= File name here!!!!!
 
         self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
