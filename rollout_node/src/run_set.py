@@ -17,8 +17,8 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 Set = '10'
 # set_modes = ['robust_particles_pc','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
@@ -190,8 +190,8 @@ if not rollout and 1:
 
     results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
-    Sum = {set_mode[:set_mode.find('_')]: np.zeros((C.shape[0],4)) for set_mode in set_modes} 
-    run_num = 0
+    Sum = {set_mode[:set_mode.find('_')]: np.zeros((C.shape[0],5)) for set_mode in set_modes} 
+    # run_num = 0
 
     for set_mode in set_modes:
 
@@ -208,8 +208,8 @@ if not rollout and 1:
                 continue
             if pklfile.find(set_mode) < 0:
                 continue
-            if int(pklfile[pklfile.find('run')+3]) != run_num:
-                continue
+            # if int(pklfile[pklfile.find('run')+3]) != run_num:
+            #     continue
             print "\nRunning pickle file: " + pklfile
             
             ja = pklfile.find('goal')+4
@@ -304,11 +304,13 @@ if not rollout and 1:
                 if pklfile[i] == '/':
                     break
 
-            Sum[planner][num, 0] = 100 - c # Percent failures
-            Sum[planner][num, 1] = p # Success rate
             e, l = tracking_error(Smean, Straj)
-            Sum[planner][num, 2] = e # Tracking error
-            Sum[planner][num, 3] = l # Planned path length
+            Sum[planner][num, 4] += 1
+            if p >= Sum[planner][num, 1] and (Sum[planner][num, 2] == 0 or Sum[planner][num, 2] > e):
+                Sum[planner][num, 0] = 100 - c # Percent failures
+                Sum[planner][num, 1] = p # Success rate
+                Sum[planner][num, 2] = e # Tracking error
+                Sum[planner][num, 3] = l # Planned path length
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=300)
@@ -318,22 +320,25 @@ if not rollout and 1:
         
     # plt.show()
 
-    download_dir = results_path + '/summary' + str(run_num) + '.csv' 
+    download_dir = results_path + '/summary.csv' 
     csv = open(download_dir, "w") 
     csv.write("Goal #,")
     for key in Sum.keys():
         for _ in range(Sum[key].shape[1]):
             csv.write(key + ',')
     csv.write('\n')
-    csv.write(',fail rate, reached goal, tracking RMSE, path length, fail rate, reached goal, tracking RMSE, path length, fail rate, reached goal, tracking RMSE, path length\n')
+    csv.write(',fail rate, reached goal, tracking RMSE, path length, planning rate, fail rate, reached goal, tracking RMSE, path length, planning rate, fail rate, reached goal, tracking RMSE, path length, planning rate\n')
     for goal in range(C.shape[0]):
         csv.write(str(goal) + ',')
         for key in Sum.keys():
             if np.all(Sum[key][goal,:] == 0):
-                csv.write('-,-,-,-,')
+                csv.write('-,-,-,-,0,')
             else:
                 for j in range(Sum[key].shape[1]):
-                    csv.write(str(Sum[key][goal, j]) + ',')
+                    if j == 4:
+                        csv.write(str(Sum[key][goal, j]/2.0*100.) + ',')
+                    else:
+                        csv.write(str(Sum[key][goal, j]) + ',')
         csv.write('\n')
 
 
@@ -468,8 +473,8 @@ if not rollout and 0:
                     break
 
             fo.write(set_mode + ': ' + str(c) + ', ' + str(p) + '\n')
-        plt.savefig(results_path + 'set' + str(set_num) + '_goal' + str(goal_num) + '.png', dpi=300) 
-        # plt.show()   
+            plt.savefig(results_path + 'set' + str(set_num) + '_goal' + str(goal_num) + '.png', dpi=300) 
+            # plt.show()   
     
     fo.write('\n\nPlanning success rate: \n')
     for k in list(PL.keys()):
