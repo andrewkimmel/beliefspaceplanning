@@ -27,7 +27,7 @@ diffORspec = 'diff'
 
 class Spin_gp(data_load, mean_shift, svm_failure):
 
-    OBS = False
+    OBS = True
 
     def __init__(self):
         # Number of NN
@@ -309,9 +309,12 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         # Obs1 = np.array([42, 90, 12.])
         # Obs2 = np.array([-45, 101, 7.])
         # f = 1.15 # inflate
-        Obs1 = np.array([33, 110, 4.]) # Right
-        Obs2 = np.array([-27, 118, 2.5]) # Left
-        f = 1.75 # inflate
+        # Obs1 = np.array([33, 110, 4.]) # Right
+        # Obs2 = np.array([-27, 118, 2.5]) # Left
+        # f = 1.75 # inflate
+        Obs1 = np.array([-12, 118, 2.55]) # Upper
+        Obs2 = np.array([-11, 111, 2.6]) # Lower
+        f = 1.2 # inflate
 
         if np.linalg.norm(s[:2]-Obs1[:2]) <= f * Obs1[2]:
             # print "right obstacle collision"
