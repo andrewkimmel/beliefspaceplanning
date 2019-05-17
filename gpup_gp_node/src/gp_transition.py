@@ -328,17 +328,20 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     # Predicts the next step by calling the GP class - repeats the same action 'n' times
     def GetTransitionRepeat(self, req):
 
-        S = np.array(req.states).reshape(-1, self.state_dim)
-        a = np.array(req.action)
         n = req.num_repeat
 
+        TranReq = batch_transition()
+        TranReq.states = req.states
+        TranReq.action = req.action
+
         for _ in range(n):
-            S_next = self.batch_propa(S, a)
-            S = S_next
+            res = self.GetTransition(TranReq)
+            TranReq.states = res.next_states
+            prob = res.node_probability
+            if prob < req.probability_threshold:
+                break
         
-        mean = self.get_mean_shift(S_next)
-        
-        return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean}
+        return {'next_states': TranReq.states, 'mean_shift': TranReq.mean_shift, 'node_probability': TranReq.node_probability, 'bad_action': TranReq.bad_action}
 
     # Predicts the next step by calling the GP class
     def GetTransitionOneParticle(self, req):
