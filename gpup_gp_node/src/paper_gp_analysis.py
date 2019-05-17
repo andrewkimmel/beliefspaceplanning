@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from gpup_gp_node.srv import gpup_transition, batch_transition, one_transition
+from gpup_gp_node.srv import gpup_transition, batch_transition, one_transition, batch_transition_repeat
 from std_srvs.srv import Empty, EmptyResponse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,6 +22,7 @@ stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
+gpr_srv = rospy.ServiceProxy('/gp/transitionRepeat', batch_transition_repeat)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 
 rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
@@ -29,7 +30,7 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
-path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
 
 
 TR = [tr]#['1','2','3'] #
@@ -240,7 +241,7 @@ for tr in TR:
             a = A[i,:]
 
             st = time.time()
-            res = gp_srv(S.reshape(-1,1), a)
+            res = gpr_srv(S.reshape(-1,1), a, 10, 0.65)
             t_gp += (time.time() - st) 
 
             S_next = np.array(res.next_states).reshape(-1,state_dim)

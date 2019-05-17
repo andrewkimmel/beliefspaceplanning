@@ -336,12 +336,12 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         for _ in range(n):
             res = self.GetTransition(TranReq)
-            TranReq.states = res.next_states
-            prob = res.node_probability
+            TranReq.states = res['next_states']
+            prob = res['node_probability']
             if prob < req.probability_threshold:
                 break
         
-        return {'next_states': res.next_states, 'mean_shift': res.mean_shift, 'node_probability': res.node_probability, 'bad_action': res.bad_action}
+        return {'next_states': res['next_states'], 'mean_shift': res['mean_shift'], 'node_probability': res['node_probability'], 'bad_action': res['bad_action']}
 
     # Predicts the next step by calling the GP class
     def GetTransitionOneParticle(self, req):
