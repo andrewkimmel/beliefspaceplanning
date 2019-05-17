@@ -1,6 +1,9 @@
 float32[] states
 float32[] action
 int32 num_repeat
+float32 probability_threshold
 ---
 float32[] next_states
 float32[] mean_shift
+float32 node_probability
+float32[] bad_action
