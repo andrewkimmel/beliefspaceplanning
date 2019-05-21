@@ -189,8 +189,8 @@ class hand_control():
         # Obs2 = np.array([-45, 101, 7.])
         # Obs1 = np.array([33, 110, 4.]) # Right
         # Obs2 = np.array([-27, 118, 2.5]) # Left
-        Obs1 = np.array([-12, 118, 2.55]) # Upper
-        Obs2 = np.array([-11, 111, 2.6]) # Lower
+        Obs1 = np.array([-12, 118, 2.7]) # Upper
+        Obs2 = np.array([-10, 113, 2.7]) # Lower
         if self.OBS and (np.linalg.norm(self.obj_pos-Obs1[:2]) < Obs1[2] or np.linalg.norm(self.obj_pos-Obs2[:2]) < Obs2[2]):
             print('[hand_control_sim] Collision.')
             return False

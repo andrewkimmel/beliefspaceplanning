@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -20,9 +20,9 @@ rollout = 1
 comp = 'juntao'
 # comp = 'pracsys'
 
-Set = '11'
-set_modes = ['mean_only_particles','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-# set_modes = ['robust_particles_pc']
+Set = '12'
+# set_modes = ['mean_only_particles','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+set_modes = ['robust_particles_pc']
 
 ############################# Rollout ################################
 if rollout:
@@ -31,7 +31,7 @@ if rollout:
     state_dim = 8
 
     # while 1:
-    for _ in range(2):
+    for _ in range(10):
         for set_mode in set_modes:
             path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
@@ -62,7 +62,7 @@ if rollout:
 
                 Af = A.reshape((-1,))
                 Pro = []
-                for j in range(5):
+                for j in range(2):
                     print("Rollout number " + str(j) + ".")
                     
                     Sro = np.array(rollout_srv(Af, [0,0,0,0,0,0,0,0,0]).states).reshape(-1,state_dim)
@@ -166,12 +166,26 @@ if Set == '10':
 
     # Obs = np.array([[-11, 111, 2.6], [-12, 118, 2.55], [11, 113, 2.5], [12, 120, 2.5]])
 
-if Set == '11':
-    C = np.array([[-27,111],
+# if Set == '11':
+#     C = np.array([[-27,111],
+#     [-23, 112],
+#     [-36, 107]])
+
+#     Obs = np.array([[-11, 111, 2.6], [-12, 118, 2.55]])
+
+if Set == '11': # New
+    C = np.array([[-27,107],
     [-23, 112],
     [-36, 107]])
 
-    Obs = np.array([[-11, 111, 2.6], [-12, 118, 2.55]])
+    Obs = np.array([[-11, 108, 2.7], [-12, 115, 2.7]])
+
+if Set == '12': # New
+    C = np.array([[-27,107],
+    [-23, 112],
+    [-36, 107]])
+
+    Obs = np.array([[-10, 111.7, 2.7], [-12, 118, 2.7]])
 
     
 def tracking_error(S1, S2):
@@ -322,8 +336,8 @@ if not rollout and 1:
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=300)
-            plt.show()
-            exit(1)
+            # plt.show()
+            # exit(1)
 
         fo.close()
         

@@ -306,14 +306,15 @@ class Spin_gp(data_load, mean_shift, svm_failure):
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action}
 
     def obstacle_check(self, s):
+        # print "Obstacle check...."
         # Obs1 = np.array([42, 90, 12.])
         # Obs2 = np.array([-45, 101, 7.])
         # f = 1.15 # inflate
         # Obs1 = np.array([33, 110, 4.]) # Right
         # Obs2 = np.array([-27, 118, 2.5]) # Left
         # f = 1.75 # inflate
-        Obs1 = np.array([-12, 118, 2.55]) # Upper
-        Obs2 = np.array([-11, 111, 2.6]) # Lower
+        Obs1 = np.array([-12, 118, 2.7]) # Upper
+        Obs2 = np.array([-10, 111.7, 2.7]) # Lower
         f = 1.2 # inflate
 
         if np.linalg.norm(s[:2]-Obs1[:2]) <= f * Obs1[2]:

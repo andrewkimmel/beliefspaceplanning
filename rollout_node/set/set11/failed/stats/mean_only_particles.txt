@@ -1,0 +1,8 @@
+/mean_only_particles_goal0_run0,118.149,96.5111,0,0,78
+/mean_only_particles_goal1_run0,80.233,93.7507,0,0,278
+/mean_only_particles_goal2_run0,148.22,157.229,0,0,184
+/mean_only_particles_goal0_run1,314.966,261.774,0,0,137
+/mean_only_particles_goal1_run1,22.3076,91.4811,0,0,268
+/mean_only_particles_goal2_run1,103.628,176.089,0,0,223
+/mean_only_particles_goal1_run2,234.683,144.409,0,0,269
+/mean_only_particles_goal2_run2,6.66186,43.5455,0,0,360

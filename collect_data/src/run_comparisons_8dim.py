@@ -243,11 +243,10 @@ goals = [
 
 ## Set 11 - Don't delete!!!
 goals = [
-"-27,111,  16,  16, 0, 0, 0, 0", 
+"-27,107,  16,  16, 0, 0, 0, 0", 
 "-23, 112,  16,  16, 0, 0, 0, 0",
 "-36, 107,  16,  16, 0, 0, 0, 0",
 ]
-
 
 NUM_RUNS = 2
 
@@ -261,7 +260,7 @@ SUCCESS_PROB_CONSTRAINT = 0.7
 FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
-    for x in range(3):
+    for x in range(2):
         count = 0
         for g in goals:
             for n in nodes:
