@@ -6,8 +6,11 @@ from sklearn.neighbors import KDTree #pip install -U scikit-learn
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-import var
 import os.path
+
+data_version_ = 13
+dim_ = 4
+stepSize_ = 1
 
 
 class svm_failure():
@@ -22,22 +25,23 @@ class svm_failure():
 
         print('All set!')
 
+
     def load_data(self):
 
         # path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/'
-        path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
-        File = 'svm_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_) + '.obj' # <= File name here!!!!!
+        self.path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        File = 'svm_data_' + self.mode + '_v' + str(data_version_) + '_d' + str(dim_) + '_m' + str(stepSize_) + '.obj' # <= File name here!!!!!
 
-        self.postfix = '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(var.stepSize_)
-        if os.path.exists(path + 'svm_fit_' + self.mode + self.postfix + '.obj'):
-            with open(path + 'svm_fit_' + self.mode + self.postfix + '.obj', 'rb') as f: 
-                self.clf, self.x_mean, self.x_std = pickle.load(f)
+        self.postfix = '_v' + str(data_version_) + '_d' + str(dim_) + '_m' + str(stepSize_)
+        if 0 and os.path.exists(self.path + 'svm_fit_' + self.mode + self.postfix + '.obj'):
+            with open(self.path + 'svm_fit_' + self.mode + self.postfix + '.obj', 'rb') as f: 
+                self.clf, self.x_mean, self.x_std = pickle.load(f, encoding='latin1') # Latin1 in python3
             print('[SVM] Loaded svm fit.')
         else:
             print('[SVM] Loading data from ' + File)
-            with open(path + File, 'rb') as f: 
-                self.SA, self.done = pickle.load(f)
-            print('[SVM] Loaded svm data.')            
+            with open(self.path + File, 'rb') as f: 
+                self.SA, self.done = pickle.load(f, encoding='latin1')
+            print('[SVM] Loaded svm data.')       
 
             # Normalize
             scaler = StandardScaler()
@@ -55,14 +59,15 @@ class svm_failure():
         print('SVM ready with %d classes: '%len(self.clf.classes_) + str(self.clf.classes_))
 
     def probability(self, s, a):
-
+        
         sa = np.concatenate((s,a), axis=0).reshape(1,-1)
 
         # Normalize
         sa = (sa - self.x_mean) / self.x_std
 
         p = self.clf.predict_proba(sa)[0][1]
+        # pp = self.clf.predict(sa)
 
-        return p#, self.clf.predict(sa)
+        return p#, pp
 
 

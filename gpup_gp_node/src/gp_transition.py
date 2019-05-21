@@ -195,7 +195,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     def batch_svm_check(self, S, a):
         failed_inx = []
         for i in range(S.shape[0]):
-            p, _ = self.probability(S[i,:], a) # Probability of failure
+            p = self.probability(S[i,:], a) # Probability of failure
             prob_fail = np.random.uniform(0,1)
             if prob_fail <= p:
                 failed_inx.append(i)
@@ -209,7 +209,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         failed_inx = []
         for i in range(S.shape[0]):
-            p, _ = self.probability(S[i,:], a) # Probability of failure
+            p = self.probability(S[i,:], a) # Probability of failure
             prob_fail = np.random.uniform(0,1)
             if prob_fail <= p:
                 failed_inx.append(i)
@@ -225,7 +225,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         a = np.array(req.action)
 
         if (len(S) == 1):
-            p, _ = self.probability(S[0,:],a)
+            p = self.probability(S[0,:],a)
             node_probability = 1.0 - p
             sa = np.concatenate((S[0,:],a), axis=0)
             sa = self.normz(sa)
@@ -239,7 +239,12 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
             # Check which particles failed
             failed_inx = self.batch_svm_check(S, a)
-            node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+            try:
+                node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+            except:
+                S_next = []
+                mean = [0,0]
+                return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': np.array([0.,0.])}
 
             # Remove failed particles by duplicating good ones
             bad_action = np.array([0.,0.])
@@ -350,7 +355,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        p, _ = self.probability(s, a)
+        p = self.probability(s, a)
         node_probability = 1.0 - p
 
         # Propagate
