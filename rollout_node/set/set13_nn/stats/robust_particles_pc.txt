@@ -1,0 +1,7 @@
+/robust_particles_pc_goal0_run0, 0.0, 0.0, 0.0, 0.0, 3
+/robust_particles_pc_goal0_run0, 0.0, 0.0, 0.0, 0.0, 3
+/robust_particles_pc_goal1_run0, 0.0, 0.0, 0.0, 0.0, 3
+/robust_particles_pc_goal2_run0, 0.0, 0.0, 0.0, 0.0, 3
+/robust_particles_pc_goal0_run1, 0.0, 0.0, 0.0, 0.0, 3
+/robust_particles_pc_goal1_run1, 0.0, 0.0, 0.0, 0.0, 3
+/robust_particles_pc_goal2_run1, 0.0, 0.0, 0.0, 0.0, 3

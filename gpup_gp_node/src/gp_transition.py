@@ -195,7 +195,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     def batch_svm_check(self, S, a):
         failed_inx = []
         for i in range(S.shape[0]):
-            p, _ = self.probability(S[i,:], a) # Probability of failure
+            p = self.probability(S[i,:], a) # Probability of failure
             prob_fail = np.random.uniform(0,1)
             if prob_fail <= p:
                 failed_inx.append(i)
@@ -209,7 +209,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
 
         failed_inx = []
         for i in range(S.shape[0]):
-            p, _ = self.probability(S[i,:], a) # Probability of failure
+            p = self.probability(S[i,:], a) # Probability of failure
             prob_fail = np.random.uniform(0,1)
             if prob_fail <= p:
                 failed_inx.append(i)
@@ -225,21 +225,26 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         a = np.array(req.action)
 
         if (len(S) == 1):
-            p, _ = self.probability(S[0,:],a)
+            p = self.probability(S[0,:],a)
             node_probability = 1.0 - p
             sa = np.concatenate((S[0,:],a), axis=0)
             sa = self.normz(sa)
             sa_normz = self.one_predict(sa)
             s_next = self.denormz(sa_normz)
 
-            if self.OBS and self.obstacle_check(s_next):
-                node_probability = 0.0
-            return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability}
+            collision_probability = 1.0 if (self.OBS and self.obstacle_check(s_next)) else 0.0
+
+            return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability, 'collision_probability': collision_probability}
         else:       
 
             # Check which particles failed
             failed_inx = self.batch_svm_check(S, a)
-            node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+            try:
+                node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+            except:
+                S_next = []
+                mean = [0,0]
+                return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': np.array([0.,0.]), 'collision_probability': 1.0}
 
             # Remove failed particles by duplicating good ones
             bad_action = np.array([0.,0.])
@@ -248,7 +253,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 if len(good_inx) == 0: # All particles failed
                     S_next = []
                     mean = [0,0]
-                    return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': np.array([0.,0.])}
+                    return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': np.array([0.,0.]), 'collision_probability': 1.0}
 
                 # Find main direction of fail
                 S_failed_mean = np.mean(S[failed_inx, :], axis=0)
@@ -276,15 +281,15 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 for i in range(S_next.shape[0]):
                     if self.obstacle_check(S_next[i,:]):
                         failed_inx.append(i)
-                node_probability2 = 1.0 - float(len(failed_inx))/float(S.shape[0])
-                node_probability = min(node_probability, node_probability2)
+                collision_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
+                # node_probability = min(node_probability, node_probability2)
 
                 if len(failed_inx):
                     good_inx = np.delete( np.array(range(S_next.shape[0])), failed_inx )
                     if len(good_inx) == 0: # All particles failed
                         S_next = []
                         mean = [0,0]
-                        return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': np.array([0.,0.])}
+                        return {'next_states': S_next, 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': np.array([0.,0.]), 'collision_probability': 1.0}
 
                     # Find main direction of fail
                     S_next_failed_mean = np.mean(S_next[failed_inx, :], axis=0)
@@ -303,7 +308,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                     S_next[failed_inx, :] = S_next[dup_inx,:]
 
             mean = np.mean(S_next, 0) #self.get_mean_shift(S_next)
-            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action}
+            return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action, 'collision_probability': collision_probability}
 
     def obstacle_check(self, s):
         # print "Obstacle check...."
@@ -329,17 +334,20 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     # Predicts the next step by calling the GP class - repeats the same action 'n' times
     def GetTransitionRepeat(self, req):
 
-        S = np.array(req.states).reshape(-1, self.state_dim)
-        a = np.array(req.action)
         n = req.num_repeat
 
+        TranReq = batch_transition()
+        TranReq.states = req.states
+        TranReq.action = req.action
+
         for _ in range(n):
-            S_next = self.batch_propa(S, a)
-            S = S_next
+            res = self.GetTransition(TranReq)
+            TranReq.states = res['next_states']
+            prob = res['node_probability']
+            if prob < req.probability_threshold:
+                break
         
-        mean = self.get_mean_shift(S_next)
-        
-        return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean}
+        return {'next_states': res['next_states'], 'mean_shift': res['mean_shift'], 'node_probability': res['node_probability'], 'bad_action': res['bad_action']}
 
     # Predicts the next step by calling the GP class
     def GetTransitionOneParticle(self, req):
@@ -348,7 +356,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        p, _ = self.probability(s, a)
+        p = self.probability(s, a)
         node_probability = 1.0 - p
 
         # Propagate

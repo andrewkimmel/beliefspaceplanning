@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from gpup_gp_node.srv import gpup_transition, batch_transition, one_transition
+from gpup_gp_node.srv import gpup_transition, batch_transition, one_transition, batch_transition_repeat
 from std_srvs.srv import Empty, EmptyResponse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,6 +22,7 @@ stepSize = var.stepSize_
 
 gp_srv = rospy.ServiceProxy('/gp/transition', batch_transition)
 gpup_srv = rospy.ServiceProxy('/gpup/transition', gpup_transition)
+gpr_srv = rospy.ServiceProxy('/gp/transitionRepeat', batch_transition_repeat)
 naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 
 rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
@@ -29,7 +30,43 @@ plot_srv = rospy.ServiceProxy('/rollout/plot', Empty)
 
 rospy.init_node('verification_gazebo', anonymous=True)
 
-path = '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/'
+
+
+
+# s = np.array([-10.29469490051269531250,116.89755249023437500000,16.32597923278808593750,17.65195846557617187500,-0.01324925106018781662,0.00528503581881523132,-0.00003745680442079902,-0.00012167862587375566])
+# a = np.array([-1.,-1.])
+
+# S = np.tile(s, (100,1)) + np.random.normal(0, 0.2, (100, state_dim))
+
+# res = gp_srv(S.reshape(-1,1), a)
+# Snext = np.array(res.next_states).reshape(-1,state_dim)
+# smean = np.mean(Snext, 0)
+# # print 
+# # print np.linalg.norm(s[:2] - np.array(res.next_states)[:2]), np.linalg.norm(np.array([-12,118]) - smean[:2])
+# # print 
+# # print res.mean_shift
+# # print
+# print res.node_probability
+# print
+# print res.collision_probability
+
+# if res.collision_probability < 1.0:
+#     fig, ax = plt.subplots(figsize=(12,12))
+#     obs = plt.Circle(np.array([-12,118]), 2.7)#, zorder=10)
+#     ax.add_artist(obs)
+
+#     plt.plot(s[0], s[1], 'xr')
+#     plt.plot(smean[0], smean[1], 'xb')
+
+#     plt.plot(S[:,0], S[:,1], '.m')
+#     plt.plot(Snext[:,0], Snext[:,1], '.k')
+#     plt.axis('equal')
+#     plt.show()  
+
+
+
+# exit(1)
 
 
 TR = [tr]#['1','2','3'] #
@@ -240,7 +277,7 @@ for tr in TR:
             a = A[i,:]
 
             st = time.time()
-            res = gp_srv(S.reshape(-1,1), a)
+            res = gpr_srv(S.reshape(-1,1), a, 10, 0.65)
             t_gp += (time.time() - st) 
 
             S_next = np.array(res.next_states).reshape(-1,state_dim)
