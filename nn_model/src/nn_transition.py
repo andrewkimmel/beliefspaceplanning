@@ -190,24 +190,16 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action, 'collision_probability': collision_probability}
 
     def obstacle_check(self, s):
-        # Obs1 = np.array([42, 90, 12.])
-        # Obs2 = np.array([-45, 101, 7.])
-        # f = 1.15 # inflate
-        # Obs1 = np.array([33, 110, 4.]) # Right
-        # Obs2 = np.array([-27, 118, 2.5]) # Left
-        # f = 1.75 # inflate
-        Obs1 = np.array([-38, 116, 4.]) # Upper
-        Obs2 = np.array([-33., 105, 4.]) # Lower
-        f = 1.2 # inflate
+        Obs1 = np.array([-38, 116.7, 4.]) # Upper
+        Obs2 = np.array([-33., 106, 4.]) # Lower
+        Obs3 = np.array([-51., 105.5, 4.]) # Left
+        Obs = np.array([Obs1, Obs2, Obs3])
+        f = 1.1 # inflate
 
-        if np.linalg.norm(s[:2]-Obs1[:2]) <= f * Obs1[2]:
-            # print "right obstacle collision"
-            return True
-        elif np.linalg.norm(s[:2]-Obs2[:2]) <= f * Obs2[2]:
-            # print "left obstacle collision", s[:2], Obs2[:2]
-            return True
-        else:
-            return False
+        for obs in Obs:
+            if np.linalg.norm(s[:2]-obs[:2]) <= f * obs[2]:
+                return True
+        return False
 
     # Predicts the next step by calling the GP class - repeats the same action 'n' times
     def GetTransitionRepeat(self, req):

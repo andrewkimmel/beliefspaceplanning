@@ -17,8 +17,8 @@ class predict_nn:
     state_action_dim = 6
     state_dim = 4
 
-    VAR_POS = [0.00001, 0.00001]
-    VAR_LOAD = [0.00001, 0.00001]
+    VAR_POS = [0.5, 0.5]
+    VAR_LOAD = [0.1, 0.1]
        
     def __init__(self):
 

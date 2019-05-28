@@ -186,11 +186,15 @@ class hand_control():
 
         self.move_servos_srv.call(angles)
 
-        Obs1 = np.array([-38, 116, 4.]) # Upper
-        Obs2 = np.array([-33., 105, 4.]) # Lower
-        if self.OBS and (np.linalg.norm(self.obj_pos-Obs1[:2]) < Obs1[2] or np.linalg.norm(self.obj_pos-Obs2[:2]) < Obs2[2]):
-            print('[hand_control_sim] Collision.')
-            return False
+        Obs1 = np.array([-38, 116.7, 4.]) # Upper
+        Obs2 = np.array([-33., 106, 4.]) # Lower
+        Obs3 = np.array([-51., 105.5, 4.]) # Left
+        Obs = np.array([Obs1, Obs2, Obs3])
+        if self.OBS:
+            for obs in Obs:
+                if np.linalg.norm(self.obj_pos-obs[:2]) < obs[2]:
+                    print('[hand_control_sim] Collision.')
+                    return False
 
         return True
 

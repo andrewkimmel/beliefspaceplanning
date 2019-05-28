@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -20,10 +20,10 @@ rollout = 0
 comp = 'juntao'
 # comp = 'pracsys'
 
-Set = '18_nn'
-set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+Set = '19_nn'
+# set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
-# set_modes = ['robust_particles_pc']
+set_modes = ['robust_particles_pc']
 
 ############################# Rollout ################################
 if rollout:
@@ -185,10 +185,19 @@ if Set == '18_nn': # New
     C = np.array([[-63, 91],
         [-50, 90]])
 
-    Obs1 = np.array([-38, 116, 4.]) # Upper
-    Obs2 = np.array([-33., 105, 4.]) # Lower
+    Obs1 = np.array([-38, 116.7, 4.]) # Upper
+    Obs2 = np.array([-33., 106, 4.]) # Lower
     Obs = np.array([Obs1, Obs2])
 
+if Set == '19_nn': # New
+    C = np.array([[-63, 91]])
+
+    Obs1 = np.array([-38, 116.7, 4.]) # Upper
+    Obs2 = np.array([-33., 106, 4.]) # Lower
+    Obs3 = np.array([-51., 105.5, 4.]) # Left
+    Obs = np.array([Obs1, Obs2, Obs3])
+
+# ===============================================
     
 def tracking_error(S1, S2):
     Sum = 0.
@@ -262,7 +271,7 @@ if not rollout and 1:
             i = 0
             Ss = []
             while i < len(Pro):
-                if Pro[i].shape[0] == 1:
+                if Pro[i].shape[0] == 1 or np.linalg.norm(Pro[i][0,:2] - np.array([0,118])) > 5. :
                     del Pro[i]
                 else:
                     Ss.append(Pro[i][0,:2])
@@ -296,7 +305,7 @@ if not rollout and 1:
 
             p = 0
             for S in Pro:
-                plt.plot(S[:,0], S[:,1], '.--r')
+                plt.plot(S[:,0], S[:,1], '--r')
                 if S.shape[0] < maxR:
                     plt.plot(S[-1,0], S[-1,1], 'oc')
 
@@ -318,9 +327,9 @@ if not rollout and 1:
             except:
                 pass
 
-            plt.plot(Straj[:,0], Straj[:,1], '.-k', linewidth=3.5, label='Planned path')
+            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
 
-            plt.plot(Smean[:,0], Smean[:,1], '.-b', label='rollout mean')
+            plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
             # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
             # Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
             # plt.fill( X, Y , alpha = 0.5 , color = 'b')
@@ -483,7 +492,7 @@ if not rollout and 0:
             except:
                 pass
 
-            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
+            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3., label='Planned path')
 
             plt.plot(Smean[:,0], Smean[:,1], '-b', linewidth=3.0, label='rollout mean')
             # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
