@@ -204,9 +204,9 @@ seed = [
 # ]
 
 ## Set 5 - Don't delete!!!
-goals = [
-"50, 111,  16,  16",
-]
+# goals = [
+# "50, 111,  16,  16",
+# ]
 
 ## Set 8 & 9 - Don't delete!!!
 # goals = [

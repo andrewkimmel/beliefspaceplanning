@@ -45,7 +45,6 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
         self.time_bnn = 0.
         self.num_checks_bnn = 0        
 
-
         rospy.spin()
 
     def batch_svm_check(self, S, a):
@@ -182,8 +181,10 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
 
                     dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                     S_next[failed_inx, :] = S_next[dup_inx,:]
+            else:
+                collision_probability = 0.0
 
-            print('svm time: ' + str(self.time_svm/self.num_checks_svm) + ', prediction time: ' + str(self.time_nn/self.num_checks_nn) + ', batch prediction time: ' + str(self.time_bnn/self.num_checks_bnn))
+            # print('svm time: ' + str(self.time_svm/self.num_checks_svm) + ', prediction time: ' + str(self.time_nn/self.num_checks_nn) + ', batch prediction time: ' + str(self.time_bnn/self.num_checks_bnn))
 
             mean = np.mean(S_next, 0) #self.get_mean_shift(S_next)
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action, 'collision_probability': collision_probability}
@@ -195,8 +196,8 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
         # Obs1 = np.array([33, 110, 4.]) # Right
         # Obs2 = np.array([-27, 118, 2.5]) # Left
         # f = 1.75 # inflate
-        Obs1 = np.array([-12, 118, 2.55]) # Upper
-        Obs2 = np.array([-11, 111, 2.6]) # Lower
+        Obs1 = np.array([-38, 116, 4.]) # Upper
+        Obs2 = np.array([-33., 105, 4.]) # Lower
         f = 1.2 # inflate
 
         if np.linalg.norm(s[:2]-Obs1[:2]) <= f * Obs1[2]:

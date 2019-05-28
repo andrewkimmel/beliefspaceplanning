@@ -122,7 +122,8 @@ class hand_control():
             rospy.sleep(.2)
             self.reset_srv.call()
             # Close gripper
-            self.moveGripper(self.finger_closing_position)
+            no = np.random.random(2)*2. - 1.
+            self.moveGripper(self.finger_closing_position+no/1000.)
             rospy.sleep(0.7)
             self.move_lift_srv.call()
             rospy.sleep(2.0)
@@ -145,10 +146,10 @@ class hand_control():
         while c < 150:
             c += 1
             # print('Load' + str(self.gripper_load))
-            if self.gripper_load[0]!=self.gripper_load[1]: # equal when stable in the initial position
-                rospy.sleep(0.5)
-                ratein.sleep()
-                continue
+            # if self.gripper_load[0]!=self.gripper_load[1]: # equal when stable in the initial position
+            #     rospy.sleep(0.5)
+            #     ratein.sleep()
+            #     continue
 
             pos1 = self.obj_pos
             rospy.sleep(0.2)
@@ -185,12 +186,8 @@ class hand_control():
 
         self.move_servos_srv.call(angles)
 
-        # Obs1 = np.array([42, 90, 12.])
-        # Obs2 = np.array([-45, 101, 7.])
-        # Obs1 = np.array([33, 110, 4.]) # Right
-        # Obs2 = np.array([-27, 118, 2.5]) # Left
-        Obs1 = np.array([-12, 118, 2.7]) # Upper
-        Obs2 = np.array([-10, 113, 2.7]) # Lower
+        Obs1 = np.array([-38, 116, 4.]) # Upper
+        Obs2 = np.array([-33., 105, 4.]) # Lower
         if self.OBS and (np.linalg.norm(self.obj_pos-Obs1[:2]) < Obs1[2] or np.linalg.norm(self.obj_pos-Obs2[:2]) < Obs2[2]):
             print('[hand_control_sim] Collision.')
             return False

@@ -17,12 +17,13 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
-Set = '12'
-# set_modes = ['mean_only_particles','naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-set_modes = ['robust_particles_pc']
+Set = '18_nn'
+set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+# set_modes = ['naive_with_svm']
+# set_modes = ['robust_particles_pc']
 
 ############################# Rollout ################################
 if rollout:
@@ -30,8 +31,8 @@ if rollout:
     rospy.init_node('run_rollout_set', anonymous=True)
     state_dim = 8
 
-    # while 1:
-    for _ in range(10):
+    while 1:
+    # for _ in range(10):
         for set_mode in set_modes:
             path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
@@ -48,6 +49,8 @@ if rollout:
                     continue
                 if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
                     continue
+                if int(action_file[action_file.find('run')+3]) > 0:
+                    continue
                 pklfile = action_file[:-3] + 'pkl'
 
                 # To distribute rollout files between computers
@@ -62,10 +65,10 @@ if rollout:
 
                 Af = A.reshape((-1,))
                 Pro = []
-                for j in range(2):
+                for j in range(10):
                     print("Rollout number " + str(j) + ".")
                     
-                    Sro = np.array(rollout_srv(Af, [0,0,0,0,0,0,0,0,0]).states).reshape(-1,state_dim)
+                    Sro = np.array(rollout_srv(Af, [0,0,0,0]).states).reshape(-1,state_dim)
 
                     Pro.append(Sro)
 
@@ -75,56 +78,6 @@ if rollout:
 ############################# Plot ################################
 
 
-# if Set == '1':
-#     # Goal centers - set 1
-#     C = np.array([
-#         [17, 117],
-#         [75, 75],
-#         [-83, 66],
-#         [-52, 77],
-#         [48, 114],
-#         [-31, 100],
-#         [5.4, 108],
-#         [87, 65]])
-
-if Set == '1' or Set == '2':
-    # Goal centers
-    C = np.array([
-        [-24, 115],
-        [58, 76],
-        [-56, 90],36.23284149169921875000,110.15370
-        [79, 76],
-        [-66, 97],36.23284149169921875000,110.15370
-        [-46, 77],
-        [-73, 63],
-        [60, 100],
-        [35, 106],
-        [27, 104]])
-
-    if Set == '1':
-        Obs = np.array([[42, 90, 12], [-45, 101, 7]])
-
-if Set == '3':
-    # Goal centers
-    C = np.array([
-        [40, 95],
-        [50, 111],
-        [25, 98],
-        [-32, 104]])
-
-    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
-
-if Set == '4' or Set == '6' or Set == '7':
-    # Goal centers
-    C = np.array([
-        [-37, 119],
-        [-33, 102],
-        [-22, 129],
-        [-52, 112],
-        [67, 80],
-        [-63, 91]])
-
-    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
 
 if Set == '5':
     # Goal centers
@@ -187,6 +140,55 @@ if Set == '12': # New
 
     Obs = np.array([[-10, 111.7, 2.7], [-12, 118, 2.7]])
 
+if Set == '14_nn': # New
+    C = np.array([[37, 119], 
+        [-33, 102],
+        [-40, 100],
+        [-80, 80],
+        [-50, 90],
+        [50, 90],
+        [40, 100],
+        [-52, 112],
+        [67, 80],
+        [-63, 91]])
+
+    Obs = np.array([[-11, 111, 2.6], [-12, 118, 2.55]])
+
+if Set == '15_nn' or Set == '16_nn': # New
+    C = np.array([[-21, 104],
+        [-35, 100],
+        [-27, 98],
+        [-23, 106]])
+
+    Obs = np.array([[-9., 107.2, 2.7], [-12, 114, 2.55]])
+
+# if Set == '17_nn': # New
+#     C = np.array([[-40, 97]])
+
+#     Obs1 = np.array([-24, 115.2, 2.55]) # Upper
+#     Obs2 = np.array([-22., 108.7, 2.8]) # Lowerr
+#     Obs = np.array([Obs1, Obs2])
+
+if Set == '17_nn': # New
+    C = np.array([[-37, 119], 
+        [-33, 102],
+        [-40, 100],
+        [-80, 80],
+        [-50, 90],
+        [50, 90],
+        [40, 100],
+        [-52, 112],
+        [67, 80],
+        [-63, 91]])
+
+if Set == '18_nn': # New
+    C = np.array([[-63, 91],
+        [-50, 90]])
+
+    Obs1 = np.array([-38, 116, 4.]) # Upper
+    Obs2 = np.array([-33., 105, 4.]) # Lower
+    Obs = np.array([Obs1, Obs2])
+
     
 def tracking_error(S1, S2):
     Sum = 0.
@@ -232,7 +234,7 @@ if not rollout and 1:
                 continue
             if pklfile.find(set_mode) < 0:
                 continue
-            # if int(pklfile[pklfile.find('run')+3]) != run_num:
+            # if int(pklfile[pklfile.find('goal')+4]) < 5:
             #     continue
             print "\nRunning pickle file: " + pklfile
             
@@ -258,11 +260,14 @@ if not rollout and 1:
                 Pro = pickle.load(f)
             
             i = 0
+            Ss = []
             while i < len(Pro):
                 if Pro[i].shape[0] == 1:
                     del Pro[i]
                 else:
+                    Ss.append(Pro[i][0,:2])
                     i += 1 
+            print np.mean(np.array(Ss),0), np.std(np.array(Ss),0)
 
             A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
             maxR = A.shape[0]+1
@@ -303,7 +308,7 @@ if not rollout and 1:
             plt.plot(ctr[0], ctr[1], 'om')
             goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
             ax.add_artist(goal)
-            goal_plan = plt.Circle((ctr[0], ctr[1]), 8, color='w')
+            goal_plan = plt.Circle((ctr[0], ctr[1]), rp, color='w')
             ax.add_artist(goal_plan)
 
             try:

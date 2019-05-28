@@ -31,15 +31,16 @@ reset_srv = rospy.ServiceProxy('/hand_control/ResetGripper', Empty)
 rospy.Subscriber('/hand_control/gripper_status', String, callbackGripperStatus)
 rospy.Subscriber('/hand/obj_pos', Float32MultiArray, callbackObj)
 rospy.Subscriber('/gripper/load', Float32MultiArray, callbackGripperLoad)
+move_srv = rospy.ServiceProxy('/hand_control/MoveGripper', TargetAngles)
 
 
 rate = rospy.Rate(10) 
 
-if 0:
-    # S = []
-    # L = []
-    with open('gazebo_start_states.obj', 'rb') as f:
-        S, L = pickle.load(f)
+if 1:
+    S = []
+    L = []
+    # with open('gazebo_start_states.obj', 'rb') as f:
+    #     S, L = pickle.load(f)
     while len(S) < 1000:
         print "Run ", len(S)
         # Reset gripper
@@ -47,16 +48,35 @@ if 0:
         while not gripper_closed:
             rate.sleep()
 
+        # if not (np.abs(obj_pos[0]-3.30313851e-02) < 0.01831497*2. and np.abs(obj_pos[1]-1.18306790e+02) < 0.10822673*2.):
+        #     continue
+
         rate.sleep()
 
         S.append(obj_pos)
         L.append(gripper_load)
 
+        print np.mean(np.array(S), 0), np.std(np.array(S), 0)
+        print np.mean(np.array(L), 0), np.std(np.array(L), 0)
+
+        # 3.12393330e-02 1.18311873e+02
+
         rate.sleep()
 
-        if not (len(S) % 5):
+        a = np.random.random(2) * 100 - 50
+        move_srv(a)
+
+        rospy.sleep(3.)
+
+        if not (len(S) % 10):
             with open('gazebo_start_states.obj', 'wb') as f:
                 pickle.dump([S, L], f)
+
+            So = np.array(S)
+            sm = np.mean(So,0)
+            plt.plot(So[:,0], So[:,1],'.')
+            plt.plot(sm[0], sm[1],'x')
+            plt.show()
 else:
     with open('gazebo_start_states.obj', 'rb') as f:
         S, L = pickle.load(f)

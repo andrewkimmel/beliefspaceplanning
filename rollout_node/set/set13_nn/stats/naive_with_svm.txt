@@ -4,3 +4,8 @@
 /naive_with_svm_goal0_run1, 0.0, 0.0, 0.0, 0.0, 3
 /naive_with_svm_goal1_run1, 0.0, 0.0, 0.0, 0.0, 3
 /naive_with_svm_goal2_run1, 0.0, 0.0, 0.0, 0.0, 3
+/naive_with_svm_goal0_run0,182.456,120.232,0,0,4165
+/naive_with_svm_goal1_run0,87.6525,26.636,0,0,5837
+/naive_with_svm_goal2_run0,88.5033,44.6408,0,0,5828
+/naive_with_svm_goal0_run1,103.786,34.1272,0,0,5136
+/naive_with_svm_goal1_run1,96.4577,30.6633,0,0,5731

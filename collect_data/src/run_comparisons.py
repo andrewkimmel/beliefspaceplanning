@@ -77,7 +77,7 @@ nodes =[
 # "robust_particles_pc_svmHeuristic", 
 "robust_particles_pc", 
 "naive_with_svm",
-"mean_only_particles"
+# "mean_only_particles"
 ]
 ## ROBUST PLUS GOALS part 1
 # goals = [
@@ -100,69 +100,60 @@ nodes =[
 # "20,127,  16,  16,  0.026,  0"
 # ]
 
-# seed = [
-# 121352,
-# 517517,
-# 90219,
-# 829329,
-# 854750,
-# 315604,
-# 450032,
-# 299577,
-# 460861,
-# 102557,
-# 502620,
-# 90152,
-# 262304,
-# 455762,
-# 986361,
-# 850173,
-# 946174,
-# 36375,
-# 908293,
-# 438016,
-# 943726,
-# 641619,
-# 575966,
-# 799277,
-# 968928,
-# 299693,
-# 528931,
-# 941909,
-# 524368,
-# 223754,
-# 59924,
-# 72583,
-# 530268,
-# 686644,
-# 978683,
-# 671628,
-# 965098,
-# 293854,
-# 536775,
-# 727240,
-# 286633,
-# 756622,
-# 810768,
-# 776987,
-# 857337,
-# 421650,
-# 99062,
-# 117072,
-# 896704,
-# 132096,
-# 131234,
-# 98964]
-
-
 seed = [
+121352,
+517517,
+90219,
+829329,
+854750,
+315604,
+450032,
+299577,
+460861,
+102557,
+502620,
+90152,
+262304,
+455762,
+986361,
+850173,
+946174,
+36375,
+908293,
+438016,
+943726,
+641619,
+575966,
+799277,
+968928,
+299693,
+528931,
+941909,
+524368,
+223754,
+59924,
+72583,
 530268,
 686644,
 978683,
 671628,
 965098,
 293854,
+536775,
+727240,
+286633,
+756622,
+810768,
+776987,
+857337,
+421650,
+99062,
+117072,
+896704,
+132096,
+131234,
 98964]
+
 
 ## Set 1 - Don't delete!!!
 # goals = [
@@ -202,35 +193,81 @@ seed = [
 # "-32, 104,  16,  16",
 # ]
 
-# Set 4 - Don't delete!!!
+# # Set 4 - Don't delete!!!
+# goals = [
+# "-37, 119,  16,  16, 0, 0, 0, 0",
+# "-33, 102,  16,  16, 0, 0, 0, 0",
+# "-22, 129,  16,  16, 0, 0, 0, 0",
+# "-52, 112,  16,  16, 0, 0, 0, 0",
+# "67, 80,  16,  16, 0, 0, 0, 0",
+# "-63, 91,  16,  16, 0, 0, 0, 0",
+# ]
+
+## Set 5 - Don't delete!!!
+# goals = [
+# "50, 111,  16,  16",
+# ]
+
+## Set 8 & 9 - Don't delete!!!
+# goals = [
+# "-37, 119,  16,  16, 0, 0, 0, 0",
+# "-33, 102,  16,  16, 0, 0, 0, 0",
+# "-60, 90,  16,  16, 0, 0, 0, 0",
+# "-40, 100,  16,  16, 0, 0, 0, 0",
+# "-80, 65,  16,  16, 0, 0, 0, 0",
+# "-80, 80,  16,  16, 0, 0, 0, 0",
+# "-50, 90,  16,  16, 0, 0, 0, 0",
+# "60, 90,  16,  16, 0, 0, 0, 0",
+# "80, 80,  16,  16, 0, 0, 0, 0",
+# "50, 90,  16,  16, 0, 0, 0, 0",
+# "40, 100,  16,  16, 0, 0, 0, 0",
+# "80, 65,  16,  16, 0, 0, 0, 0",
+# "-52, 112,  16,  16, 0, 0, 0, 0",
+# "67, 80,  16,  16, 0, 0, 0, 0",
+# "-63, 91,  16,  16, 0, 0, 0, 0",
+# ]
+
+# Set 10, 14nn - Don't delete!!!
 goals = [
-"-37, 119,  16,  16",
+"-37, 119,  16,  16", 
 "-33, 102,  16,  16",
-"-22, 129,  16,  16",
+"-40, 100,  16,  16",
+"-80, 80,  16,  16",
+"-50, 90,  16,  16",
+"50, 90,  16,  16",
+"40, 100,  16,  16",
 "-52, 112,  16,  16",
 "67, 80,  16,  16",
 "-63, 91,  16,  16",
 ]
 
-# ## Set 5 - Don't delete!!!
+
+## Set 15 - Don't delete!!!
 # goals = [
-# "50, 111,  16,  16",
+# "-40, 97,  16,  16",
 # ]
 
+## Set 18 - Don't delete!!!
+goals = [
+"-63, 91,  16,  16",
+"-50, 90,  16,  16",
+]
 
 
-NUM_RUNS = 2
+NUM_RUNS = 1
 
 GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
-PROBABILITY_CONSTRAINT = 0.8
-# PROBABILITY_CONSTRAINT = 0.6 #0.8
-# SUCCESS_PROB_CONSTRAINT = 0.1
+# PROBABILITY_CONSTRAINT = 0.7
+PROBABILITY_CONSTRAINT = 0.65
+NO_COLLISION_CONSTRAINT = 0.95
+# SUCCESS_PROB_CONSTRAINT = 0.7
 SUCCESS_PROB_CONSTRAINT = 0.5
 FAILURE_CONSTANT = 100.0
+# ]
 
 if __name__ == "__main__":
-    for x in range(1):
+    for x in range(NUM_RUNS):
         count = 0
         for g in goals:
             for n in nodes:
@@ -238,6 +275,7 @@ if __name__ == "__main__":
                 node_name = "node:="+ n + "_goal" + str(count) + "_run" + str(x)
                 goal_state = "goal_state:="+ g
                 total_particles = "total_particles:="
+                no_collision_constraint = "minimum_no_collision:=" + str(NO_COLLISION_CONSTRAINT)
                 success_constraint ="minimum_success_prob:=" + str(SUCCESS_PROB_CONSTRAINT)
                 probability_constraint = "minimum_prob:="
                 mean_only="mean_only:="
@@ -269,8 +307,8 @@ if __name__ == "__main__":
                     failure_constant="failure_constant:="+str(FAILURE_CONSTANT)
                 # experiment_filename="experiment_filename:=experiment"+str(count)+".txt"
                 experiment_filename="experiment_filename:="+n+".txt"
-                print node_name, goal_state, probability_constraint
+                print node_name, goal_state, probability_constraint,no_collision_constraint, success_constraint
                 goal_radius="goal_radius:=" + str(GOAL_RADIUS)
-                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", node_name, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint])
+                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", node_name, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint, no_collision_constraint, random_seed])
             count = count + 1
 
