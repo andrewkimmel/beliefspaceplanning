@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -199,16 +199,21 @@ if Set == '19_nn': # New
     Obs = np.array([Obs1, Obs2, Obs3])
     
 if Set == '20_nn':
-    C = np.array([[53,93],
-    [74,76],
+    C = np.array([[40,91],
+                [69,72],
+                [75,81],
+                [-38,92],
+                [-75,72],
+                [-55,100],
+                [-62,78]
     ])
 
-    Obs = np.array([[-38, 117.1, 4.],
-        [-33., 106.2, 4.],
-        [-51.5, 105.2, 4.],
-        [43., 111.5, 6.],
-        [59., 80., 3.],
-        [36.5, 94., 4.]
+    Obs = np.array([[-46, 110, 5.],
+        [-22, 107, 4.],
+        [-60, 87, 4.],
+        [50., 104, 3.],
+        [61., 87., 3.],
+        [32, 102., 6.]
         ])
 
 # ===============================================
@@ -366,8 +371,8 @@ if not rollout and 1:
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=300)
-            # plt.show()
-            # exit(1)
+            plt.show()
+            exit(1)
 
         fo.close()
         
