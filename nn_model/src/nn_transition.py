@@ -198,11 +198,11 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
             [-33., 106.2, 4.],
             # [-52.5, 105.5, 4.],
             [-51.5, 105.2, 4.],
-            [42., 111., 6.],
-            [62., 80., 3.],
+            [43., 111.5, 6.],
+            [59., 80., 3.],
             [36.5, 94., 4.]
         ])
-        f = 1.1 # inflate
+        f = 1.2 # inflate
 
         for obs in Obs:
             if np.linalg.norm(s[:2]-obs[:2]) <= f * obs[2]:
