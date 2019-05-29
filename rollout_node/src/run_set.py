@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -194,7 +194,7 @@ if Set == '19_nn': # New
 
     Obs = np.array([[-38, 117.1, 4.],
         [-33., 106.2, 4.],
-        [-51.5, 105.2, 4.],
+        [-51.2, 105.4, 4.],
         [42., 111., 6.],
         [62., 80., 3.],
         [36.5, 94., 4.]
