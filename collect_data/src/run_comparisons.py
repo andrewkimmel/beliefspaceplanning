@@ -249,8 +249,8 @@ goals = [
 
 ## Set 18 - Don't delete!!!
 goals = [
-"-63, 91,  16,  16",
-# "-50, 90,  16,  16",
+# "-63, 91,  16,  16",
+"-42, 94,  16,  16",
 ]
 
 
@@ -260,7 +260,7 @@ GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
 PROBABILITY_CONSTRAINT = 0.65
-NO_COLLISION_CONSTRAINT = 0.85
+NO_COLLISION_CONSTRAINT = 0.95
 # SUCCESS_PROB_CONSTRAINT = 0.7
 SUCCESS_PROB_CONSTRAINT = 0.5
 FAILURE_CONSTANT = 100.0
@@ -268,7 +268,7 @@ FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
     for x in range(NUM_RUNS):
-        count = 0
+        count = 1
         for g in goals:
             for n in nodes:
                 random_seed = "random_seed:=" + str(seed[x])

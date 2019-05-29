@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 /robust_particles_pc_goal1_run0,162.623,71.0343,0,0,53
 /robust_particles_pc_goal1_run0,258.493,64.0287,0,0,46
 /robust_particles_pc_goal1_run0,982.967,83.8833,0,0,71
+=======
+/robust_particles_pc_goal0_run0,1076.84,73.2062,0,0,41
+/robust_particles_pc_goal0_run0,840.312,72.1139,0,0,8
+>>>>>>> 30a3786d2092e3dc417ff1444b63526d05524ff2

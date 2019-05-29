@@ -1,8 +1,3 @@
 Goal #,robust,robust,robust,robust,robust,naive,naive,naive,naive,naive,mean,mean,mean,mean,mean,
 ,fail rate, reached goal, tracking RMSE, path length, planning rate, fail rate, reached goal, tracking RMSE, path length, planning rate, fail rate, reached goal, tracking RMSE, path length, planning rate
-<<<<<<< HEAD
-0,-,-,-,-,0,-,-,-,-,0,-,-,-,-,0,
-1,33.33333333333334,55.55555555555556,2.531149855982557,77.12718581411012,50.0,70.0,20.0,1.5276280299669553,54.202991827984434,50.0,-,-,-,-,0,
-=======
 0,40.0,60.0,0.657951086001276,63.996369832984335,50.0,100.0,0.0,2.0307274378306492,52.4906817597533,50.0,-,-,-,-,0,
->>>>>>> 30a3786d2092e3dc417ff1444b63526d05524ff2
