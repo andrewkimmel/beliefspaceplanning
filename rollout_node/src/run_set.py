@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -22,8 +22,8 @@ comp = 'juntao'
 
 Set = '19_nn'
 # set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-# set_modes = ['naive_with_svm']
-set_modes = ['robust_particles_pc']
+set_modes = ['naive_with_svm']
+# set_modes = ['robust_particles_pc']
 
 ############################# Rollout ################################
 if rollout:
@@ -190,12 +190,13 @@ if Set == '18_nn': # New
     Obs = np.array([Obs1, Obs2])
 
 if Set == '19_nn': # New
-    C = np.array([[-63, 91]])
+    C = np.array([[-59, 90]])
 
-    Obs1 = np.array([-38, 116.7, 4.]) # Upper
-    Obs2 = np.array([-33., 106, 4.]) # Lower
-    Obs3 = np.array([-51., 105.5, 4.]) # Left
+    Obs1 = np.array([-38, 117.5, 4.]) # Upper
+    Obs2 = np.array([-33., 105., 4.]) # Lower
+    Obs3 = np.array([-52.5, 105.5, 4.]) # Left
     Obs = np.array([Obs1, Obs2, Obs3])
+    
 
 # ===============================================
     

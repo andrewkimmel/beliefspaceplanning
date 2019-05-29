@@ -186,9 +186,9 @@ class hand_control():
 
         self.move_servos_srv.call(angles)
 
-        Obs1 = np.array([-38, 116.7, 4.]) # Upper
-        Obs2 = np.array([-33., 106, 4.]) # Lower
-        Obs3 = np.array([-51., 105.5, 4.]) # Left
+        Obs1 = np.array([-38, 117.5, 4.]) # Upper
+        Obs2 = np.array([-33., 105., 4.]) # Lower
+        Obs3 = np.array([-52.5, 105.5, 4.]) # Left
         Obs = np.array([Obs1, Obs2, Obs3])
         if self.OBS:
             for obs in Obs:
