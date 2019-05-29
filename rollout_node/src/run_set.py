@@ -191,6 +191,7 @@ if Set == '18_nn': # New
 
 if Set == '19_nn': # New
     C = np.array([[-59, 90]])
+    # [53,93]
 
     Obs1 = np.array([-38, 117.5, 4.]) # Upper
     Obs2 = np.array([-33., 105., 4.]) # Lower
