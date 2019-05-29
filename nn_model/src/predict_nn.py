@@ -17,8 +17,8 @@ class predict_nn:
     state_action_dim = 6
     state_dim = 4
 
-    VAR_POS = [0.5, 0.5]
-    VAR_LOAD = [0.1, 0.1]
+    VAR_POS = [0.8, 0.8]
+    VAR_LOAD = [0.4, 0.4]
        
     def __init__(self):
 
@@ -29,7 +29,7 @@ class predict_nn:
         print('[predict_nn] Loading training data...')
 
         ''' load mean and std used for normalization'''
-        data_path = '/home/juntao/catkin_ws/src/beliefspaceplanning/nn_model/data/'
+        data_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/nn_model/data/'
         with open(data_path + 'state_mean_arr', 'rb') as pickle_file:
             self.state_mean_arr = pickle.load(pickle_file)
 
@@ -43,7 +43,7 @@ class predict_nn:
             self.delta_std_arr = pickle.load(pickle_file)
 
         ######## Load Neural Network
-        self.model_path = '/home/juntao/catkin_ws/src/beliefspaceplanning/nn_model/model/'
+        self.model_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/nn_model/model/'
 
         '''Neural net structure'''
         self.neural_net_pos = tf.keras.Sequential([

@@ -17,13 +17,13 @@ rollout = 1
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 Set = '19_nn'
-# set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
-set_modes = ['robust_particles_pc']
+# set_modes = ['robust_particles_pc']
 
 ############################# Rollout ################################
 if rollout:
@@ -190,12 +190,15 @@ if Set == '18_nn': # New
     Obs = np.array([Obs1, Obs2])
 
 if Set == '19_nn': # New
-    C = np.array([[-63, 91]])
+    C = np.array([[0,0],[-42, 94]])
 
-    Obs1 = np.array([-38, 116.7, 4.]) # Upper
-    Obs2 = np.array([-33., 106, 4.]) # Lower
-    Obs3 = np.array([-51., 105.5, 4.]) # Left
-    Obs = np.array([Obs1, Obs2, Obs3])
+    Obs = np.array([[-38, 117.1, 4.],
+        [-33., 106.2, 4.],
+        [-51.5, 105.2, 4.],
+        [42., 111., 6.],
+        [62., 80., 3.],
+        [36.5, 94., 4.]
+        ])
 
 # ===============================================
     
