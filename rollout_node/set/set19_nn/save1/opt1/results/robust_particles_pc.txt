@@ -1,1 +1,0 @@
-robust_particles_pc_goal1_run0_plan: 66.6666666667, 55.5555555556

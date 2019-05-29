@@ -1,0 +1,2 @@
+/mean_only_particles_goal0_run0, 0.0, 0.0, 0.0, 0.0, 127
+/mean_only_particles_goal1_run0,551.684,58.898,0,0,25
