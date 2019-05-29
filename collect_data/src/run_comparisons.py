@@ -256,7 +256,7 @@ goals = [
 ## Set 20 - Don't delete!!!
 goals = [
 # "-59, 90,  16,  16",
-"-42, 94,  16,  16",
+"53,93,  16,  16",
 ]
 
 
@@ -275,7 +275,7 @@ FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
     for x in range(NUM_RUNS):
-        count = 1
+        count = 2
         for g in goals:
             for n in nodes:
                 random_seed = "random_seed:=" + str(seed[x])
