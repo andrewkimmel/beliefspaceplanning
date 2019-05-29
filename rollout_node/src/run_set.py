@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -21,9 +21,9 @@ comp = 'juntao'
 # comp = 'pracsys'
 
 Set = '20_nn'
-# set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
-set_modes = ['robust_particles_pc']
+# set_modes = ['robust_particles_pc']
 
 ############################# Rollout ################################
 if rollout:
@@ -65,7 +65,7 @@ if rollout:
 
                 Af = A.reshape((-1,))
                 Pro = []
-                for j in range(4):
+                for j in range(10):
                     print("Rollout number " + str(j) + ".")
                     
                     Sro = np.array(rollout_srv(Af, [0,0,0,0]).states).reshape(-1,state_dim)
@@ -160,7 +160,7 @@ if Set == '15_nn' or Set == '16_nn': # New
         [-27, 98],
         [-23, 106]])
 
-    Obs = np.array([[-9., 107.2, 2.7], [-12, 114, 2.55]])
+    Obs = np.array([[-9., 107.2, 2.7], [-12, 114, 2.551]])
 
 # if Set == '17_nn': # New
 #     C = np.array([[-40, 97]])
@@ -199,18 +199,14 @@ if Set == '19_nn': # New
     
 if Set == '20_nn':
     C = np.array([[53,93],
-    [74,73],
-    [47,87],
-    [-56,80],
-    [52,89],
-    [-66,74]
+    [74,76],
     ])
 
     Obs = np.array([[-38, 117.1, 4.],
         [-33., 106.2, 4.],
         [-51.5, 105.2, 4.],
-        [42., 111., 6.],
-        [62., 80., 3.],
+        [43., 111.5, 6.],
+        [59., 80., 3.],
         [36.5, 94., 4.]
         ])
 
