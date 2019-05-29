@@ -17,13 +17,14 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
-Set = '20_nn'
+Set = '19_nn'
 # set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
-set_modes = ['robust_particles_pc']
+# set_modes = ['robust_particles_pc']
+set_modes = ['mean_only_particles']
 
 ############################# Rollout ################################
 if rollout:
@@ -65,7 +66,7 @@ if rollout:
 
                 Af = A.reshape((-1,))
                 Pro = []
-                for j in range(4):
+                for j in range(10):
                     print("Rollout number " + str(j) + ".")
                     
                     Sro = np.array(rollout_srv(Af, [0,0,0,0]).states).reshape(-1,state_dim)
@@ -190,12 +191,13 @@ if Set == '18_nn': # New
     Obs = np.array([Obs1, Obs2])
 
 if Set == '19_nn': # New
-    C = np.array([[-59, 90]])
+    C = np.array([[-59, 90],[-42, 94]])
 
     Obs1 = np.array([-38, 117.5, 4.]) # Upper
     Obs2 = np.array([-33., 105., 4.]) # Lower
-    Obs3 = np.array([-52.5, 105.5, 4.]) # Left
-    Obs = np.array([Obs1, Obs2, Obs3])
+    Obs3 = np.array([-52.5, 105.5, 4.]) # Left - for goal 0
+    Obs3b = np.array([-51., 105.5, 4.]) # Left - for goal 1
+    Obs = np.array([Obs1, Obs2, Obs3, Obs3b])
     
 if Set == '20_nn':
     C = np.array([[53,93],
@@ -338,9 +340,19 @@ if not rollout and 1:
             ax.add_artist(goal_plan)
 
             try:
+                kj = 0
                 for o in Obs:
+                    if Set == '19_nn':
+                        if kj == 2 and num == 1:
+                            kj += 1
+                            continue
+                        if kj == 3 and num == 0:
+                            kj += 1
+                            continue
+                            
                     obs = plt.Circle(o[:2], o[2])#, zorder=10)
                     ax.add_artist(obs)
+                    kj += 1
             except:
                 pass
 

@@ -10,7 +10,7 @@ from svm_class import svm_failure
 
 
 import sys
-sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 from mean_shift import mean_shift
 from gpup_gp_node.srv import batch_transition, batch_transition_repeat, one_transition, setk
 
@@ -196,6 +196,7 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
         # Obs = np.array([Obs1, Obs2, Obs3])
         Obs = np.array([[-38, 117.1, 4.],
             [-33., 106.2, 4.],
+            # [-52.5, 105.5, 4.],
             [-51.5, 105.2, 4.],
             [42., 111., 6.],
             [62., 80., 3.],
