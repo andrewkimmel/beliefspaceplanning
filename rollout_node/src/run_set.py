@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -371,8 +371,8 @@ if not rollout and 1:
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=300)
-            plt.show()
-            exit(1)
+            # plt.show()
+            # exit(1)
 
         fo.close()
         
