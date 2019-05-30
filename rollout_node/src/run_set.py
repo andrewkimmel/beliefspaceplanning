@@ -13,7 +13,7 @@ from scipy.io import loadmat
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -21,11 +21,11 @@ rollout = 1
 # comp = 'juntao'
 comp = 'pracsys'
 
-Set = '19_nn'
-# set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+Set = '21_nn'
+set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
-set_modes = ['mean_only_particles']
+# set_modes = ['mean_only_particles']
 
 ############################# Rollout ################################
 if rollout:
@@ -222,6 +222,21 @@ if Set == '20_nn':
         [32, 102., 6.]
         ])
 
+if Set == '21_nn': # New
+    C = np.array([[-58, 80],
+            [50,78],
+            [73,76],
+            [-26,96],
+            [57,103],
+    ])
+    Obs = np.array([[-38, 117.1, 4.],
+        [-33., 105., 4.],
+        [-52.5, 105.2, 4.],
+        [43., 111.5, 6.],
+        [59., 80., 3.],
+        [36.5, 94., 4.]
+        ])
+
 # ===============================================
     
 def tracking_error(S1, S2):
@@ -340,15 +355,14 @@ if not rollout and 1:
 
             p = 0
             for S in Pro:
-                plt.plot(S[:,0], S[:,1], '-b')
-                if S.shape[0] < maxR:
+                
+                if S.shape[0] < maxR or np.linalg.norm(S[-1,:2]-ctr) > r:
+                    plt.plot(S[:,0], S[:,1], '-r')
                     plt.plot(S[-1,0], S[-1,1], 'or')
-
-                if np.linalg.norm(S[-1,:2]-ctr) <= r:
-                    plt.plot(S[-1,0], S[-1,1], 'og')
-                    p += 1
                 else:
-                    plt.plot(S[-1,0], S[-1,1], 'or')
+                    plt.plot(S[-1,0], S[-1,1], 'ob')
+                    plt.plot(S[:,0], S[:,1], '-b')
+                    p += 1
             p = float(p) / len(Pro)*100
             print("Reached goal success rate: " + str(p) + "%")
 
@@ -403,8 +417,8 @@ if not rollout and 1:
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
             plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=300)
-            plt.show()
-            exit(1)
+            # plt.show()
+            # exit(1)
 
         fo.close()
         
