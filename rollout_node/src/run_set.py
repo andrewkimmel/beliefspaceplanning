@@ -10,6 +10,7 @@ from rollout_node.srv import rolloutReq
 import time
 import glob
 from scipy.io import loadmat
+from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
 
 rollout = 0
@@ -17,13 +18,14 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
-Set = '20_nn'
+Set = '21_nn'
 set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
+# set_modes = ['mean_only_particles']
 
 ############################# Rollout ################################
 if rollout:
@@ -190,13 +192,17 @@ if Set == '18_nn': # New
     Obs = np.array([Obs1, Obs2])
 
 if Set == '19_nn': # New
-    C = np.array([[-59, 90]])
-    # [53,93]
+    C = np.array([[-59, 90], [-42, 94], [53,93]])
 
-    Obs1 = np.array([-38, 117.5, 4.]) # Upper
-    Obs2 = np.array([-33., 105., 4.]) # Lower
-    Obs3 = np.array([-52.5, 105.5, 4.]) # Left
-    Obs = np.array([Obs1, Obs2, Obs3])
+    Obs = np.array([[-38, 117.1, 4.],
+        # [-33., 105., 4.],
+        [-33., 106.2, 4.],
+        [-52.5, 105.2, 4.],
+        [-51., 105.5, 4.],
+        [43., 111.5, 6.],
+        [59., 80., 3.],
+        [36.5, 94., 4.]
+        ])
     
 if Set == '20_nn':
     C = np.array([[40,91],
@@ -214,6 +220,21 @@ if Set == '20_nn':
         [50., 104, 3.],
         [61., 87., 3.],
         [32, 102., 6.]
+        ])
+
+if Set == '21_nn': # New
+    C = np.array([[-58, 80],
+            [50,78],
+            [73,76],
+            [-26,96],
+            [57,103],
+    ])
+    Obs = np.array([[-38, 117.1, 4.],
+        [-33., 105., 4.],
+        [-52.5, 105.2, 4.],
+        [43., 111.5, 6.],
+        [59., 80., 3.],
+        [36.5, 94., 4.]
         ])
 
 # ===============================================
@@ -295,7 +316,6 @@ if not rollout and 1:
                 else:
                     Ss.append(Pro[i][0,:2])
                     i += 1 
-            print np.mean(np.array(Ss),0), np.std(np.array(Ss),0)
 
             A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
             maxR = A.shape[0]+1
@@ -320,35 +340,61 @@ if not rollout and 1:
 
             # fig = plt.figure(k)
             fig, ax = plt.subplots(figsize=(12,12))
-            plt.plot(Data[:,0], Data[:,1], '.y', zorder=0)
+            # plt.plot(Data[:,0], Data[:,1], '.y', zorder=0)
+
+            # -----
+            hull = ConvexHull(Data[:,:2])
+            H1 = []
+            for simplex in hull.vertices:
+                H1.append(Data[simplex, :2])
+            H2 = np.array([[-87,41],[-83,46],[-76,52],[-60,67],[-46,79],[-32,90],[-18,100],[0,105],[18,100],[32,90],[46,79],[60,67],[76,52],[83,46],[87,41]])
+            H = np.concatenate((np.array(H1)[2:,:], H2), axis=0)
+            pgon = plt.Polygon(H, color='y', alpha=1, zorder=0)
+            ax.add_patch(pgon)
+            # -----
 
             p = 0
             for S in Pro:
-                plt.plot(S[:,0], S[:,1], '--r')
-                if S.shape[0] < maxR:
-                    plt.plot(S[-1,0], S[-1,1], 'oc')
-
-                if np.linalg.norm(S[-1,:2]-ctr) <= r:
+                
+                if S.shape[0] < maxR or np.linalg.norm(S[-1,:2]-ctr) > r:
+                    plt.plot(S[:,0], S[:,1], '-r')
+                    plt.plot(S[-1,0], S[-1,1], 'or')
+                else:
+                    plt.plot(S[-1,0], S[-1,1], 'ob')
+                    plt.plot(S[:,0], S[:,1], '-b')
                     p += 1
             p = float(p) / len(Pro)*100
             print("Reached goal success rate: " + str(p) + "%")
 
-            plt.plot(ctr[0], ctr[1], 'om')
-            goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
-            ax.add_artist(goal)
-            goal_plan = plt.Circle((ctr[0], ctr[1]), rp, color='w')
+            # plt.plot(ctr[0], ctr[1], 'om')
+            # goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
+            # ax.add_artist(goal)
+            goal_plan = plt.Circle((ctr[0], ctr[1]), r, color='m')
             ax.add_artist(goal_plan)
 
             try:
-                for o in Obs:
-                    obs = plt.Circle(o[:2], o[2])#, zorder=10)
+                kj = 0
+                for os in Obs:
+                    o = np.copy(os)
+                    if Set == '19_nn':
+                        if kj == 2 and num > 0:
+                            kj += 1
+                            continue
+                        if kj == 3 and num == 0:
+                            kj += 1
+                            continue
+                    if num == 0 and kj == 1:
+                        o[1] = 105.
+                    
+                    obs = plt.Circle(o[:2], o[2], color=[0.4,0.4,0.4])#, zorder=10)
                     ax.add_artist(obs)
+                    kj += 1
             except:
                 pass
 
-            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3.5, label='Planned path')
+            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth = 2.7, label='Planned path')
 
-            plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
+            # plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
             # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
             # Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
             # plt.fill( X, Y , alpha = 0.5 , color = 'b')
