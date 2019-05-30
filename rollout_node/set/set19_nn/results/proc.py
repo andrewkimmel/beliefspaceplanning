@@ -6,9 +6,8 @@ from matplotlib.patches import Ellipse, Polygon
 import glob
 
 
-# files = glob.glob("*.png")
-
 set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set19_nn/results/'
 
 W = 1200
 H = 800
@@ -16,7 +15,7 @@ H = 800
 for i in range(3):
     P = []
     for set_mode in set_modes:
-        files = glob.glob(set_mode + "*.png")
+        files = glob.glob(path + set_mode + "*.png")
         F = '-1'
         for File in files:
             if int(File[File.find('goal')+4]) == i:
@@ -48,4 +47,4 @@ for i in range(3):
     I = np.concatenate((P[0], P[1], P[2]), axis=1)
 
     # plt.imshow(I)
-    plt.imsave('robust_naive_mean_' + str(i) + '.png', I)
+    plt.imsave(path + 'robust_naive_mean_' + str(i) + '.png', I)
