@@ -262,8 +262,6 @@ goals = [
 "57,103,  16,  16",
 ]
 
-
-
 NUM_RUNS = 1
 
 GOAL_RADIUS = 7

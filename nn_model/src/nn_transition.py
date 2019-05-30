@@ -84,9 +84,12 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
 
         if (len(S) == 1):
             st = rospy.get_time()
-            p = self.probability(S[0,:],a)
+            p = self.probability(S[0,:], a)
             self.time_svm += rospy.get_time() - st
             self.num_checks_svm += 1
+
+            print("------")
+            print(S[0,:], a)
 
             node_probability = 1.0 - p
             sa = np.concatenate((S[0,:],a), axis=0)
@@ -94,6 +97,8 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
             s_next = self.predict(sa)
             self.time_nn += rospy.get_time() - st
             self.num_checks_nn += 1
+
+            print(s_next)
             
             collision_probability = 1.0 if (self.OBS and self.obstacle_check(s_next)) else 0.0
             
