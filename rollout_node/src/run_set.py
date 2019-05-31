@@ -12,13 +12,13 @@ import glob
 from scipy.io import loadmat
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 Set = '19_nn'
 set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
@@ -305,7 +305,6 @@ if not rollout and 1:
             print('Plotting file number ' + str(k+1) + ': ' + file_name)
             
             with open(pklfile) as f:  
-                print pklfile
                 Pro = pickle.load(f)
             
             i = 0

@@ -123,7 +123,7 @@ class hand_control():
             self.reset_srv.call()
             # Close gripper
             no = np.random.random(2)*2. - 1.
-            self.moveGripper(self.finger_closing_position+no/300.)
+            self.moveGripper(self.finger_closing_position+no/1000.)
             rospy.sleep(0.7)
             self.move_lift_srv.call()
             rospy.sleep(2.0)

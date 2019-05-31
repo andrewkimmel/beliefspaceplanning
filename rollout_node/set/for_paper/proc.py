@@ -26,7 +26,7 @@ for path in paths:
                 if int(File[File.find('goal')+4]) == i:
                     F = File
                     break
-            if (path.find('set20_nn') > 0 or F == '-1') and not (i == 0 or i == 2):
+            if (path.find('set20_nn') > 0 or F == '-1') and not (i == 0 or i == 2 or i == 3):
                 continue
 
             if F == '-1':
@@ -44,11 +44,12 @@ for path in paths:
                 elif b == 2 or b == 3:
                     x = 1254
                     y = 1782
-                elif b == 4 or b == 5:
+                elif b == 4:
                     x = 1254
                     y = 1782
-                    # plt.imshow(I)
-                    # plt.show()
+                elif b == 5:
+                    x = 1200
+                    y = 760
                 else:
                     x = 1
                     y = 1
