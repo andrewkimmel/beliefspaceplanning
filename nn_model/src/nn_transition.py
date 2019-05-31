@@ -195,12 +195,12 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action, 'collision_probability': collision_probability}
 
     def obstacle_check(self, s):
-        Obs = np.array([[-46, 110, 5.],
-            [-22, 107, 4.],
-            [-60, 87, 4.],
-            [50., 104, 3.],
-            [61., 87., 3.],
-            [32, 102., 6.]
+        Obs = np.array([[-38, 117.1, 4.],
+            [-33., 105., 4.],
+            [-52.5, 105.2, 4.],
+            [43., 111.5, 6.],
+            [59., 80., 3.],
+            [36.5, 94., 4.]
         ])
         f = 1.2 # inflate
 

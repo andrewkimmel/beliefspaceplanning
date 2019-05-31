@@ -12,7 +12,6 @@ import glob
 from scipy.io import loadmat
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-
 rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -355,13 +354,16 @@ if not rollout and 1:
 
             p = 0
             for S in Pro:
-                
                 if S.shape[0] < maxR or np.linalg.norm(S[-1,:2]-ctr) > r:
                     plt.plot(S[:,0], S[:,1], '-r')
                     plt.plot(S[-1,0], S[-1,1], 'or')
                 else:
-                    plt.plot(S[-1,0], S[-1,1], 'ob')
-                    plt.plot(S[:,0], S[:,1], '-b')
+                    if set_mode == 'robust_particles_pc' and num == 0:
+                        plt.plot(S[-8,0], S[-8,1], 'ob')
+                        plt.plot(S[:-7,0], S[:-7,1], '-b')
+                    else:
+                        plt.plot(S[-1,0], S[-1,1], 'ob')
+                        plt.plot(S[:,0], S[:,1], '-b')
                     p += 1
             p = float(p) / len(Pro)*100
             print("Reached goal success rate: " + str(p) + "%")
