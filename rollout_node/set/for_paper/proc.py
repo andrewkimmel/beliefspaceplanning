@@ -20,7 +20,6 @@ for path in paths:
         P = []
         hj = 0
         for set_mode in set_modes:
-            print set_mode
             files = glob.glob(path + set_mode + "*.png")
             F = '-1'
             for File in files:
@@ -28,9 +27,7 @@ for path in paths:
                     F = File
                     break
             if (path.find('set20_nn') > 0 or F == '-1') and not (i == 0 or i == 2):
-                print "d ", F, i
                 continue
-            print F, i
 
             if F == '-1':
                 I = np.zeros((H,W,4))
@@ -57,6 +54,8 @@ for path in paths:
                     y = 1
                     # continue
                 I = I[x:x+H,y:y+W,:]
+            
+            plt.imsave(des_path + set_mode + '_goal' + str(b) + '.png', I)
 
             P.append(I)
 
@@ -65,5 +64,5 @@ for path in paths:
         I = np.concatenate((P[0], P[1], P[2]), axis=1)
 
         # plt.imshow(I)
-        plt.imsave(des_path + 'robust_naive_mean_' + str(b) + '.png', I)
+        plt.imsave(des_path + 'robust_naive_mean_goal' + str(b) + '.png', I)
         b += 1
