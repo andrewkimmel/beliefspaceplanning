@@ -255,13 +255,11 @@ goals = [
 
 ## Set 21 - Don't delete!!!
 goals = [
-# "40,91,  16,  16",
-# "69,72,  16,  16",
-"75,81,  16,  16",
-# "-38,92,  16,  16",
-# "-75,72,  16,  16",
-# "-55,100,  16,  16",
-# "-62,78,  16,  16",
+# "-58, 80,  16,  16",
+# "50,78,  16,  16",
+# "73,76,  16,  16",
+"-26,96,  16,  16",
+# "57,103,  16,  16",
 ]
 
 NUM_RUNS = 1
@@ -270,7 +268,7 @@ GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
 PROBABILITY_CONSTRAINT = 0.65
-NO_COLLISION_CONSTRAINT = 0.96
+NO_COLLISION_CONSTRAINT = 0.94
 # SUCCESS_PROB_CONSTRAINT = 0.7
 SUCCESS_PROB_CONSTRAINT = 0.45
 FAILURE_CONSTANT = 100.0

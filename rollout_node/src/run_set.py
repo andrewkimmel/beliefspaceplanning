@@ -17,10 +17,10 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
-Set = '20_nn'
+Set = '19_nn'
 set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
