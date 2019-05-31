@@ -17,8 +17,8 @@ rollout = 1
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
 Set = '19_nn'
 set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
@@ -213,7 +213,7 @@ if Set == '20_nn':
                 [-62,78]
     ])
 
-    Obs = np.array([[-46, 110, 5.],
+    Obs = np.array([[-47, 111, 5.],
         [-22, 107, 4.],
         [-60, 87, 4.],
         [50., 104, 3.],

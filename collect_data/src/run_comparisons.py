@@ -276,7 +276,7 @@ FAILURE_CONSTANT = 100.0
 
 if __name__ == "__main__":
     for x in range(NUM_RUNS):
-        count = 3
+        count = 0
         for g in goals:
             for n in nodes:
                 random_seed = "random_seed:=" + str(seed[x])

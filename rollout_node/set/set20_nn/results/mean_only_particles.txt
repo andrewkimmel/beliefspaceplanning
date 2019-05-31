@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 mean_only_particles_goal0_run0_plan: 60.0, 0.0
 mean_only_particles_goal3_run0_plan: 100.0, 22.2222222222
+=======
+mean_only_particles_goal3_run0_plan: 100.0, 22.2222222222
+mean_only_particles_goal0_run0_plan: 60.0, 0.0
+>>>>>>> 465ff46e062db624f8a03ae505842bca0e5d293e
