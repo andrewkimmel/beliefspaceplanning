@@ -1,0 +1,71 @@
+==== Goal 0 ====
+/naive_with_svm_goal0_run0,13.1164,95.0747,0,0,10
+/naive_with_svm_goal0_run0,12.5563,85.0621,0,0,9
+
+/mean_only_particles_goal0_run0, 0.0, 0.0, 0.0, 0.0, 127
+
+/robust_particles_pc_goal0_run0,1076.84,73.2062,0,0,41
+/robust_particles_pc_goal0_run0,840.312,72.1139,0,0,8
+
+==== Goal 1 ====
+/naive_with_svm_goal1_run0,7.75746,103.496,0,0,921
+/naive_with_svm_goal1_run0,8.3796,112.8,0,0,1010
+
+/mean_only_particles_goal1_run0,551.684,58.898,0,0,25
+
+/robust_particles_pc_goal1_run0,162.623,71.0343,0,0,53
+/robust_particles_pc_goal1_run0,258.493,64.0287,0,0,46
+/robust_particles_pc_goal1_run0,982.967,83.8833,0,0,71
+
+==== Goal 2 ====
+
+/mean_only_particles_goal2_run0,552.509,69.4824,0,0,44
+
+==== Goal 3 ====
+
+/naive_with_svm_goal0_run0,7.09911,190.602,0,0,340
+
+/mean_only_particles_goal0_run0,170.828,59.8386,0,0,28
+
+/robust_particles_pc_goal0_run0,219.771,77.793,0,0,50
+
+==== Goal 4 ====
+
+/naive_with_svm_goal2_run0,43.7853,134.078,0,0,156
+
+/mean_only_particles_goal2_run0, 0.0, 0.0, 0.0, 0.0, 72
+/mean_only_particles_goal2_run0, 0.0, 0.0, 0.0, 0.0, 81
+
+/robust_particles_pc_goal2_run0,579.803,83.8544,0,0,13
+
+==== Goal 5 ====
+
+/mean_only_particles_goal3_run0,927.694,61.3074,0,0,46
+
+/robust_particles_pc_goal3_run0,806.729,57.0558,0,0,31
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
