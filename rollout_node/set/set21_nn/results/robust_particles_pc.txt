@@ -1,1 +1,1 @@
-robust_particles_pc_goal4_run0_plan: 33.3333333333, 33.3333333333
+robust_particles_pc_goal4_run0_plan: 40.0, 40.0
