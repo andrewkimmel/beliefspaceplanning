@@ -29,7 +29,7 @@ class predict_nn:
         print('[predict_nn] Loading training data...')
 
         ''' load mean and std used for normalization'''
-        data_path = '/home/juntao/catkin_ws/src/beliefspaceplanning/nn_model/data/'
+        data_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/nn_model/data/'
         with open(data_path + 'state_mean_arr', 'rb') as pickle_file:
             self.state_mean_arr = pickle.load(pickle_file)
 
@@ -43,7 +43,7 @@ class predict_nn:
             self.delta_std_arr = pickle.load(pickle_file)
 
         ######## Load Neural Network
-        self.model_path = '/home/juntao/catkin_ws/src/beliefspaceplanning/nn_model/model/'
+        self.model_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/nn_model/model/'
 
         '''Neural net structure'''
         self.neural_net_pos = tf.keras.Sequential([
@@ -102,46 +102,6 @@ class predict_nn:
 
         return next_state
 
-# if __name__ == "__main__":
-#     NN = predict_nn()
-
-#     # with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/jt_path3_v14_m10.pkl', 'rb') as pickle_file:
-#     #     traj_data = pickle.load(pickle_file, encoding='latin1')
-#     # S = np.asarray(traj_data[0])#[:-1,:]
-#     # A = traj_data[2]
-#     with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/results/jt_rollout_3_v14_d8_m1.pkl', 'rb') as pickle_file:
-#         traj_data = pickle.load(pickle_file, encoding='latin1')
-#     S = np.asarray(traj_data[0])[:,:4]
-#     A = traj_data[1]
-
-#     s = S[0,:]
-#     SP = []
-#     SP.append(s)
-#     t = 0.
-#     k = 0
-#     for a in A:
-#         for i in range(1):
-#             print(k, i, a)
-#             sa = np.concatenate((s, a), axis=0)
-#             st = time.time()
-#             s_next = NN.predict(sa)
-#             t += time.time() - st
-#             k += 1
-
-#             SP.append(s_next)
-#             s = np.copy(s_next)
-
-#     print("Avg. time: %f"%(t/k))
-
-#     SP = np.array(SP)
-
-#     plt.figure(1)
-#     plt.plot(S[:,0], S[:,1], 'r')
-#     plt.plot(SP[:,0],SP[:,1], '.-b')
-#     plt.figure(2)
-#     plt.plot(S[:,2], S[:,3], 'r')
-#     plt.plot(SP[:,2],SP[:,3], '.-b')
-#     plt.show()
 
 
 

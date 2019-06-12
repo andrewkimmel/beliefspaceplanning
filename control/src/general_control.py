@@ -12,7 +12,7 @@ from control.srv import pathTrackReq
 from rollout_node.srv import gets
 
 import sys
-sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 import var
 
 class general_control():
@@ -21,16 +21,18 @@ class general_control():
     obj_pos = np.array([0., 0.])
     gripper_load = np.array([0., 0.])
     actionGP = np.array([0., 0.])
+    actionNN = np.array([0., 0.])
     actionVS = np.array([0., 0.])
     gripper_closed = 'open'
-    tol = 0.7
-    goal_tol = 4.0
+    tol = 0.3
+    goal_tol = 0.3
     horizon = 1
 
     def __init__(self):
         rospy.init_node('control', anonymous=True)
 
         self.gp = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
+        self.nn = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
 
         rospy.Subscriber('/hand/obj_pos', Float32MultiArray, self.callbackObj)
         rospy.Subscriber('/gripper/load', Float32MultiArray, self.callbackGripperLoad)
@@ -39,6 +41,7 @@ class general_control():
 
         rospy.Service('/control', pathTrackReq, self.CallbackTrack)
         rospy.Subscriber('/gp_controller/action', Float32MultiArray, self.CallbackBestActionGP)
+        rospy.Subscriber('/nn_controller/action', Float32MultiArray, self.CallbackBestActionNN)
         rospy.Subscriber('/vs_controller/action', Float32MultiArray, self.CallbackBestActionVS)
         self.pub_current_goal = rospy.Publisher('/control/goal', Float32MultiArray, queue_size=10)
         self.pub_horizon = rospy.Publisher('/control/horizon', Float32MultiArray, queue_size=10)
@@ -64,7 +67,7 @@ class general_control():
 
     def CallbackTrack(self, req):
 
-        path = np.array(req.desired_path).reshape(-1, self.state_dim)
+        path = np.array(req.desired_path).reshape(-1, 2)
         
         real_path, actions, success = self.run_tracking(path)
 
@@ -76,17 +79,30 @@ class general_control():
 
     def run_tracking(self, S):
         
-        # Reset gripper
-        while 1:
+        fail = True
+        N = 0
+        a = np.array([-1,1])
+        while fail:
+            # Reset gripper
             self.reset_srv()
-            while not self.gripper_closed:
+            break
+
+            # Shoot
+            print('[general control] Shooting...')
+            for i in range(N):
+                suc = self.move_srv(a).success
+                if not suc or self.drop:
+                    break
                 self.rate.sleep()
 
-            # Verify starting state
-            if np.abs(self.obj_pos[0]-3.30313851e-02) < 0.01831497*2. and np.abs(self.obj_pos[1]-1.18306790e+02) < 0.10822673*2.:
-                break
+                if i == N-1:
+                    fail = False
+            
 
-        i_path = 10
+        # Move relative to current position
+        S += self.obj_pos
+
+        i_path = 0
         msg = Float32MultiArray()
         msg.data = S[i_path,:]
         msge = Float32MultiArray()
@@ -106,10 +122,11 @@ class general_control():
         action = np.array([0.,0.])
         excluded_action = np.array([0.,0.])
         dd_count = 0
-        Controller = 'GP'
+        Controller = 'NN'
         sk = 2
         
         print("[control] Tracking path...")
+        start_time = rospy.get_time()
         while 1:
             change = False
             state = np.concatenate((self.obj_pos, self.gripper_load), axis=0)
@@ -122,25 +139,23 @@ class general_control():
                 change = True
                 dd_count = 0
                 print "Distance to next waypoint: " + str(self.weightedL2(state[:sk]-S[i_path,:sk])) + ", moving to the next one # " + str(i_path) + "."
-                # Controller = 'GP'
-            # elif count > 1000:# and i_path < S.shape[0]-1:
-                # self.tol = 2.5
-                # Controller == 'VS'
+            #     Controller == 'NN'
+            # elif count > 150:# and i_path < S.shape[0]-1:
+            #     # self.tol = 2.5
+            #     Controller == 'VS'
             self.pub_current_goal.publish(msg)
 
             dd = self.weightedL2(state[:sk]-S[i_path,:sk]) - d_prev
             dd_count = dd_count + 1 if dd > 0.  else 0
             if np.any(action != np.array([0.,0.])):
-                excluded_action = action if dd_count > 7 else np.array([0.,0.])
+                excluded_action = action if dd_count > 10 else np.array([0.,0.])
             msge.data = excluded_action
             self.pub_exclude.publish(msge)
 
-            # if n == 0 and not change and dd < 0:
-            #     n = 1
-            #     print "Extended..."
             if n <= 0:# or dd_count > 5:
-                if 0 and dd_count <= 7:#Controller == 'GP':
-                    action = self.actionGP
+                # if 0 and dd_count <= 7:
+                if 0 and Controller == 'NN':
+                    action = self.actionNN
                     if np.all(action == excluded_action):
                         action = np.array([0.,0.])
                     else:
@@ -165,6 +180,8 @@ class general_control():
 
             if np.linalg.norm(state[:sk]-S[-1,:sk]) < self.goal_tol and S.shape[0] - i_path < 3:
                 print("[control] Reached GOAL!!!")
+                T = rospy.get_time() - start_time
+                print('[control] Runtime: %f'%T)
                 success = True
                 break
 
@@ -193,6 +210,9 @@ class general_control():
 
     def CallbackBestActionGP(self, msg):
         self.actionGP = np.array(msg.data)
+    
+    def CallbackBestActionNN(self, msg):
+        self.actionNN = np.array(msg.data)
 
     def CallbackBestActionVS(self, msg):
         self.actionVS = np.array(msg.data)

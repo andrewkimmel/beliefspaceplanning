@@ -30,7 +30,7 @@ class hand_control():
     D_load = np.array([0., 0.])
     R = []
     count = 1
-    OBS = True
+    OBS = False
 
     gripper_status = 'open'
 
@@ -122,7 +122,7 @@ class hand_control():
             rospy.sleep(.2)
             self.reset_srv.call()
             # Close gripper
-            no = np.random.random(2)*2. - 1.
+            no = 0#np.random.random(2)*2. - 1.
             self.moveGripper(self.finger_closing_position+no/1000.)
             rospy.sleep(0.7)
             self.move_lift_srv.call()
@@ -187,22 +187,9 @@ class hand_control():
         self.move_servos_srv.call(angles)
 
         Obs = np.array([[-38, 117.1, 4.],
-        # [-33., 105., 4.],
         [-33., 106.2, 4.],
-        [-52.5, 105.2, 4.],
-        [-51., 105.5, 4.],
-        [43., 111.5, 6.],
-        [59., 80., 3.],
-        [36.5, 94., 4.]
         ])
 
-        # Obs = np.array([[-38, 117.1, 4.],
-        #     [-33., 105., 4.],
-        #     [-52.5, 105.2, 4.],
-        #     [43., 111.5, 6.],
-        #     [59., 80., 3.],
-        #     [36.5, 94., 4.]
-        # ])
         if self.OBS:
             for obs in Obs:
                 if np.linalg.norm(self.obj_pos-obs[:2]) < obs[2]:

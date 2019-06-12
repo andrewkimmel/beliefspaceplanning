@@ -10,7 +10,7 @@ from svm_class import svm_failure
 
 
 import sys
-sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/')
 from mean_shift import mean_shift
 from gpup_gp_node.srv import batch_transition, batch_transition_repeat, one_transition, setk
 
@@ -88,9 +88,6 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
             self.time_svm += rospy.get_time() - st
             self.num_checks_svm += 1
 
-            print("------")
-            print(S[0,:], a)
-
             node_probability = 1.0 - p
             sa = np.concatenate((S[0,:],a), axis=0)
             st = rospy.get_time()
@@ -98,8 +95,6 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
             self.time_nn += rospy.get_time() - st
             self.num_checks_nn += 1
 
-            print(s_next)
-            
             collision_probability = 1.0 if (self.OBS and self.obstacle_check(s_next)) else 0.0
             
             return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability, 'collision_probability': collision_probability}
@@ -234,7 +229,7 @@ class Spin_nn(predict_nn, mean_shift, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        p = self.probability(s, a)
+        p = 0#self.probability(s, a)
         node_probability = 1.0 - p
 
         # Propagate
