@@ -356,7 +356,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        p = self.probability(s, a)
+        p = 0#self.probability(s, a)
         node_probability = 1.0 - p
 
         # Propagate

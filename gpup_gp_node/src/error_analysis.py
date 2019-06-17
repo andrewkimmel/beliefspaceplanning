@@ -17,9 +17,12 @@ version = 14
 Obj = 'cyl19'
 state_dim = 4
 
-# naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
+naive_srv = rospy.ServiceProxy('/gp/transitionOneParticle', one_transition)
 nn_srv = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
 rospy.init_node('error_analysis', anonymous=True)
+
+# print "Waiting for service /gp/transitionOneParticle ..."
+# rospy.wait_for_service('/gp/transitionOneParticle')
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/bm/'
 test_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/src/bm/'
@@ -118,7 +121,7 @@ if 0:
     with open(test_path + 'testpaths_' + Obj + '_d_v' + str(version) + '.pkl', 'r') as f: 
         action_seq, test_paths, Obj, Suc = pickle.load(f)
 
-    if 1:
+    if 0:
         with open(path + 'prediction_analysis_' + Obj + '_gp.pkl', 'r') as f: 
             Ggp = pickle.load(f)
     else: 
@@ -127,44 +130,39 @@ if 0:
     j = 1
     while j < 10000:
         print("Run %d for %s, number of samples %d."%(j, Obj, len(Ggp)))
-        try:
-            h = np.random.randint(1,200)
-            path_inx = np.random.randint(len(test_paths))
-            R = test_paths[path_inx]
-            A = action_seq[path_inx]
-            R = R[:,[0,1,2,3]]
+        path_inx = np.random.randint(len(test_paths))
+        R = test_paths[path_inx]
+        h = np.random.randint(1,np.min([380,R.shape[0]-1]))
+        A = action_seq[path_inx]
+        R = R[:,[0,1,2,3]]
 
-            A = np.concatenate((A, np.tile(R[0,:], (A.shape[0], 1))), axis=1)
+        # A = np.concatenate((A, np.tile(R[0,:], (A.shape[0], 1))), axis=1)
 
-            # Randomly pick a section with length h
-            st_inx = np.random.randint(R.shape[0]-h-1)
-            R = R[st_inx:st_inx+h]
-            A = A[st_inx:st_inx+h]
+        # Randomly pick a section with length h
+        st_inx = np.random.randint(R.shape[0]-h-1)
+        R = R[st_inx:st_inx+h]
+        A = A[st_inx:st_inx+h]
 
-            s_start = R[0,:]
-            R_gp = predict_GP(s_start, A)
+        s_start = R[0,:]
+        R_gp = predict_GP(s_start, A)
 
-            e, l = tracking_error(R, R_gp)
-        except:
-            continue
+        e, l = tracking_error(R, R_gp)
 
         Ggp.append(np.array([h, l, e]))
         j += 1
 
-        if j == 10000 or j % 20 == 0:
+        if j == 10000 or j % 5 == 0:
             with open(path + 'prediction_analysis_' + Obj + '_gp.pkl', 'w') as f: 
                 pickle.dump(Ggp, f)
-
-    Ggp = np.array(Ggp)
 
     with open(path + 'prediction_analysis_' + Obj + '_gp.pkl', 'w') as f: 
         pickle.dump(Ggp, f)
 
     Ggp = np.array(Ggp)
 
-# else:
-#     with open(path + 'prediction_analysis_' + Obj + '_gp.pkl', 'r') as f: 
-#         Ggp = np.array(pickle.load(f))
+else:
+    with open(path + 'prediction_analysis_' + Obj + '_gp.pkl', 'r') as f: 
+        Ggp = np.array(pickle.load(f))
 
 if 0:
     with open(test_path + 'testpaths_' + Obj + '_d_v' + str(version) + '.pkl', 'r') as f: 
@@ -208,29 +206,34 @@ else:
         Gnn = np.array(pickle.load(f))
  
 
-# lgp, Egp, Sgp = plato(Ggp, 50)
+plt.figure(figsize=(12, 3.))
+# plt.yscale('log',basey=10) 
+
+lgp, Egp, Sgp = plato(Ggp, 50)
 lnn, Enn, Snn = plato(Gnn, 50)
 
-# Egp = medfilter(Egp, 10)
-Enn = medfilter(Enn, 10)
+Egp = medfilter(Egp, 10)
+Egp[:6] = medfilter(Egp[:6], 5)
+Enn = medfilter(Enn, 15)
 
 # plt.figure(figsize=(10,4))
 
 # plt.fill_between(lgp, Egp+Sgp, Egp-Sgp, facecolor='cyan', alpha=0.5, label='GP std.')
 # plt.fill_between(lnn, Enn+Snn, Enn-Snn, facecolor='red', alpha=0.5, label='NN std.')
 
-plt.plot(Gnn[:,1], Gnn[:,2], '.y', label = 'NN raw')
-plt.plot(lnn, Enn, '-k', label = 'NN')
+# plt.plot(Gnn[:,1], Gnn[:,2], '.y', label = 'NN raw')
+plt.plot(lnn, Enn, '-k', label = 'Neural-network')
 
 # plt.plot(Ggp[:,1], Ggp[:,2], '.m', label = 'GP raw')
-# plt.plot(lgp, Egp, '-b', label = 'GP')
+plt.plot(lgp, Egp, '-b', label = 'Gaussian Process')
 
 plt.xlabel('Horizon (mm)', fontsize=16)
 plt.ylabel('RMSE (mm)', fontsize=16)
-plt.title('Prediction error')
-# plt.legend()
-# plt.xlim([0,32])
-# plt.ylim([0,3])
-plt.savefig(path + 'pred_' + Obj + '.png', dpi=300) #str(np.random.randint(100000))
+# plt.title('Prediction error')
+plt.legend()
+plt.xlim([0,100])
+plt.ylim([0,5])
+plt.gcf().subplots_adjust(bottom=0.18)
+plt.savefig(path + 'pred_sim_' + Obj + '.png', dpi=300) #str(np.random.randint(100000))
 plt.show()
 
