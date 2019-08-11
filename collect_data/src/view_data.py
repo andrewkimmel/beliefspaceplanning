@@ -10,13 +10,13 @@ from transition_experience import *
 
 
 def main():
-    texp = transition_experience(discrete=True, postfix='')
+    texp = transition_experience(discrete=False, postfix='')
 
     # texp.save_to_file()
-    texp.process_transition_data(stepSize = 1, plot = True, mode = 4)
-    # texp.process_svm(stepSize = 10, mode = 4)
+    # texp.process_transition_data(stepSize = 1, plot = True, mode = 4)
+    texp.process_svm(stepSize = 1, mode = 1)
 
-    texp.plot_data()
+    # texp.plot_data()
 
     return 1
 

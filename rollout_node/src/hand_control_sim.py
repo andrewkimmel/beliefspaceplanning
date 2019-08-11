@@ -7,7 +7,7 @@ from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import TargetAngles, IsDropped, observation, MoveServos
 import math
 
-state_form = 'pos_load_vel' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
+state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
 
 class hand_control():
 
@@ -30,7 +30,7 @@ class hand_control():
     D_load = np.array([0., 0.])
     R = []
     count = 1
-    OBS = True
+    OBS = False
 
     gripper_status = 'open'
 

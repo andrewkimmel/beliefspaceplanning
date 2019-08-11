@@ -23,7 +23,7 @@ class transition_experience():
         else:
             self.mode = 'cont'
         
-        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_) + postfix
+        self.file = 'sim_raw_' + self.mode + '_v' + str(var.data_version_*0) + postfix
         self.file_name = self.path + self.file + '.obj'
 
         if Load:
@@ -342,7 +342,7 @@ class transition_experience():
 
         # exit(1) 
 
-        with open(self.path + 'svm_data_' + self.mode + '_v' + str(var.data_version_) + '_d' + str(var.dim_) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
+        with open(self.path + 'svm_data_' + self.mode + '_v' + str(var.data_version_*0) + '_d' + str(states.shape[1]) + '_m' + str(stepSize) + '.obj', 'wb') as f: 
             pickle.dump([SA, done], f)
         print('Saved svm data.')
 

@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="sim_nn_node" type="nn_node.py" name="nn_node" output="screen">
+    </node>
+</launch>

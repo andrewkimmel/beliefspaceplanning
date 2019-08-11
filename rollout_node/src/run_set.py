@@ -17,11 +17,11 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
-Set = '19_nn'
-set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
+Set = '0c_nn'
+set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
 # set_modes = ['mean_only_particles']
@@ -30,7 +30,7 @@ set_modes = ['robust_particles_pc', 'naive_with_svm', 'mean_only_particles']#'ro
 if rollout:
     rollout_srv = rospy.ServiceProxy('/rollout/rollout', rolloutReq)
     rospy.init_node('run_rollout_set', anonymous=True)
-    state_dim = 8
+    state_dim = 4
 
     while 1:
     # for _ in range(10):
@@ -77,8 +77,6 @@ if rollout:
                         pickle.dump(Pro, f)
 
 ############################# Plot ################################
-
-
 
 if Set == '5':
     # Goal centers
@@ -235,6 +233,19 @@ if Set == '21_nn': # New
         [59., 80., 3.],
         [36.5, 94., 4.]
         ])
+
+if Set == '0c_nn':
+   C = np.array([[-37, 119 ],
+        [-33, 102],
+        [-40, 100],
+        [-80, 80],
+        [-50, 90],
+        [50, 90],
+        [40, 100],
+        [-52, 112],
+        [67, 80],
+        [-63, 91]])
+
 
 # ===============================================
     
