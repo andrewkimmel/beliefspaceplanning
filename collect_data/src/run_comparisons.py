@@ -264,11 +264,12 @@ NO_COLLISION_CONSTRAINT = 0.94
 # SUCCESS_PROB_CONSTRAINT = 0.7
 SUCCESS_PROB_CONSTRAINT = 0.45
 FAILURE_CONSTANT = 100.0
+CRITIC_THRESHOLD = 0.2
 # ]
 
 if __name__ == "__main__":
     for x in range(NUM_RUNS):
-        count = 4
+        count = 0
         for g in goals:
             for n in nodes:
                 random_seed = "random_seed:=" + str(seed[x])
@@ -309,6 +310,7 @@ if __name__ == "__main__":
                 experiment_filename="experiment_filename:="+n+".txt"
                 print node_name, goal_state, probability_constraint,no_collision_constraint, success_constraint
                 goal_radius="goal_radius:=" + str(GOAL_RADIUS)
-                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", node_name, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint, no_collision_constraint, random_seed])
+                critic_threshold="critic_threshold:=" + str(CRITIC_THRESHOLD)
+                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", node_name, critic_threshold, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint, no_collision_constraint, random_seed])
             count = count + 1
 

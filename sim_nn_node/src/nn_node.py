@@ -137,8 +137,6 @@ class Spin_predict(predict_nn, svm_failure):
 
         sa = np.concatenate((s, a), axis=0)
 
-        print sa, sa.shape
-
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
         O_nn = self.O[idx,:].reshape(self.K, 6)
         E_nn = self.E[idx].reshape(self.K, 1)
