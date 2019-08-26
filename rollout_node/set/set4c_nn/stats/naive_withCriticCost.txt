@@ -1,0 +1,56 @@
+/naive_withCriticCost_goal0_run0, 0.0, 0.0, 0.0, 0.0, 132
+/naive_withCriticCost_goal0_run0,119.146,97.6134,0,0,156
+/naive_withCriticCost_goal1_run0, 0.0, 0.0, 0.0, 0.0, 237
+/naive_withCriticCost_goal2_run0, 0.0, 0.0, 0.0, 0.0, 227
+/naive_withCriticCost_goal3_run0, 0.0, 0.0, 0.0, 0.0, 255
+/naive_withCriticCost_goal4_run0, 0.0, 0.0, 0.0, 0.0, 317
+/naive_withCriticCost_goal5_run0, 0.0, 0.0, 0.0, 0.0, 318
+/naive_withCriticCost_goal6_run0, 0.0, 0.0, 0.0, 0.0, 339
+/naive_withCriticCost_goal7_run0, 0.0, 0.0, 0.0, 0.0, 286
+/naive_withCriticCost_goal8_run0, 0.0, 0.0, 0.0, 0.0, 346
+/naive_withCriticCost_goal9_run0, 0.0, 0.0, 0.0, 0.0, 344
+/naive_withCriticCost_goal10_run0, 0.0, 0.0, 0.0, 0.0, 357
+/naive_withCriticCost_goal0_run1, 0.0, 0.0, 0.0, 0.0, 293
+/naive_withCriticCost_goal1_run1, 0.0, 0.0, 0.0, 0.0, 287
+/naive_withCriticCost_goal2_run1, 0.0, 0.0, 0.0, 0.0, 311
+/naive_withCriticCost_goal3_run1, 0.0, 0.0, 0.0, 0.0, 310
+/naive_withCriticCost_goal4_run1, 0.0, 0.0, 0.0, 0.0, 324
+/naive_withCriticCost_goal5_run1, 0.0, 0.0, 0.0, 0.0, 354
+/naive_withCriticCost_goal6_run1, 0.0, 0.0, 0.0, 0.0, 350
+/naive_withCriticCost_goal7_run1,82.762,65.6214,0,0,172
+/naive_withCriticCost_goal8_run1, 0.0, 0.0, 0.0, 0.0, 343
+/naive_withCriticCost_goal9_run1, 0.0, 0.0, 0.0, 0.0, 356
+/naive_withCriticCost_goal10_run1, 0.0, 0.0, 0.0, 0.0, 362
+/naive_withCriticCost_goal0_run2, 0.0, 0.0, 0.0, 0.0, 316
+/naive_withCriticCost_goal1_run2, 0.0, 0.0, 0.0, 0.0, 301
+/naive_withCriticCost_goal2_run2,84.6631,56.7024,0,0,180
+/naive_withCriticCost_goal3_run2, 0.0, 0.0, 0.0, 0.0, 333
+/naive_withCriticCost_goal4_run2, 0.0, 0.0, 0.0, 0.0, 321
+/naive_withCriticCost_goal5_run2, 0.0, 0.0, 0.0, 0.0, 369
+/naive_withCriticCost_goal6_run2, 0.0, 0.0, 0.0, 0.0, 390
+/naive_withCriticCost_goal7_run2,185.501,68.948,0,0,177
+/naive_withCriticCost_goal8_run2, 0.0, 0.0, 0.0, 0.0, 404
+/naive_withCriticCost_goal9_run2, 0.0, 0.0, 0.0, 0.0, 361
+/naive_withCriticCost_goal10_run2, 0.0, 0.0, 0.0, 0.0, 379
+/naive_withCriticCost_goal0_run3, 0.0, 0.0, 0.0, 0.0, 326
+/naive_withCriticCost_goal1_run3, 0.0, 0.0, 0.0, 0.0, 326
+/naive_withCriticCost_goal2_run3, 0.0, 0.0, 0.0, 0.0, 338
+/naive_withCriticCost_goal3_run3, 0.0, 0.0, 0.0, 0.0, 351
+/naive_withCriticCost_goal4_run3, 0.0, 0.0, 0.0, 0.0, 373
+/naive_withCriticCost_goal5_run3, 0.0, 0.0, 0.0, 0.0, 390
+/naive_withCriticCost_goal6_run3, 0.0, 0.0, 0.0, 0.0, 375
+/naive_withCriticCost_goal7_run3,219.6,80.6925,0,0,200
+/naive_withCriticCost_goal8_run3, 0.0, 0.0, 0.0, 0.0, 377
+/naive_withCriticCost_goal9_run3, 0.0, 0.0, 0.0, 0.0, 369
+/naive_withCriticCost_goal10_run3, 0.0, 0.0, 0.0, 0.0, 346
+/naive_withCriticCost_goal0_run4, 0.0, 0.0, 0.0, 0.0, 307
+/naive_withCriticCost_goal1_run4, 0.0, 0.0, 0.0, 0.0, 308
+/naive_withCriticCost_goal2_run4,228.119,51.8698,0,0,57
+/naive_withCriticCost_goal3_run4, 0.0, 0.0, 0.0, 0.0, 321
+/naive_withCriticCost_goal4_run4, 0.0, 0.0, 0.0, 0.0, 328
+/naive_withCriticCost_goal5_run4, 0.0, 0.0, 0.0, 0.0, 379
+/naive_withCriticCost_goal6_run4, 0.0, 0.0, 0.0, 0.0, 396
+/naive_withCriticCost_goal7_run4,233.026,62.0538,0,0,93
+/naive_withCriticCost_goal8_run4, 0.0, 0.0, 0.0, 0.0, 382
+/naive_withCriticCost_goal9_run4, 0.0, 0.0, 0.0, 0.0, 360
+/naive_withCriticCost_goal10_run4, 0.0, 0.0, 0.0, 0.0, 369

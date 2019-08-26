@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval//models/nn.ckpt"
+all_model_checkpoint_paths: "/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval//models/nn.ckpt"

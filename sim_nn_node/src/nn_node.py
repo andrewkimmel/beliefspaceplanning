@@ -18,6 +18,7 @@ CRITIC = True
 class Spin_predict(predict_nn, svm_failure):
 
     state_dim = 4
+    OBS = True
 
     def __init__(self):
         predict_nn.__init__(self)
@@ -32,9 +33,10 @@ class Spin_predict(predict_nn, svm_failure):
 
         if CRITIC:
             self.K = 100
-            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points' + str(10) + '.pkl', 'rb') as f: 
-                self.O, self.E, l = pickle.load(f)
-            self.O = self.O[:,:6]
+            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points' + '_M' + '.pkl', 'rb') as f: 
+                self.O, self.L, self.E = pickle.load(f)
+            # self.O = self.O[:,:6]
+            self.O = np.concatenate((self.O[:,:6], self.L.reshape(-1,1)), axis = 1)
             self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
 
@@ -66,6 +68,8 @@ class Spin_predict(predict_nn, svm_failure):
             node_probability = 1.0 - p
             sa = np.concatenate((S[0,:],a), axis=0)
             s_next = self.predict(sa)
+
+            collision_probability = 1.0 if (self.OBS and self.obstacle_check(s_next)) else 0.0
 
             return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability, 'collision_probability': collision_probability}
         else:       
@@ -111,7 +115,6 @@ class Spin_predict(predict_nn, svm_failure):
             mean = np.mean(S_next, 0) #self.get_mean_shift(S_next)
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action, 'collision_probability': collision_probability}
 
-
     def GetTransitionOneParticle(self, req):
 
         s = np.array(req.state)
@@ -129,16 +132,34 @@ class Spin_predict(predict_nn, svm_failure):
 
         return {'next_state': s_next, 'node_probability': node_probability}
 
+    def obstacle_check(self, s):
+        # print "Obstacle check...."
+        obs = np.array([[-38, 117.1, 4.],
+            [-33., 100., 4.],
+            [-52.5, 105.2, 4.],
+            [43., 111.5, 6.],
+            [59., 80., 3.],
+            [36.5, 94., 4.]
+            ])
+        f = 1.2 # inflate
+
+        for o in obs:
+            if np.linalg.norm(s[:2]-o[:2]) <= f * o[2]:
+                # print "right obstacle collision"
+                return True
+        return False
 
     def GetCritic(self, req):
 
         s = np.array(req.state)
         a = np.array(req.action)
+        n = req.steps
 
         sa = np.concatenate((s, a), axis=0)
+        sa = np.append(sa, n)
 
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
-        O_nn = self.O[idx,:].reshape(self.K, 6)
+        O_nn = self.O[idx,:].reshape(self.K, 7)
         E_nn = self.E[idx].reshape(self.K, 1)
 
         gpr = GaussianProcessRegressor(kernel=self.kernel).fit(O_nn, E_nn)

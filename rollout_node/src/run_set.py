@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -20,7 +20,7 @@ rollout = 1
 comp = 'juntao'
 # comp = 'pracsys'
 
-Set = '1c_nn'
+Set = '4c_nn'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
@@ -234,7 +234,7 @@ if Set == '21_nn': # New
         [36.5, 94., 4.]
         ])
 
-if Set == '0c_nn':
+if Set == '0c_nn' or Set == '1c_nn':
    C = np.array([[-37, 119 ],
         [-33, 102],
         [-40, 100],
@@ -245,6 +245,27 @@ if Set == '0c_nn':
         [-52, 112],
         [67, 80],
         [-63, 91]])
+
+if Set == '2c_nn' or Set == '2woc_nn' or Set == '4c_nn' or Set == '3c_nn':
+    C = np.array([[-37, 119 ],
+        [-33, 102],
+        [-40, 100],
+        [-80, 80],
+        [-50, 90],
+        [50, 90],
+        [40, 100],
+        [-52, 112],
+        [67, 80],
+        [-63, 91],
+        [75,75]])
+
+    Obs = np.array([[-38, 117.1, 4.],
+        [-33., 100., 4.],
+        [-52.5, 105.2, 4.],
+        [43., 111.5, 6.],
+        [59., 80., 3.],
+        [36.5, 94., 4.]
+        ])
 
 
 # ===============================================
@@ -264,16 +285,18 @@ rp = 7.
 r = 10.
 
 set_num = Set
-set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
+# set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
+set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive_withCriticPredict', 'naive']
 
-if not rollout and 1:
+results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
+
+
+if not rollout and 0:
 
     file = 'sim_data_discrete_v14_d8_m10.mat'
     path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
     Q = loadmat(path + file)
     Data = Q['D']
-
-    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
     Sum = {set_mode[:set_mode.find('_')]: np.zeros((C.shape[0],5)) for set_mode in set_modes} 
     # run_num = 0
@@ -459,149 +482,98 @@ if not rollout and 1:
         csv.write('\n')
 
 
+if 0:
+    set_w = '2c_nn'
+    set_wo = '2woc_nn'
+    path = lambda set: '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + set + '/results/'
 
-if not rollout and 0:
-    results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results_goal/'
-    PL = {set_modes[0]: 0., set_modes[1]: 0., set_modes[2]: 0.}
+    files_w = glob.glob(path(set_w) + "*.png")
+    files_wo = glob.glob(path(set_wo) + "*.png")
 
-    fo  = open(results_path + 'set' + set_num + '.txt', 'wt') 
-
-    for goal_num in range(C.shape[0]):
-        ctr = C[goal_num]
-        print "ctr: ", ctr
-
-        fo.write('\ngoal ' + str(goal_num) + ': ' + str(C[goal_num]) + '\n')
+    for F in files_w:
         
-        fig = plt.figure(figsize=(20,7))
+        if F.find('goal') < 0 or F.find('naive') < 0:
+            continue
+        goal = int(F[F.find('goal')+4])
+        fwo = -1
+        for g in files_wo:
+            if int(g[g.find('goal')+4]) == goal:
+                fwo = g
+                break
+        if fwo < 0:
+            continue
 
-        a = 0
-        for set_mode in set_modes:
+        print
+        print F
+        print 'Saving goal %d'%goal
+        Iw = plt.imread(F)
+        Iwo = plt.imread(fwo)  
+        I = np.concatenate((Iwo, Iw), axis=1)  
+        plt.imsave(path(set_w) + 'c' + set_w + '_goal' + str(goal) + '.png', I)  
 
-            path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
 
-            files = glob.glob(path + set_mode + "*.pkl")
+if 1: # Plot just plans
 
-            found = False
-            for k in range(len(files)):
-                pklfile = files[k]
-                ja = pklfile.find('goal')+4
-                ja = pklfile[ja:ja+2] if not pklfile[ja+1] == '_' else pklfile[ja]
-                if int(ja) == goal_num:
-                    found = True
-                    break
+    for set_mode in set_modes:
 
-            n = len(fig.axes)
-            for i in range(n):
-                fig.axes[i].change_geometry(1, n+1, i+1)
-            ax = fig.add_subplot(1, n+1, n+1)#, aspect='equal')
-            plt.plot(ctr[0], ctr[1], 'om')
-            goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
-            ax.add_artist(goal)
-            goal_plan = plt.Circle((ctr[0], ctr[1]), rp, color='w')
-            ax.add_artist(goal_plan)
-            # plt.ylim([40,130])
-            # plt.xlim([-100, 100])
+        file = 'sim_data_discrete_v14_d8_m10.mat'
+        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+        Q = loadmat(path + file)
+        Data = Q['D']
 
-            if not found:
-                plt.title(set_mode + ", No plan")
-                fo.write(set_mode + ': No plan\n')
+        path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/'
+
+        files = glob.glob(path + "*.txt")
+
+        for k in range(len(files)):
+
+            trajfile = files[k]
+            if trajfile.find('traj') < 0 or trajfile.find(set_mode) < 0:
                 continue
-            PL[set_mode] += 1.
-            pklfile = files[k]
+            print "\nRunning pickle file: " + trajfile
+            
+            ja = trajfile.find('goal')+4
+            num = int(trajfile[ja]) if trajfile[ja+1] == '_' else int(trajfile[ja:ja+2])
+            ctr = C[num, :] # Goal center
+            print(("Goal number %d with center: "%num), ctr)
 
-            for j in range(len(pklfile)-1, 0, -1):
-                if pklfile[j] == '/':
+            for j in range(len(trajfile)-1, 0, -1):
+                if trajfile[j] == '/':
                     break
-            file_name = pklfile[j+1:-4]
+            file_name = trajfile[j+1:-4]
 
-            trajfile = pklfile[:-8] + 'traj.txt'
             Straj = np.loadtxt(trajfile, delimiter=',', dtype=float)[:,:2]
 
-            with open(pklfile) as f:  
-                Pro = pickle.load(f) 
+            print('Plotting file number ' + str(k+1) + ': ' + file_name)
 
-            i = 0
-            while i < len(Pro):
-                if Pro[i].shape[0] == 1:
-                    del Pro[i]
-                else:
-                    i += 1
+            fig, ax = plt.subplots(figsize=(12,12))
+            # -----
+            hull = ConvexHull(Data[:,:2])
+            H1 = []
+            for simplex in hull.vertices:
+                H1.append(Data[simplex, :2])
+            H2 = np.array([[-87,41],[-83,46],[-76,52],[-60,67],[-46,79],[-32,90],[-18,100],[0,105],[18,100],[32,90],[46,79],[60,67],[76,52],[83,46],[87,41]])
+            H = np.concatenate((np.array(H1)[2:,:], H2), axis=0)
+            pgon = plt.Polygon(H, color='y', alpha=1, zorder=0)
+            ax.add_patch(pgon)
+            # -----
 
-            A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
-            maxR = A.shape[0]+1
-            maxX = np.max([x.shape[0] for x in Pro])
-            
-            c = np.sum([(1 if x.shape[0]==maxR else 0) for x in Pro])
-
-            Smean = []
-            Sstd = []
-            for i in range(min(maxR, maxX)):
-                F = []
-                for S in Pro: 
-                    if S.shape[0] > i:
-                        F.append(S[i])
-                Smean.append( np.mean(np.array(F), axis=0) )
-                Sstd.append( np.std(np.array(F), axis=0) )
-            Smean = np.array(Smean)
-            Sstd = np.array(Sstd)
-
-            c = float(c) / len(Pro)*100
-
-            p = 0
-            t = True
-            for S in Pro:
-                if t:
-                    plt.plot(S[:,0], S[:,1], '--r', label='rollouts')
-                    t = False
-                else:
-                    plt.plot(S[:,0], S[:,1], '--r')
-
-                if S.shape[0] < maxR:
-                    plt.plot(S[-1,0], S[-1,1], 'oc')
-
-                if np.linalg.norm(S[-1,:2]-ctr) <= r:
-                    p += 1
-            p = float(p) / len(Pro)*100
+            goal_plan = plt.Circle((ctr[0], ctr[1]), r, color='m')
+            ax.add_artist(goal_plan)
 
             try:
                 for o in Obs:
-                    obs = plt.Circle(o[:2], o[2])#, zorder=10)
+                    obs = plt.Circle(o[:2], o[2], color=[0.4,0.4,0.4])#, zorder=10)
                     ax.add_artist(obs)
             except:
                 pass
 
-            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth=3., label='Planned path')
+            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth = 2.7, label='Planned path')
+            plt.title(file_name)
+            plt.axis('equal')
 
-            plt.plot(Smean[:,0], Smean[:,1], '-b', linewidth=3.0, label='rollout mean')
-            # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
-            # Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
-            # plt.fill( X, Y , alpha = 0.5 , color = 'b')
-            # plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
-            # plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
-            plt.title(set_mode + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%")
-            # plt.axis('equal')
-
-            plt.plot(Smean[0,0], Smean[0,1], 'og', markersize=14 , label='start state')
-            
-            plt.legend()
-
-            for i in range(len(pklfile)-1, 0, -1):
-                if pklfile[i] == '/':
+            for i in range(len(trajfile)-1, 0, -1):
+                if trajfile[i] == '/':
                     break
 
-            fo.write(set_mode + ': ' + str(c) + ', ' + str(p) + '\n')
-            plt.savefig(results_path + 'set' + str(set_num) + '_goal' + str(goal_num) + '.png', dpi=300) 
-            # plt.show()   
-    
-    fo.write('\n\nPlanning success rate: \n')
-    for k in list(PL.keys()):
-        fo.write(k + ': ' + str(PL[k]/13.*100.) + '\n')
-    
-    fo.close()
-    # plt.show()
-
-
-        
-        
-
-    
+            plt.savefig(results_path + '/' + trajfile[i+1:-4] + '.png', dpi=300)

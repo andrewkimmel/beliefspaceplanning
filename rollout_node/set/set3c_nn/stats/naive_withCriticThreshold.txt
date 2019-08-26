@@ -1,0 +1,9 @@
+/naive_withCriticThreshold_goal0_run0,97.1325,142.239,0,0,111
+/naive_withCriticThreshold_goal1_run0, 0.0, 0.0, 0.0, 0.0, 155
+/naive_withCriticThreshold_goal2_run0, 0.0, 0.0, 0.0, 0.0, 170
+/naive_withCriticThreshold_goal3_run0, 0.0, 0.0, 0.0, 0.0, 186
+/naive_withCriticThreshold_goal5_run0, 0.0, 0.0, 0.0, 0.0, 167
+/naive_withCriticThreshold_goal6_run0, 0.0, 0.0, 0.0, 0.0, 144
+/naive_withCriticThreshold_goal7_run0,55.0152,63.0727,0,0,64
+/naive_withCriticThreshold_goal8_run0, 0.0, 0.0, 0.0, 0.0, 145
+/naive_withCriticThreshold_goal10_run0, 0.0, 0.0, 0.0, 0.0, 162

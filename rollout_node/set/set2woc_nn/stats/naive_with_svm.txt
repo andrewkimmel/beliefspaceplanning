@@ -1,0 +1,11 @@
+/naive_with_svm_goal0_run0,3.85622,86.5295,0,0,6
+/naive_with_svm_goal1_run0,20.4113,131.018,0,0,7
+/naive_with_svm_goal2_run0,27.0095,76.0214,0,0,7
+/naive_with_svm_goal3_run0,21.2584,116.369,0,0,15
+/naive_with_svm_goal4_run0,62.6402,117.971,0,0,16
+/naive_with_svm_goal5_run0,105.396,221.661,0,0,319
+/naive_with_svm_goal6_run0,39.0828,208.933,0,0,8
+/naive_with_svm_goal7_run0,5.00433,94.7081,0,0,10
+/naive_with_svm_goal8_run0,268.345,338.111,0,0,1145
+/naive_with_svm_goal9_run0,23.3547,87.0613,0,0,10
+/naive_with_svm_goal10_run0,100.475,186.485,0,0,17

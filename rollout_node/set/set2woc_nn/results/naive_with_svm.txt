@@ -1,0 +1,11 @@
+naive_with_svm_goal3_run0_plan: 22.2222222222, 22.2222222222
+naive_with_svm_goal5_run0_plan: 10.0, 0.0
+naive_with_svm_goal10_run0_plan: 0.0, 0.0
+naive_with_svm_goal1_run0_plan: 100.0, 100.0
+naive_with_svm_goal0_run0_plan: 100.0, 100.0
+naive_with_svm_goal6_run0_plan: 100.0, 40.0
+naive_with_svm_goal7_run0_plan: 100.0, 100.0
+naive_with_svm_goal9_run0_plan: 20.0, 0.0
+naive_with_svm_goal4_run0_plan: 50.0, 10.0
+naive_with_svm_goal2_run0_plan: 100.0, 100.0
+naive_with_svm_goal8_run0_plan: 0.0, 0.0
