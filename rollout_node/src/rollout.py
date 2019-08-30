@@ -60,7 +60,8 @@ class rollout():
                 self.rate.sleep()
 
             # Verify starting state
-            if not (np.abs(obj_pos[0]+4.64167607e-02) < 0.1 and np.abs(obj_pos[1]-118.16) < 0.1):
+            print self.obj_pos, np.abs(self.obj_pos[0]-0.03) < 0.015 , np.abs(self.obj_pos[1]-118.16) < 0.1
+            if np.abs(self.obj_pos[0]-0.03) < 0.015 and np.abs(self.obj_pos[1]-118.16) < 0.1:
                 break
         
         print("[rollout] Rolling-out...")

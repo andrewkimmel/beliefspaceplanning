@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -20,11 +20,15 @@ rollout = 0
 comp = 'juntao'
 # comp = 'pracsys'
 
-Set = '4c_nn'
+Set = '6c_nn'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
-set_modes = ['naive_with_svm']
+# set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
 # set_modes = ['mean_only_particles']
+set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive']
+# set_modes_no = ['naive_goal', 'naive_withCriticPredict']
+# set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost']
+
 
 ############################# Rollout ################################
 if rollout:
@@ -50,8 +54,10 @@ if rollout:
                     continue
                 if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
                     continue
-                if int(action_file[action_file.find('run')+3]) > 0:
-                    continue
+                # if int(action_file[action_file.find('run')+3]) > 0:
+                #     continue
+                # if action_file.find(set_modes_no[0]) > 0 or action_file.find(set_modes_no[1]) > 0:
+                #     continue
                 pklfile = action_file[:-3] + 'pkl'
 
                 # To distribute rollout files between computers
@@ -246,7 +252,7 @@ if Set == '0c_nn' or Set == '1c_nn':
         [67, 80],
         [-63, 91]])
 
-if Set == '2c_nn' or Set == '2woc_nn' or Set == '4c_nn' or Set == '3c_nn':
+if Set == '2c_nn' or Set == '2woc_nn' or Set == '4c_nn' or Set == '3c_nn' or Set == '5c_nn':
     C = np.array([[-37, 119 ],
         [-33, 102],
         [-40, 100],
@@ -286,7 +292,7 @@ r = 10.
 
 set_num = Set
 # set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
-set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive_withCriticPredict', 'naive']
+set_modes = ['naive_goal', 'naive_withCriticThreshold', 'naive_withCriticCost', 'naive_withCriticPredict']
 
 results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
@@ -298,7 +304,8 @@ if not rollout and 0:
     Q = loadmat(path + file)
     Data = Q['D']
 
-    Sum = {set_mode[:set_mode.find('_')]: np.zeros((C.shape[0],5)) for set_mode in set_modes} 
+    # Sum = {set_mode[:set_mode.find('_')]: np.zeros((C.shape[0],5)) for set_mode in set_modes} 
+    Sum = {set_mode: np.zeros((C.shape[0],5)) for set_mode in set_modes} 
     # run_num = 0
 
     for set_mode in set_modes:
@@ -331,7 +338,7 @@ if not rollout and 0:
                     break
             file_name = pklfile[j+1:-4]
 
-            planner = file_name[:file_name.find('_')]
+            planner = set_mode#file_name[:file_name.find('_')]
 
             trajfile = pklfile[:-8] + 'traj.txt'
             Straj = np.loadtxt(trajfile, delimiter=',', dtype=float)[:,:2]
@@ -428,17 +435,6 @@ if not rollout and 0:
             except:
                 pass
 
-            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth = 2.7, label='Planned path')
-
-            # plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
-            # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
-            # Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
-            # plt.fill( X, Y , alpha = 0.5 , color = 'b')
-            # plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
-            # plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
-            plt.title(file_name + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%")
-            plt.axis('equal')
-
             for i in range(len(pklfile)-1, 0, -1):
                 if pklfile[i] == '/':
                     break
@@ -448,11 +444,22 @@ if not rollout and 0:
             if p >= Sum[planner][num, 1] and (Sum[planner][num, 2] == 0 or Sum[planner][num, 2] > e):
                 Sum[planner][num, 0] = 100 - c # Percent failures
                 Sum[planner][num, 1] = p # Success rate
-                Sum[planner][num, 2] = e # Tracking error
-                Sum[planner][num, 3] = l # Planned path length
+                Sum[planner][num, 2] = round(e, 2) # Tracking error
+                Sum[planner][num, 3] = round(l, 2) # Planned path length
+
+            plt.plot(Straj[:,0], Straj[:,1], '-k', linewidth = 2.7, label='Planned path')
+
+            # plt.plot(Smean[:,0], Smean[:,1], '-b', label='rollout mean')
+            # X = np.concatenate((Smean[:,0]+Sstd[:,0], np.flip(Smean[:,0]-Sstd[:,0])), axis=0)
+            # Y = np.concatenate((Smean[:,1]+Sstd[:,1], np.flip(Smean[:,1]-Sstd[:,1])), axis=0)
+            # plt.fill( X, Y , alpha = 0.5 , color = 'b')
+            # plt.plot(Smean[:,0]+Sstd[:,0], Smean[:,1]+Sstd[:,1], '--b', label='rollout mean')
+            # plt.plot(Smean[:,0]-Sstd[:,0], Smean[:,1]-Sstd[:,1], '--b', label='rollout mean')       
+            plt.title(file_name + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%, RMSE: " + str(round(e, 2)) + ' mm', fontsize = 17)
+            plt.axis('equal')
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
-            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=300)
+            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
             # plt.show()
             # exit(1)
 
@@ -511,8 +518,53 @@ if 0:
         I = np.concatenate((Iwo, Iw), axis=1)  
         plt.imsave(path(set_w) + 'c' + set_w + '_goal' + str(goal) + '.png', I)  
 
+if 1:
+    run = 1
+    path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
-if 1: # Plot just plans
+    files = glob.glob(path + "*.png")
+
+    for goal in range(11):
+        print 'Goal ' + str(goal)
+        G = []
+        for F in files:
+            if F.find('goal' + str(goal) + '_') > 0 and F.find('run' + str(run)) > 0:
+                G.append(F)
+
+        i = 0
+        for S in set_modes:
+            f = [s for s in G if S in s]#[0]
+            Iw = plt.imread(f[0]) if f else np.zeros((2400,2400,4))
+            I = np.concatenate((I, Iw), axis=1) if i > 0 else Iw
+            i += 1
+        plt.imsave(path + 'c' + Set + '_goal' + str(goal) + '_run' + str(run) + '.png', I)  
+
+
+
+
+    # for F in files_w:
+        
+    #     if F.find('goal') < 0 or F.find('naive') < 0:
+    #         continue
+    #     goal = int(F[F.find('goal')+4])
+    #     fwo = -1
+    #     for g in files_wo:
+    #         if int(g[g.find('goal')+4]) == goal:
+    #             fwo = g
+    #             break
+    #     if fwo < 0:
+    #         continue
+
+    #     print
+    #     print F
+    #     print 'Saving goal %d'%goal
+    #     Iw = plt.imread(F)
+    #     Iwo = plt.imread(fwo)  
+    #     I = np.concatenate((Iwo, Iw), axis=1)  
+    #     plt.imsave(path(set_w) + 'c' + set_w + '_goal' + str(goal) + '.png', I)  
+
+
+if 0: # Plot just plans
 
     for set_mode in set_modes:
 

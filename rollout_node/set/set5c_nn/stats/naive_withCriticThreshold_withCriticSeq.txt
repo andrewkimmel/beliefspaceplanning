@@ -1,0 +1,22 @@
+/naive_withCriticThreshold_withCriticSeq_goal0_run0,45.4346,60.2095,0,0,1986
+/naive_withCriticThreshold_withCriticSeq_goal1_run0,1053.67,94.1583,0,0,2070
+/naive_withCriticThreshold_withCriticSeq_goal2_run0,118.982,68.3245,0,0,1038
+/naive_withCriticThreshold_withCriticSeq_goal3_run0,492.11,145.977,0,0,2067
+/naive_withCriticThreshold_withCriticSeq_goal4_run0,722.754,144.01,0,0,1289
+/naive_withCriticThreshold_withCriticSeq_goal5_run0,1010.53,281.383,0,0,3945
+/naive_withCriticThreshold_withCriticSeq_goal6_run0,496.592,59.1564,0,0,2135
+/naive_withCriticThreshold_withCriticSeq_goal7_run0,92.8997,64.2916,0,0,1239
+/naive_withCriticThreshold_withCriticSeq_goal8_run0,875.274,242.256,0,0,2361
+/naive_withCriticThreshold_withCriticSeq_goal9_run0,417.444,83.4455,0,0,39
+/naive_withCriticThreshold_withCriticSeq_goal10_run0,1183.76,141.506,0,0,1718
+/naive_withCriticThreshold_withCriticSeq_goal0_run1,285.323,51.3105,0,0,2194
+/naive_withCriticThreshold_withCriticSeq_goal1_run1,923.593,185.298,0,0,2098
+/naive_withCriticThreshold_withCriticSeq_goal2_run1,292.656,81.9943,0,0,800
+/naive_withCriticThreshold_withCriticSeq_goal3_run1, 0.0, 0.0, 0.0, 0.0, 5384
+/naive_withCriticThreshold_withCriticSeq_goal4_run1,225.797,107.273,0,0,1112
+/naive_withCriticThreshold_withCriticSeq_goal5_run1,606.931,76.4685,0,0,2094
+/naive_withCriticThreshold_withCriticSeq_goal6_run1,120.383,52.3648,0,0,48
+/naive_withCriticThreshold_withCriticSeq_goal7_run1,199.161,78.1464,0,0,1149
+/naive_withCriticThreshold_withCriticSeq_goal8_run1,277.952,109.596,0,0,2568
+/naive_withCriticThreshold_withCriticSeq_goal9_run1,106.395,67.133,0,0,36
+/naive_withCriticThreshold_withCriticSeq_goal10_run1,957.223,120.986,0,0,1404

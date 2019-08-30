@@ -2,7 +2,7 @@
 
 import rospy
 from gpup_gp_node.srv import batch_transition, one_transition
-from sim_nn_node.srv import critic
+from sim_nn_node.srv import critic_seq
 import numpy as np
 from svm_class import svm_failure
 import pickle
@@ -27,18 +27,21 @@ class Spin_predict(predict_nn, svm_failure):
         rospy.Service('/nn/transition', batch_transition, self.GetTransition)
         rospy.Service('/nn/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
         if CRITIC:
-            rospy.Service('/nn/critic', critic, self.GetCritic)
+            rospy.Service('/nn/critic_seq', critic_seq, self.GetCritic)
 
         rospy.init_node('predict', anonymous=True)
 
         if CRITIC:
-            self.K = 100
-            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points' + '_M' + '.pkl', 'rb') as f: 
-                self.O, self.L, self.E = pickle.load(f)
-            # self.O = self.O[:,:6]
-            self.O = np.concatenate((self.O[:,:6], self.L.reshape(-1,1)), axis = 1)
-            self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
+            self.K = 5
+            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_P40_sakh.pkl', 'rb') as f: 
+                self.O, self.E = pickle.load(f)
+            if 0:
+                self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
+            else:
+                with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_P40_sakh.pkl', 'rb') as f: 
+                    self.kdt = pickle.load(f)
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
+            print('[nn_predict_node] Critic loaded.')
 
         print('[nn_predict_node] Ready to predict...')
         rospy.spin()
@@ -56,6 +59,8 @@ class Spin_predict(predict_nn, svm_failure):
     # Predicts the next step by calling the GP class
     def GetTransition(self, req):
 
+        print("In NN...")
+
         S = np.array(req.states).reshape(-1, self.state_dim)
         a = np.array(req.action)
 
@@ -70,6 +75,8 @@ class Spin_predict(predict_nn, svm_failure):
             s_next = self.predict(sa)
 
             collision_probability = 1.0 if (self.OBS and self.obstacle_check(s_next)) else 0.0
+
+            print("Out NN...")
 
             return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability, 'collision_probability': collision_probability}
         else:       
@@ -150,20 +157,23 @@ class Spin_predict(predict_nn, svm_failure):
         return False
 
     def GetCritic(self, req):
+        print("In critic...")
 
         s = np.array(req.state)
-        a = np.array(req.action)
+        a = np.array(req.future_action)
         n = req.steps
+        Apr = np.array(req.seq)
 
-        sa = np.concatenate((s, a), axis=0)
-        sa = np.append(sa, n)
+        sa = np.concatenate((s, a, np.array([n]), Apr.reshape((-1))), axis=0)
+        # sa = np.append(sa, n)
 
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
-        O_nn = self.O[idx,:].reshape(self.K, 7)
+        O_nn = self.O[idx,:].reshape(self.K, -1)
         E_nn = self.E[idx].reshape(self.K, 1)
 
         gpr = GaussianProcessRegressor(kernel=self.kernel).fit(O_nn, E_nn)
         e, _ = gpr.predict(sa.reshape(1, -1), return_std=True)
+        print("Out critic...")
     
         return {'err': e}
 

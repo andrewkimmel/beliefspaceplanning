@@ -1,0 +1,3 @@
+/naive_withCriticPredict_withCriticSeq_goal0_run0, 0.0, 0.0, 0.0, 0.0, 5804
+/naive_withCriticPredict_withCriticSeq_goal0_run0, 0.0, 0.0, 0.0, 0.0, 5454
+/naive_withCriticPredict_withCriticSeq_goal0_run1, 0.0, 0.0, 0.0, 0.0, 5385

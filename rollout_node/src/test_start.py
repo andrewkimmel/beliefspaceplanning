@@ -48,7 +48,7 @@ if 1:
         while not gripper_closed:
             rate.sleep()
 
-        print obj_pos, np.abs(obj_pos[0]+4.64167607e-02) < 0.1 , np.abs(obj_pos[1]-118.16) < 0.1
+        print obj_pos, np.abs(obj_pos[0]-0.03) < 0.015 , np.abs(obj_pos[1]-118.16) < 0.1 #+4.64167607e-02) < 0.1
         if not (np.abs(obj_pos[0]-0.03) < 0.015 and np.abs(obj_pos[1]-118.16) < 0.1):
             continue
 

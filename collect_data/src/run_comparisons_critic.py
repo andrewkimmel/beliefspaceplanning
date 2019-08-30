@@ -69,31 +69,45 @@ seed = [
 98964]
 
 # Set 10, 14nn , 0c_nn, 1c_nn- Don't delete!!!
+# goals = [
+# "-37, 119,  16,  16", 
+# "-33, 102,  16,  16",
+# "-40, 100,  16,  16",
+# "-80, 80,  16,  16",
+# "-50, 90,  16,  16",
+# "50, 90,  16,  16",
+# "40, 100,  16,  16",
+# "-52, 112,  16,  16",
+# "67, 80,  16,  16",
+# "-63, 91,  16,  16",
+# "75, 75, 16, 16",
+# ]
+
 goals = [
-"-37, 119,  16,  16", 
-"-33, 102,  16,  16",
-"-40, 100,  16,  16",
-"-80, 80,  16,  16",
-"-50, 90,  16,  16",
-"50, 90,  16,  16",
-"40, 100,  16,  16",
-"-52, 112,  16,  16",
-"67, 80,  16,  16",
-"-63, 91,  16,  16",
-"75, 75, 16, 16",
+"-40, 82,  16,  16", 
 ]
 
 
-nodes =[
-"naive_withCriticThreshold",
-"naive_withCriticCost",
+# CRITIC NO SEQ
+# nodes =[
+# "naive_withCriticThreshold",
+# "naive_withCriticCost",
 # "naive_withCriticPredict",
+# "naive",
+# ]
+
+# CRITIC WITH k=40 SEQ
+nodes =[
+# "naive_withCriticThreshold_withCriticSeq",
+"naive_withCriticCost_withCriticSeq",
+# "naive_withCriticPredict_withCriticSeq",
 # "naive",
 ]
 
-SET_FOLDER = "set4c_nn"
 
-NUM_RUNS = 5
+SET_FOLDER = "set6c_nn"
+
+NUM_RUNS = 1
 
 GOAL_RADIUS = 7
 TOTAL_PARTICLES = 100
@@ -103,7 +117,7 @@ NO_COLLISION_CONSTRAINT = 0.94
 # SUCCESS_PROB_CONSTRAINT = 0.7
 SUCCESS_PROB_CONSTRAINT = 0.45
 FAILURE_CONSTANT = 100.0
-CRITIC_THRESHOLD = 0.15
+CRITIC_THRESHOLD = 0.10
 # ]
 
 if __name__ == "__main__":

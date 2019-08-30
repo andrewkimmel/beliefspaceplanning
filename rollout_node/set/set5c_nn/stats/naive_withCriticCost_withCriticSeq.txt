@@ -1,0 +1,22 @@
+/naive_withCriticCost_withCriticSeq_goal0_run0,33.5844,66.3421,0,0,1323
+/naive_withCriticCost_withCriticSeq_goal1_run0,626.403,195.187,0,0,1845
+/naive_withCriticCost_withCriticSeq_goal2_run0,227.746,96.2704,0,0,603
+/naive_withCriticCost_withCriticSeq_goal3_run0,530.52,148.101,0,0,1954
+/naive_withCriticCost_withCriticSeq_goal4_run0,677.901,137.568,0,0,1594
+/naive_withCriticCost_withCriticSeq_goal5_run0,667.342,128.652,0,0,2171
+/naive_withCriticCost_withCriticSeq_goal6_run0,414.644,72.6417,0,0,2019
+/naive_withCriticCost_withCriticSeq_goal7_run0,189.61,77.007,0,0,1082
+/naive_withCriticCost_withCriticSeq_goal8_run0,986.046,112.821,0,0,1614
+/naive_withCriticCost_withCriticSeq_goal9_run0,415.776,151.192,0,0,392
+/naive_withCriticCost_withCriticSeq_goal10_run0,964.011,125.481,0,0,1030
+/naive_withCriticCost_withCriticSeq_goal0_run1,79.8867,106.172,0,0,112
+/naive_withCriticCost_withCriticSeq_goal1_run1,773.67,180.451,0,0,3235
+/naive_withCriticCost_withCriticSeq_goal2_run1,368.456,122.122,0,0,609
+/naive_withCriticCost_withCriticSeq_goal3_run1,444.693,120.888,0,0,2023
+/naive_withCriticCost_withCriticSeq_goal4_run1,489.581,134.56,0,0,1920
+/naive_withCriticCost_withCriticSeq_goal5_run1,522.403,93.137,0,0,1752
+/naive_withCriticCost_withCriticSeq_goal6_run1,359.005,65.5002,0,0,1265
+/naive_withCriticCost_withCriticSeq_goal7_run1,107.645,87.0006,0,0,1355
+/naive_withCriticCost_withCriticSeq_goal8_run1,660.758,109.341,0,0,1265
+/naive_withCriticCost_withCriticSeq_goal9_run1,758.03,105.304,0,0,558
+/naive_withCriticCost_withCriticSeq_goal10_run1, 0.0, 0.0, 0.0, 0.0, 5246

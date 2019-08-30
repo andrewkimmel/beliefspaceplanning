@@ -27,7 +27,7 @@ with open('/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_
 del D[:432] # Delete data that was used for training
 
 l_prior = 40
-if 1:
+if 0:
     if 0:
         O = []
         M = []
@@ -96,8 +96,7 @@ else:
 # On = []
 # En = []
 # for o, e in zip(O, E):
-#     # if e < 0.47:
-#     if np.all(o[4:6] == np.array([1,-1])):
+#     if e < 1.0 and np.all(np.abs(o[4:6] - np.array([1,-1]) < 0.3)):
 #         On.append(o)
 #         En.append(e)
 # O = np.array(On)
@@ -123,15 +122,19 @@ if G == 'sak':
     Otrain = np.concatenate((O[:M,:6], L[:M].reshape(-1,1)), axis = 1)
     Otest = np.concatenate((O[M:,:6], L[M:].reshape(-1,1)), axis = 1)
 elif G == 'sakh':
-    X = []
-    for o, apr, l in zip(O, Apr, L):
-        x = np.concatenate((o[:6], np.array([l]), apr.reshape((-1))), axis = 0)
-        X.append(x)
-    X = np.array(X)
+    if 1:
+        with open(path + 'data_P' + str(l_prior) + '_' + G + '.pkl', 'rb') as f: 
+            X, _ = pickle.load(f)
+    else:
+        X = []
+        for o, apr, l in zip(O, Apr, L):
+            x = np.concatenate((o[:6], np.array([l]), apr.reshape((-1))), axis = 0)
+            X.append(x)
+        X = np.array(X)
+        with open(path + 'data_P' + str(l_prior) + '_' + G + '.pkl', 'wb') as f: 
+            pickle.dump([X, E], f)
     Otrain = X[:-M]
     Otest = X[-M:]
-    with open(path + 'data_P' + str(l_prior) + '_' + G + '.pkl', 'wb') as f: 
-        pickle.dump(X, f)
 elif G == 'sakt':
     X = []
     k = 0
@@ -184,8 +187,15 @@ Etrain = E[:-M]
 Etest = E[-M:]
 d = Otrain.shape[1]
 
-kdt = KDTree(Otrain, leaf_size=100, metric='euclidean')
-K = 100
+if 0:
+    kdt = KDTree(Otrain, leaf_size=100, metric='euclidean')
+    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '.pkl', 'wb') as f: 
+            pickle.dump(kdt, f)
+else:
+    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '.pkl', 'rb') as f: 
+        kdt = pickle.load(f)
+
+K = 3
 kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
 i = 0
 T = []
@@ -204,7 +214,7 @@ for e, o in zip(Etest, Otest):
     T.append(time.time() - st)
     Err.append(np.abs(e-e_mean))
     # print e, e_mean, np.abs(e-e_mean), o[-1]
-    if i < 10:
+    if i >=0:
         print e, e_mean
     i += 1
 

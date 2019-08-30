@@ -1,0 +1,4 @@
+/naive_withCriticThreshold_withCriticSeq_goal0_run0, 0.0, 0.0, 0.0, 0.0, 6066
+/naive_withCriticThreshold_withCriticSeq_goal0_run1, 0.0, 0.0, 0.0, 0.0, 6199
+/naive_withCriticThreshold_withCriticSeq_goal0_run0,704.371,242.632,0,0,4273
+/naive_withCriticThreshold_withCriticSeq_goal0_run1,957.442,268.393,0,0,4707
