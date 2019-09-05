@@ -2,3 +2,4 @@
 /naive_withCriticCost_withCriticSeq_goal0_run1, 0.0, 0.0, 0.0, 0.0, 5549
 /naive_withCriticCost_withCriticSeq_goal0_run0, 0.0, 0.0, 0.0, 0.0, 5796
 /naive_withCriticCost_withCriticSeq_goal0_run1, 0.0, 0.0, 0.0, 0.0, 5631
+/naive_withCriticCost_withCriticSeq_goal0_run0,774.246,279.762,0,0,4698

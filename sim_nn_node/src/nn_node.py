@@ -13,12 +13,12 @@ from sklearn.neighbors import KDTree
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 
-CRITIC = True
+CRITIC = False
 
 class Spin_predict(predict_nn, svm_failure):
 
     state_dim = 4
-    OBS = True
+    OBS = False
 
     def __init__(self):
         predict_nn.__init__(self)
@@ -59,8 +59,6 @@ class Spin_predict(predict_nn, svm_failure):
     # Predicts the next step by calling the GP class
     def GetTransition(self, req):
 
-        print("In NN...")
-
         S = np.array(req.states).reshape(-1, self.state_dim)
         a = np.array(req.action)
 
@@ -75,8 +73,6 @@ class Spin_predict(predict_nn, svm_failure):
             s_next = self.predict(sa)
 
             collision_probability = 1.0 if (self.OBS and self.obstacle_check(s_next)) else 0.0
-
-            print("Out NN...")
 
             return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability, 'collision_probability': collision_probability}
         else:       

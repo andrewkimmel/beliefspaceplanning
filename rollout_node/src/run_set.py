@@ -20,12 +20,12 @@ rollout = 1
 comp = 'juntao'
 # comp = 'pracsys'
 
-Set = '6c_nn'
+Set = '7c_nn'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
 # set_modes = ['mean_only_particles']
-set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive']
+set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive_goal']
 # set_modes_no = ['naive_goal', 'naive_withCriticPredict']
 # set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost']
 
@@ -252,7 +252,7 @@ if Set == '0c_nn' or Set == '1c_nn':
         [67, 80],
         [-63, 91]])
 
-if Set == '2c_nn' or Set == '2woc_nn' or Set == '4c_nn' or Set == '3c_nn' or Set == '5c_nn':
+if Set == '2c_nn' or Set == '2woc_nn' or Set == '4c_nn' or Set == '3c_nn' or Set == '5c_nn' or Set == '6c_nn':
     C = np.array([[-37, 119 ],
         [-33, 102],
         [-40, 100],
@@ -273,6 +273,30 @@ if Set == '2c_nn' or Set == '2woc_nn' or Set == '4c_nn' or Set == '3c_nn' or Set
         [36.5, 94., 4.]
         ])
 
+if Set == '6c_nn':
+    C = np.array([[-40, 82]])
+
+    Obs = np.array([[-38, 117.1, 4.],
+        [-33., 100., 4.],
+        [-52.5, 105.2, 4.],
+        [43., 111.5, 6.],
+        [59., 80., 3.],
+        [36.5, 94., 4.]
+        ])
+
+if Set == '7c_nn':
+    C = np.array([[-37, 119 ],
+        [-33, 102],
+        [-40, 100],
+        [-80, 80],
+        [-50, 90],
+        [50, 90],
+        [40, 100],
+        [-52, 112],
+        [67, 80],
+        [-63, 91],
+        [75,75]])
+
 
 # ===============================================
     
@@ -287,8 +311,8 @@ def tracking_error(S1, S2):
 
     return np.sqrt(Sum / S1.shape[0]), l
 
-rp = 7.
-r = 10.
+rp = 3.
+r = 5.
 
 set_num = Set
 # set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
@@ -297,7 +321,7 @@ set_modes = ['naive_goal', 'naive_withCriticThreshold', 'naive_withCriticCost', 
 results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
 
-if not rollout and 0:
+if not rollout and 1:
 
     file = 'sim_data_discrete_v14_d8_m10.mat'
     path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
@@ -519,12 +543,12 @@ if 0:
         plt.imsave(path(set_w) + 'c' + set_w + '_goal' + str(goal) + '.png', I)  
 
 if 1:
-    run = 1
+    run = 0
     path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
     files = glob.glob(path + "*.png")
 
-    for goal in range(11):
+    for goal in range(1):
         print 'Goal ' + str(goal)
         G = []
         for F in files:

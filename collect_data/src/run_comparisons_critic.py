@@ -83,8 +83,19 @@ seed = [
 # "75, 75, 16, 16",
 # ]
 
+# 6c_nn
+# goals = [
+# "-40, 82,  16,  16", 
+# ]
+
+# 7c_nn
 goals = [
-"-40, 82,  16,  16", 
+"-82, 60,  16,  16", 
+"-52, 80,  16,  16", 
+"52, 83,  16,  16", 
+"36, 95,  16,  16", 
+"0.5, 133,  16,  16", 
+"1, 109,  16,  16", 
 ]
 
 
@@ -99,17 +110,17 @@ goals = [
 # CRITIC WITH k=40 SEQ
 nodes =[
 # "naive_withCriticThreshold_withCriticSeq",
-"naive_withCriticCost_withCriticSeq",
+# "naive_withCriticCost_withCriticSeq",
+"naive",
 # "naive_withCriticPredict_withCriticSeq",
-# "naive",
 ]
 
 
-SET_FOLDER = "set6c_nn"
+SET_FOLDER = "set7c_nn"
 
 NUM_RUNS = 1
 
-GOAL_RADIUS = 7
+GOAL_RADIUS = 4
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
 PROBABILITY_CONSTRAINT = 0.65

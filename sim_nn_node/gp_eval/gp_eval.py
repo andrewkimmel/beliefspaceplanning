@@ -34,7 +34,7 @@ if 0:
         E = []
         Apr = []
     else:
-        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '.pkl', 'rb') as f: 
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '_v1.pkl', 'rb') as f: 
             O, M, Apr, E = pickle.load(f)
             O = list(O)
             E = list(E)
@@ -58,8 +58,10 @@ if 0:
         S_next = D[ix][jx:jx+l,6:]
 
         H = D[ix][np.maximum(0, jx-l_prior):jx, 4:6]
+        Hl = np.copy(H)
         if H.shape[0] < l_prior:
             H = np.concatenate((np.zeros((l_prior-H.shape[0], 2)), H), axis=0) # Validate size!!!
+        Sl = D[ix][np.maximum(0, jx-l_prior):jx, :4]
         
         Sp = []
         state = S[0]
@@ -70,8 +72,23 @@ if 0:
             state = np.array(state)
             Sp.append(state)
         Sp = np.array(Sp)
+        ep = tracking_error(S, Sp)
 
-        e = tracking_error(S, Sp)
+        if Sl.shape[0] > 0:
+            SL = []
+            state = Sl[0]
+            SL.append(state)
+            i = 0
+            for a in Hl:
+                state = o_srv(state.reshape(-1,1), a.reshape(-1,1)).next_state
+                state = np.array(state)
+                SL.append(state)
+            SL = np.array(SL)
+            el = tracking_error(Sl, SL)
+        else:
+            el = 0.0
+
+        e = ep + el
         o = np.concatenate((S[0], A[0]), axis = 0)
         O.append(o)
         M.append(l)
@@ -80,30 +97,33 @@ if 0:
 
         print k, A[0], l, e
 
-        if k > 1 and not k % 5000:
+        if k > 1 and not k % 2000:
             O1 = np.array(O)
             M1 = np.array(M)
             Apr1 = np.array(Apr)
             E1 = np.array(E)
 
-            with open(path + 'error_points_P' + str(l_prior) + '.pkl', 'wb') as f: 
+            with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'wb') as f: 
                 pickle.dump([O1, M1, Apr1, E1], f)
 else:
-    with open(path + 'error_points_P' + str(l_prior) + '.pkl', 'r') as f: 
+    with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
         O, L, Apr, E = pickle.load(f)
 
 # exit(1)
 # On = []
 # En = []
 # for o, e in zip(O, E):
-#     if e < 1.0 and np.all(np.abs(o[4:6] - np.array([1,-1]) < 0.3)):
+#     if e < 10.0 and np.all(np.abs(o[4:6] - np.array([1,-1]) < 0.3)):
 #         On.append(o)
 #         En.append(e)
 # O = np.array(On)
 # E = np.array(En)
 
+# print np.max(E)
+
 # gridsize = 20
 # plt.hexbin(O[:,0], O[:,1], C=E, gridsize=gridsize, cmap=cm.jet, bins=None)
+# # plt.hist(E, bins=100)
 # plt.colorbar()
 # plt.show()
 # exit(1)
@@ -122,8 +142,8 @@ if G == 'sak':
     Otrain = np.concatenate((O[:M,:6], L[:M].reshape(-1,1)), axis = 1)
     Otest = np.concatenate((O[M:,:6], L[M:].reshape(-1,1)), axis = 1)
 elif G == 'sakh':
-    if 1:
-        with open(path + 'data_P' + str(l_prior) + '_' + G + '.pkl', 'rb') as f: 
+    if 0:
+        with open(path + 'data_P' + str(l_prior) + '_' + G + '_v1.pkl', 'rb') as f: 
             X, _ = pickle.load(f)
     else:
         X = []
@@ -131,7 +151,7 @@ elif G == 'sakh':
             x = np.concatenate((o[:6], np.array([l]), apr.reshape((-1))), axis = 0)
             X.append(x)
         X = np.array(X)
-        with open(path + 'data_P' + str(l_prior) + '_' + G + '.pkl', 'wb') as f: 
+        with open(path + 'data_P' + str(l_prior) + '_' + G + '_v1.pkl', 'wb') as f: 
             pickle.dump([X, E], f)
     Otrain = X[:-M]
     Otest = X[-M:]
@@ -187,15 +207,15 @@ Etrain = E[:-M]
 Etest = E[-M:]
 d = Otrain.shape[1]
 
-if 0:
+if 1:
     kdt = KDTree(Otrain, leaf_size=100, metric='euclidean')
-    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '.pkl', 'wb') as f: 
-            pickle.dump(kdt, f)
+    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v1.pkl', 'wb') as f: 
+        pickle.dump(kdt, f)
 else:
-    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '.pkl', 'rb') as f: 
+    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v1.pkl', 'rb') as f: 
         kdt = pickle.load(f)
 
-K = 3
+K = 2
 kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
 i = 0
 T = []
