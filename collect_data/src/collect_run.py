@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 class collect_data():
 
     gripper_closed = False
-    discrete_actions = True # Discrete or continuous actions
+    discrete_actions = False # Discrete or continuous actions
     drop = True
 
     num_episodes = 20000
@@ -114,15 +114,12 @@ class collect_data():
             return a, num_steps
         else:
             a = np.random.uniform(-1.,1.,2)
-            if np.random.uniform(0,1,1) > 0.35:
-                if np.random.uniform(0,1,1) > 0.5:
-                    a[0] = np.random.uniform(-1.,-0.8,1)
-                    a[1] = np.random.uniform(-1.,-0.8,1)
-                else:
-                    a[0] = np.random.uniform(0.8,1.,1)
-                    a[1] = np.random.uniform(0.8,1.,1)
+            if np.random.uniform() > 0.3:
+                num_steps = np.random.randint(30)
+            else:
+                num_steps = 1
 
-            return a
+            return a, num_steps
 
 if __name__ == '__main__':
     try:
