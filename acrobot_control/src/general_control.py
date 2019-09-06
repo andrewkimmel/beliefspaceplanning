@@ -125,7 +125,7 @@ class general_control():
             Areal.append(action)
             self.action_srv(np.array([action])) # Command the action here
 
-            if count > 50:# not self.valid_srv().valid_state or count > 1000:
+            if count > 50 or not self.valid_srv().valid_state:
                 print("[control] Fail.")
                 success = False
                 break
@@ -151,8 +151,8 @@ class general_control():
         e = [0.0 if np.abs(ee) < 1e-4 else ee for ee in e]
 
         self.cumError += e
-        # Ki = np.array([100.,100.,10.,10.]) # case 1, 2
-        Ki = np.array([100.,100.,10.,10.])*100.
+        Ki = np.array([100.,100.,10.,10.]) # case 1, 2
+        # Ki = np.array([100.,100.,10.,10.])*100.
 
         if self.controller == 'pd':
             K = np.array([1000., 1000., 110.0, 120.0])
@@ -166,8 +166,8 @@ class general_control():
             """
             # H = 1000. # case 3, Ki = K
             H = 100. # case 1, 2, Ki
-            Q = np.diag([100., 100.0, 1.0, 1.0])*H
-            R = 0.1*np.diag([1.])
+            Q = np.diag([100., 100.0, 10.0, 10.0])*H
+            R = 1.*np.diag([1.])
             invR = 1./R # scipy.linalg.inv(R)
             A, B = self.linear_acrobot_system(state, ueq)
             try:

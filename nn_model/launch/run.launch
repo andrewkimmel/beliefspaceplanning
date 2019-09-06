@@ -1,0 +1,5 @@
+<launch>
+
+  <node pkg="nn_model" name="nn_transition" type="nn_transition.py" output="screen"/>
+
+</launch>

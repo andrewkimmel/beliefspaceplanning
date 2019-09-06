@@ -32,7 +32,7 @@ def medfilter(X, W):
 rp = .01
 r = .02
 
-# rospy.wait_for_service('/control')
+rospy.wait_for_service('/control')
 track_srv = rospy.ServiceProxy('/control', pathTrackReq)
 
 # File = 'naive_with_svm_goal1_run0_traj'
@@ -44,9 +44,14 @@ tr = '1'
 # traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_traj' + tr + '.txt'  
 # plan = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noiseless_acrobot/no_obstacles/discrete_control/example_paths/acrobot_ao_rrt_plan' + tr + '.txt'  
 
-File = 'naive_with_svm_goal0_run' + tr + '_traj'
-traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noisy_acrobot_discrete_withObstacles/paths/naive_with_svm_goal0_run' + tr + '_traj' + '.txt'  
-plan = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noisy_acrobot_discrete_withObstacles/paths/naive_with_svm_goal0_run' + tr + '_plan' + '.txt'  
+# File = 'naive_with_svm_goal0_run' + tr + '_traj'
+# traj = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noisy_acrobot_discrete_withObstacles/paths/naive_with_svm_goal0_run' + tr + '_traj' + '.txt'  
+# plan = '/home/pracsys/Dropbox/transfer/transition_data/Acrobot/noisy_acrobot_discrete_withObstacles/paths/naive_with_svm_goal0_run' + tr + '_plan' + '.txt'  
+
+File = 'acrobot_withoutObs_' + tr
+traj = '/home/pracsys/Dropbox/transfer/transition_data/paths/no_obstacle/equations/traj' + tr + '.txt'  
+plan = '/home/pracsys/Dropbox/transfer/transition_data/paths/no_obstacle/equations/plan' + tr + '.txt'  
+
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/acrobot_control/results/'
 
@@ -68,7 +73,7 @@ A = np.array(A)[:n]
 
 ctr = S[-1,:]
 
-if 0:
+if 1:
     res = track_srv(S.reshape((-1,)),  A.reshape((-1,)), True)
     Scl = np.array(res.real_path).reshape(-1, S.shape[1])
     Acl = np.array(res.actions).reshape(-1, 1)
