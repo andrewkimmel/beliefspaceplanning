@@ -15,7 +15,7 @@ o_srv = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
 lm_srv = rospy.ServiceProxy('/nn/load_model', load_model)
 rospy.init_node('gp_eval', anonymous=True)
 
-path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/'
+path = '/home/akimmel/repositories/pracsys/src/beliefspaceplanning/sim_nn_node/gp_eval/'
 
 def tracking_error(S1, S2):
     Sum = 0.
@@ -30,23 +30,22 @@ if 1:
     for ratio in R:
         lm_srv(ratio)
 
-        with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
+        with open('/home/akimmel/repositories/pracsys/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
             D = pickle.load(f)
         r = 577#int((1-ratio)*len(D)) Always use the last 20%
         del D[:r] # Delete data that was used for training
-
-
-        if 1:
-            O = []
-            M = []
-            E = []
-        else:
-            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_r' + str(ratio) + '_v1.pkl', 'rb') as f: 
+            
+        try:
+            with open('/home/akimmel/repositories/pracsys/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_r' + str(ratio) + '_v1.pkl', 'rb') as f: 
                 O, M, E = pickle.load(f)
                 O = list(O)
                 E = list(E)
                 M = list(M)
-        N = 1000000
+        except:
+            O = []
+            M = []
+            E = []
+        N = 500000
         for k in range(len(O), N):
             ix = np.random.randint(len(D))
             l = np.random.randint(10,30)
