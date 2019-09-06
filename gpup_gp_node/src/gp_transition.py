@@ -290,7 +290,8 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     def batch_svm_check(self, S, a):
         failed_inx = []
         for i in range(S.shape[0]):
-            p, _ = self.probability(S[i,:], a) # Probability of failure
+            # p, _ = self.probability(S[i,:], a) # Probability of failure
+            p = 0.0 # Probability of failure
             prob_fail = np.random.uniform(0,1)
             if prob_fail <= p:
                 failed_inx.append(i)
@@ -316,6 +317,7 @@ class Spin_gp(data_load, mean_shift, svm_failure):
     # Predicts the next step by calling the GP class
     def GetTransition(self, req):
 
+        total_time_start = time.time()
         S = np.array(req.states).reshape(-1, self.state_dim)
         a = np.array(req.action)
 
@@ -334,10 +336,13 @@ class Spin_gp(data_load, mean_shift, svm_failure):
         else:       
 
             # Check which particles failed
+            svm_check_start = time.time()
             failed_inx = self.batch_svm_check(S, a)
+            svm_check_end = time.time()
             node_probability = 1.0 - float(len(failed_inx))/float(S.shape[0])
 
             # Remove failed particles by duplicating good ones
+            bad_check_start = time.time()
             bad_action = np.array([0.,0.])
             if len(failed_inx):
                 good_inx = np.delete( np.array(range(S.shape[0])), failed_inx )
@@ -362,8 +367,11 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                 dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                 S[failed_inx, :] = S[dup_inx,:]
 
+            bad_check_end = time.time()
             # Propagate
+            batch_prop_start = time.time()
             S_next = self.batch_propa(S, a)
+            batch_prop_end = time.time()
 
             if self.OBS:
                 # print "Checking obstacles..."
@@ -398,8 +406,21 @@ class Spin_gp(data_load, mean_shift, svm_failure):
                     dup_inx = good_inx[np.random.choice(len(good_inx), size=len(failed_inx), replace=True)]
                     S_next[failed_inx, :] = S_next[dup_inx,:]
 
+            mean_shift_start = time.time()
             mean = self.get_mean_shift(S_next)
-            
+            mean_shift_end = time.time()
+            total_time_end = time.time()
+            total_time = total_time_end - total_time_start
+            svm_check_time = svm_check_end - svm_check_start
+            bad_check_time = bad_check_end - bad_check_start
+            batch_prop_time = batch_prop_end - batch_prop_start
+            mean_shift_time = mean_shift_end - mean_shift_start 
+
+            print ("total time:", total_time)
+            print ("svm_check_time time:", svm_check_time)
+            print ("bad_check_time time:", bad_check_time)
+            print ("batch_prop_time time:", batch_prop_time)
+            print ("mean_shift_time time:", mean_shift_time)
             return {'next_states': S_next.reshape((-1,)), 'mean_shift': mean, 'node_probability': node_probability, 'bad_action': bad_action}
 
     def obstacle_check(self, s):
