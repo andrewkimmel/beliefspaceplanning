@@ -58,6 +58,7 @@ add_service_files(
   FILES
   critic.srv
   critic_seq.srv
+  load_model.srv
 )
 
 ## Generate actions in the 'action' folder

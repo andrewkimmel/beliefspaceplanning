@@ -8,12 +8,14 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import pickle
 from gpup_gp_node.srv import one_transition
+from sim_nn_node.srv import load_model
 from sklearn.neighbors import KDTree
 
 o_srv = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
+lm_srv = rospy.ServiceProxy('/nn/load_model', load_model)
 rospy.init_node('gp_eval', anonymous=True)
 
-path = '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/'
 
 def tracking_error(S1, S2):
     Sum = 0.
@@ -22,94 +24,75 @@ def tracking_error(S1, S2):
 
     return np.sqrt(Sum / S1.shape[0])
 
-with open('/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
-    D = pickle.load(f)
-del D[:432] # Delete data that was used for training
+R = [0.5, 0.6, 0.7, 0.8, 0.9]
 
-l_prior = 40
-if 0:
-    if 0:
-        O = []
-        M = []
-        E = []
-        Apr = []
-    else:
-        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '_v1.pkl', 'rb') as f: 
-            O, M, Apr, E = pickle.load(f)
-            O = list(O)
-            E = list(E)
-            Apr = list(Apr)
-            M = list(M)
-    N = 1000000*2
-    for k in range(len(O), N):
-        ix = np.random.randint(len(D))
-        l = np.random.randint(10,30)
-        jx = np.random.randint(D[ix].shape[0]-l)
+if 1:
+    for ratio in R:
+        lm_srv(ratio)
 
-        h = 1
-        while h < l and np.all(D[ix][jx, 4:6] == D[ix][jx + h, 4:6]):
-            h += 1
-        if h < 10:
-            continue
-        l = np.minimum(h, l)
+        with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
+            D = pickle.load(f)
+        r = 577#int((1-ratio)*len(D)) Always use the last 20%
+        del D[:r] # Delete data that was used for training
 
-        S = D[ix][jx:jx+l,:4]
-        A = D[ix][jx:jx+l,4:6]
-        S_next = D[ix][jx:jx+l,6:]
 
-        H = D[ix][np.maximum(0, jx-l_prior):jx, 4:6]
-        Hl = np.copy(H)
-        if H.shape[0] < l_prior:
-            H = np.concatenate((np.zeros((l_prior-H.shape[0], 2)), H), axis=0) # Validate size!!!
-        Sl = D[ix][np.maximum(0, jx-l_prior):jx, :4]
+        if 1:
+            O = []
+            M = []
+            E = []
+        else:
+            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_r' + str(ratio) + '_v1.pkl', 'rb') as f: 
+                O, M, E = pickle.load(f)
+                O = list(O)
+                E = list(E)
+                M = list(M)
+        N = 1000000
+        for k in range(len(O), N):
+            ix = np.random.randint(len(D))
+            l = np.random.randint(10,30)
+            jx = np.random.randint(D[ix].shape[0]-l)
+
+            h = 1
+            while h < l and np.all(D[ix][jx, 4:6] == D[ix][jx + h, 4:6]):
+                h += 1
+            if h < 10:
+                continue
+            l = np.minimum(h, l)
+
+            S = D[ix][jx:jx+l,:4]
+            A = D[ix][jx:jx+l,4:6]
+            S_next = D[ix][jx:jx+l,6:]
         
-        Sp = []
-        state = S[0]
-        Sp.append(state)
-        i = 0
-        for a in A:
-            state = o_srv(state.reshape(-1,1), a.reshape(-1,1)).next_state
-            state = np.array(state)
+            Sp = []
+            state = S[0]
             Sp.append(state)
-        Sp = np.array(Sp)
-        ep = tracking_error(S, Sp)
-
-        if Sl.shape[0] > 0:
-            SL = []
-            state = Sl[0]
-            SL.append(state)
             i = 0
-            for a in Hl:
+            for a in A:
                 state = o_srv(state.reshape(-1,1), a.reshape(-1,1)).next_state
                 state = np.array(state)
-                SL.append(state)
-            SL = np.array(SL)
-            el = tracking_error(Sl, SL)
-        else:
-            el = 0.0
+                Sp.append(state)
+            Sp = np.array(Sp)
+            e = tracking_error(S, Sp)
 
-        e = ep + el
-        o = np.concatenate((S[0], A[0]), axis = 0)
-        O.append(o)
-        M.append(l)
-        Apr.append(H)
-        E.append(e)
+            o = np.concatenate((S[0], A[0]), axis = 0)
+            O.append(o)
+            M.append(l)
+            E.append(e)
 
-        print k, A[0], l, e
+            print ratio, k, len(E), A[0], l, e
 
-        if k > 1 and not k % 2000:
-            O1 = np.array(O)
-            M1 = np.array(M)
-            Apr1 = np.array(Apr)
-            E1 = np.array(E)
+            if k > 1 and not k % 2000:
+                O1 = np.array(O)
+                M1 = np.array(M)
+                E1 = np.array(E)
 
-            with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'wb') as f: 
-                pickle.dump([O1, M1, Apr1, E1], f)
-else:
-    with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
-        O, L, Apr, E = pickle.load(f)
+                with open(path + 'error_points_r' + str(ratio) + '_v1.pkl', 'wb') as f: 
+                    pickle.dump([O1, M1, E1], f)
+    else:
+        with open(path + 'error_points_r' + str(ratio) + '_v1.pkl', 'r') as f: 
+            O, L, E = pickle.load(f)
 
-# exit(1)
+exit(1)
 # On = []
 # En = []
 # for o, e in zip(O, E):

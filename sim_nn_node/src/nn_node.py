@@ -2,7 +2,7 @@
 
 import rospy
 from gpup_gp_node.srv import batch_transition, one_transition
-from sim_nn_node.srv import critic_seq
+from sim_nn_node.srv import critic_seq, load_model
 import numpy as np
 from svm_class import svm_failure
 import pickle
@@ -26,25 +26,29 @@ class Spin_predict(predict_nn, svm_failure):
 
         rospy.Service('/nn/transition', batch_transition, self.GetTransition)
         rospy.Service('/nn/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
+        rospy.Service('/nn/load_model', load_model, self.load_model_srv)
         if CRITIC:
             rospy.Service('/nn/critic_seq', critic_seq, self.GetCritic)
 
         rospy.init_node('predict', anonymous=True)
 
         if CRITIC:
-            self.K = 5
-            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_P40_sakh.pkl', 'rb') as f: 
+            self.K = 3
+            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_P40_sakh.pkl', 'rb') as f: 
                 self.O, self.E = pickle.load(f)
             if 0:
                 self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
             else:
-                with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_P40_sakh.pkl', 'rb') as f: 
+                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_P40_sakh.pkl', 'rb') as f: 
                     self.kdt = pickle.load(f)
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
             print('[nn_predict_node] Critic loaded.')
 
         print('[nn_predict_node] Ready to predict...')
         rospy.spin()
+
+    def load_model_srv(self, req):
+        return self.Load_model(req.ratio)
 
     def batch_svm_check(self, S, a):
         failed_inx = []
@@ -124,7 +128,7 @@ class Spin_predict(predict_nn, svm_failure):
         a = np.array(req.action)
 
         # Check which particles failed
-        p = self.probability(s, a)
+        p = 0#self.probability(s, a)
         node_probability = 1.0 - p
 
         # Propagate
@@ -153,7 +157,6 @@ class Spin_predict(predict_nn, svm_failure):
         return False
 
     def GetCritic(self, req):
-        print("In critic...")
 
         s = np.array(req.state)
         a = np.array(req.future_action)
@@ -169,7 +172,6 @@ class Spin_predict(predict_nn, svm_failure):
 
         gpr = GaussianProcessRegressor(kernel=self.kernel).fit(O_nn, E_nn)
         e, _ = gpr.predict(sa.reshape(1, -1), return_std=True)
-        print("Out critic...")
     
         return {'err': e}
 

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import time
 
 import sys
-sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/common/')
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/common/')
 from data_normalization import *
 import pickle
 import random
@@ -15,12 +15,12 @@ import random
 class predict_nn:
     def __init__(self):
 
-        save_path = '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
+        self.save_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
         model_name = 'sim_cont_trajT_bs512_model512_BS64_loadT_ho40.pkl' # Name of the model we want to depickle
-        self.model_path = save_path + model_name
+        self.model_path = self.save_path + model_name
 
         print('[predict_nn] Loading training data...')
-        with open(save_path + '/normalization_arr_sim_cont_trajT_bs512_model512_BS64_loadT_ho40_py2', 'rb') as pickle_file:
+        with open(self.save_path + '/normalization_arr_sim_cont_trajT_bs512_model512_BS64_loadT_ho40_py2', 'rb') as pickle_file:
             x_norm_arr, y_norm_arr = pickle.load(pickle_file)
 
         self.x_mean_arr, self.x_std_arr = x_norm_arr[0], x_norm_arr[1]
@@ -34,6 +34,29 @@ class predict_nn:
 
     def denormalize(self, data, ):
         return data * self.y_std_arr[:data.shape[-1]] + self.y_mean_arr[:data.shape[-1]]
+
+    def Load_model(self, ratio):
+
+        ratio = round(ratio, 1)
+
+        print('[predict_nn] Loading model with %.1f data ratio...'%ratio)
+        self.model_path = self.save_path + 'ratios/'
+
+        try:
+            with open(self.model_path + '/normalization_arr_sim_cont_trajT_bs512_model512_BS64_loadT_ho' + str(ratio) + '_py2', 'rb') as pickle_file:
+                x_norm_arr, y_norm_arr = pickle.load(pickle_file)
+
+            self.x_mean_arr, self.x_std_arr = x_norm_arr[0], x_norm_arr[1]
+            self.y_mean_arr, self.y_std_arr = y_norm_arr[0], y_norm_arr[1]
+
+            with open(self.model_path + 'sim_cont_trajT_bs512_model512_BS64_loadT_ho' + str(ratio), 'rb') as pickle_file:
+                self.model = torch.load(pickle_file, map_location='cpu')
+            print('[predict_nn] New model loaded.')
+            return True
+        except:
+            print('[predict_nn] Model with %.1f data ratio does not exist!'%ratio)
+            return False
+
 
     def predict(self, sa):
 
