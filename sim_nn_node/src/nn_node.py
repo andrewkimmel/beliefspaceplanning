@@ -2,7 +2,7 @@
 
 import rospy
 from gpup_gp_node.srv import batch_transition, one_transition
-from sim_nn_node.srv import critic_seq, load_model
+from sim_nn_node.srv import critic, load_model
 import numpy as np
 from svm_class import svm_failure
 import pickle
@@ -28,18 +28,18 @@ class Spin_predict(predict_nn, svm_failure):
         rospy.Service('/nn/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
         rospy.Service('/nn/load_model', load_model, self.load_model_srv)
         if CRITIC:
-            rospy.Service('/nn/critic_seq', critic_seq, self.GetCritic)
+            rospy.Service('/nn/critic_seq', critic, self.GetCritic)
 
         rospy.init_node('predict', anonymous=True)
 
         if CRITIC:
             self.K = 3
-            with open('/home/akimmel/repositories/pracsys/src/beliefspaceplanning/sim_nn_node/gp_eval/data_P40_sakh.pkl', 'rb') as f: 
+            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_r0.5_v1.pkl', 'rb') as f: 
                 self.O, self.E = pickle.load(f)
             if 0:
                 self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
             else:
-                with open('/home/akimmel/repositories/pracsys/src/beliefspaceplanning/beliefspaceplanning/sim_nn_node/gp_eval/kdt_P40_sakh.pkl', 'rb') as f: 
+                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/beliefspaceplanning/sim_nn_node/gp_eval/kdt_r0.5_v1.pkl', 'rb') as f: 
                     self.kdt = pickle.load(f)
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
             print('[nn_predict_node] Critic loaded.')
@@ -48,6 +48,19 @@ class Spin_predict(predict_nn, svm_failure):
         rospy.spin()
 
     def load_model_srv(self, req):
+
+        if CRITIC:
+            self.K = 3
+            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_r' + str(round(req.ratio, 1)) + '_v1.pkl', 'rb') as f: 
+                self.O, self.E = pickle.load(f)
+            if 0:
+                self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
+            else:
+                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/beliefspaceplanning/sim_nn_node/gp_eval/kdt_r' + str(round(req.ratio, 1)) + '_v1.pkl', 'rb') as f: 
+                    self.kdt = pickle.load(f)
+            self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
+            print('[nn_predict_node] Critic loaded with %.1f data.'%req.ratio)
+
         return self.Load_model(req.ratio)
 
     def batch_svm_check(self, S, a):
@@ -159,11 +172,10 @@ class Spin_predict(predict_nn, svm_failure):
     def GetCritic(self, req):
 
         s = np.array(req.state)
-        a = np.array(req.future_action)
+        a = np.array(req.action)
         n = req.steps
-        Apr = np.array(req.seq)
 
-        sa = np.concatenate((s, a, np.array([n]), Apr.reshape((-1))), axis=0)
+        sa = np.concatenate((s, a, np.array([n])), axis=0)
         # sa = np.append(sa, n)
 
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)
