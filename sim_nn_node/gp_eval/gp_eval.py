@@ -106,30 +106,38 @@ if 0:
             with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'wb') as f: 
                 pickle.dump([O1, M1, Apr1, E1], f)
 else:
+    # pass
     with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
-        O, L, Apr, E = pickle.load(f)
+        O1, L1, Apr1, E1 = pickle.load(f)
+    with open(path + 'error_points_P' + str(l_prior) + '_v1b.pkl', 'r') as f: 
+        O2, L2, Apr2, E2 = pickle.load(f)
+
+    O = np.concatenate((O1, O2), axis=0)
+    L = np.concatenate((L1, L2), axis=0)
+    Apr = np.concatenate((Apr1, Apr2), axis=0)
+    E = np.concatenate((E1, E2), axis=0)
 
 # exit(1)
-# On = []
-# En = []
-# for o, e in zip(O, E):
-#     if e < 10.0 and np.all(np.abs(o[4:6] - np.array([1,-1]) < 0.3)):
-#         On.append(o)
-#         En.append(e)
-# O = np.array(On)
-# E = np.array(En)
+On = []
+En = []
+for o, e in zip(O, E):
+    if e < 10.0:# and np.all(np.abs(o[4:6] - np.array([1,-1]) < 0.3)):
+        On.append(o)
+        En.append(e)
+O = np.array(On)
+E = np.array(En)
 
 # print np.max(E)
 
 # gridsize = 20
 # plt.hexbin(O[:,0], O[:,1], C=E, gridsize=gridsize, cmap=cm.jet, bins=None)
-# # plt.hist(E, bins=100)
+plt.hist(E, bins=100)
 # plt.colorbar()
-# plt.show()
-# exit(1)
+plt.show()
+exit(1)
 
 # print O.shape
-print "Data of size %d loaded."%O.shape[0]
+# print "Data of size %d loaded."%O.shape[0]
 M = 1000
 
 
@@ -144,7 +152,7 @@ if G == 'sak':
 elif G == 'sakh':
     if 0:
         with open(path + 'data_P' + str(l_prior) + '_' + G + '_v1.pkl', 'rb') as f: 
-            X, _ = pickle.load(f)
+            X, E = pickle.load(f)
     else:
         X = []
         for o, apr, l in zip(O, Apr, L):
@@ -208,14 +216,14 @@ Etest = E[-M:]
 d = Otrain.shape[1]
 
 if 1:
-    kdt = KDTree(Otrain, leaf_size=100, metric='euclidean')
+    kdt = KDTree(X, leaf_size=100, metric='euclidean')
     with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v1.pkl', 'wb') as f: 
         pickle.dump(kdt, f)
 else:
     with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v1.pkl', 'rb') as f: 
         kdt = pickle.load(f)
-
-K = 2
+exit(1)
+K = 3
 kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
 i = 0
 T = []

@@ -1,0 +1,8 @@
+/naive_withCriticThreshold_withCriticSeq_goal1_run0,17.6896,38.2848,0,0,19
+/naive_withCriticThreshold_withCriticSeq_goal6_run0, 0.0, 0.0, 0.0, 0.0, 1304
+/naive_withCriticThreshold_withCriticSeq_goal1_run0,17.4995,40.2295,0,0,1693
+/naive_withCriticThreshold_withCriticSeq_goal6_run0,821.694,278.182,0,0,2626
+/naive_withCriticThreshold_withCriticSeq_goal31_run0,127.112,154.798,0,0,2362
+/naive_withCriticThreshold_withCriticSeq_goal38_run0,116.475,123.009,0,0,1226
+/naive_withCriticThreshold_withCriticSeq_goal91_run0,69.6796,100.473,0,0,32
+/naive_withCriticThreshold_withCriticSeq_goal99_run0,731.948,215.028,0,0,2364

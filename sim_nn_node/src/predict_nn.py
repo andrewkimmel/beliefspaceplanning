@@ -11,6 +11,26 @@ sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/c
 from data_normalization import *
 import pickle
 import random
+import signal
+
+class Timeout():
+    """Timeout class using ALARM signal."""
+    class Timeout(Exception):
+        pass
+
+    def __init__(self, sec):
+        self.sec = sec
+
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.raise_timeout)
+        signal.alarm(self.sec)
+
+    def __exit__(self, *args):
+        signal.alarm(0)    # disable alarm
+
+    def raise_timeout(self, *args):
+        raise Timeout.Timeout()
+
 
 class predict_nn:
     def __init__(self):
@@ -37,13 +57,24 @@ class predict_nn:
 
     def predict(self, sa):
 
+        print "In predict"
         inpt = self.normalize(sa)
-        inpt = torch.tensor(inpt, dtype=torch.float)
-        state_delta = self.model(inpt)
+
+        flag = True
+        while flag:
+            try:
+                # with Timeout(10):
+                inpt = torch.tensor(inpt, dtype=torch.float)
+                state_delta = self.model(inpt)
+                
+                flag = False
+            except:
+                print "Timeout"
+
         state_delta = state_delta.detach().numpy()
         state_delta = self.denormalize(state_delta)
-
         next_state = (sa[...,:4] + state_delta)
+        print "Out predict"
         return next_state
 
 

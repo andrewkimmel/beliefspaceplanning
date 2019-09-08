@@ -1,0 +1,4 @@
+naive_withCriticThreshold_withCriticSeq_goal31_run0_plan: 100.0, 0.0
+naive_withCriticThreshold_withCriticSeq_goal1_run0_plan: 100.0, 100.0
+naive_withCriticThreshold_withCriticSeq_goal6_run0_plan: 0.0, 0.0
+naive_withCriticThreshold_withCriticSeq_goal38_run0_plan: 100.0, 0.0

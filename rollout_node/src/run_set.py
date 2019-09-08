@@ -12,7 +12,7 @@ import glob
 from scipy.io import loadmat
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
@@ -20,7 +20,7 @@ rollout = 1
 comp = 'juntao'
 # comp = 'pracsys'
 
-Set = '7c_nn'
+Set = '8c_nn'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
@@ -52,6 +52,7 @@ if rollout:
                 action_file = files[i]
                 if action_file.find('traj') > 0:
                     continue
+                files_pkl = glob.glob(path + set_mode + "*.pkl")
                 if any(action_file[:-3] + 'pkl' in f for f in files_pkl):
                     continue
                 # if int(action_file[action_file.find('run')+3]) > 0:
@@ -62,17 +63,24 @@ if rollout:
 
                 # To distribute rollout files between computers
                 ja = pklfile.find('goal')+4
-                num = int(pklfile[ja]) if pklfile[ja+1] == '_' else int(pklfile[ja:ja+2])
-                # if num > 9:
+                jb = ja + 1
+                while not (pklfile[jb] == '_'):
+                    jb += 1
+                num = int(pklfile[ja:jb])#int(pklfile[ja]) if pklfile[ja+1] == '_' else int(pklfile[ja:ja+2])
+                # if num == 124:
                 #     continue
 
-                print('Rolling-out file number ' + str(i+1) + ': ' + action_file + '.')
+                print('Rolling-out goal number ' + str(num) + ': ' + action_file + '.')
 
-                A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
+                try:
+                    A = np.loadtxt(action_file, delimiter=',', dtype=float)[:,:2]
+                except:
+                    A = np.loadtxt(action_file, delimiter=',', dtype=float)
+                    print A.shape
 
                 Af = A.reshape((-1,))
                 Pro = []
-                for j in range(10):
+                for j in range(2):
                     print("Rollout number " + str(j) + ".")
                     
                     Sro = np.array(rollout_srv(Af, [0,0,0,0]).states).reshape(-1,state_dim)
@@ -297,6 +305,10 @@ if Set == '7c_nn':
         [-63, 91],
         [75,75]])
 
+if Set == '8c_nn':
+    # C = np.zeros((1000,2))
+    C = np.loadtxt('/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/random_goals.txt', delimiter=',', dtype=float)[:,:2]
+
 
 # ===============================================
     
@@ -311,8 +323,8 @@ def tracking_error(S1, S2):
 
     return np.sqrt(Sum / S1.shape[0]), l
 
-rp = 3.
-r = 5.
+rp = 5.5
+r = 7.
 
 set_num = Set
 # set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
@@ -352,8 +364,15 @@ if not rollout and 1:
             print "\nRunning pickle file: " + pklfile
             
             ja = pklfile.find('goal')+4
-            num = int(pklfile[ja]) if pklfile[ja+1] == '_' else int(pklfile[ja:ja+2])
-            ctr = C[num, :] # Goal center
+            jb = ja + 1
+            while not (pklfile[jb] == '_'):
+                jb += 1
+            num = int(pklfile[ja:jb])
+            # num = int(pklfile[ja]) if pklfile[ja+1] == '_' else int(pklfile[ja:ja+2])
+            try:
+                ctr = C[num, :] # Goal center
+            except:
+                ctr = np.array([0,0])
             print(("Goal number %d with center: "%num), ctr)
             # exit(1)
 
@@ -542,7 +561,7 @@ if 0:
         I = np.concatenate((Iwo, Iw), axis=1)  
         plt.imsave(path(set_w) + 'c' + set_w + '_goal' + str(goal) + '.png', I)  
 
-if 1:
+if 0:
     run = 0
     path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 

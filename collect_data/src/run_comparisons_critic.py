@@ -88,14 +88,17 @@ seed = [
 # "-40, 82,  16,  16", 
 # ]
 
-# 7c_nn
+# 7c_nn, 8c_nn
 goals = [
-"-82, 60,  16,  16", 
-"-52, 80,  16,  16", 
-"52, 83,  16,  16", 
+# "-82, 60,  16,  16", 
+# "-52, 80,  16,  16", 
+# "52, 83,  16,  16", 
 "36, 95,  16,  16", 
 "0.5, 133,  16,  16", 
 "1, 109,  16,  16", 
+"-73, 60,  16,  16", 
+"85, 72,  16,  16", 
+"25, 100,  16,  16", 
 ]
 
 
@@ -109,32 +112,52 @@ goals = [
 
 # CRITIC WITH k=40 SEQ
 nodes =[
-# "naive_withCriticThreshold_withCriticSeq",
+"naive_withCriticThreshold_withCriticSeq",
 # "naive_withCriticCost_withCriticSeq",
-"naive",
+# "naive",
 # "naive_withCriticPredict_withCriticSeq",
 ]
 
 
-SET_FOLDER = "set7c_nn"
+SET_FOLDER = "set8c_nn"
 
 NUM_RUNS = 1
 
-GOAL_RADIUS = 4
+GOAL_RADIUS = 5.5
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
-PROBABILITY_CONSTRAINT = 0.65
+# PROBABILITY_CONSTRAINT = 0.65
+PROBABILITY_CONSTRAINT = 0.001
 NO_COLLISION_CONSTRAINT = 0.94
 # SUCCESS_PROB_CONSTRAINT = 0.7
 SUCCESS_PROB_CONSTRAINT = 0.45
 FAILURE_CONSTANT = 100.0
-CRITIC_THRESHOLD = 0.10
+CRITIC_THRESHOLD = 0.50
 # ]
+
+#generate random goals
+# NUM_RANDOM_GOALS = 200
+# goals = []
+# f=open("random_goals.txt", "a+")
+# for x in range(NUM_RANDOM_GOALS): 
+#     rand_x = random.uniform(-90,90)
+#     rand_y = random.uniform(36,136)
+#     rand_goal = str(rand_x) + "," + str(rand_y) + ",16,16"
+#     goals.append(rand_goal)
+#     f.write(rand_goal + "\n")
+
+C = np.loadtxt('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
+I = [1, 6, 31, 38, 91, 99, 123, 124, 134, 138]
 
 if __name__ == "__main__":
     for x in range(NUM_RUNS):
         count = 0
-        for g in goals:
+        # for g in goals:
+
+        for ii in I:
+            g = str(C[ii,0]) + "," + str(C[ii,1]) + ",16,16"
+            count = ii
+
             for n in nodes:
                 set_folder= "set_folder:=" + SET_FOLDER
                 random_seed = "random_seed:=" + str(seed[x])
