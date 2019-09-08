@@ -13,7 +13,7 @@ from sklearn.neighbors import KDTree
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 
-CRITIC = False
+CRITIC = True
 
 class Spin_predict(predict_nn, svm_failure):
 
@@ -28,7 +28,7 @@ class Spin_predict(predict_nn, svm_failure):
         rospy.Service('/nn/transitionOneParticle', one_transition, self.GetTransitionOneParticle)
         rospy.Service('/nn/load_model', load_model, self.load_model_srv)
         if CRITIC:
-            rospy.Service('/nn/critic_seq', critic, self.GetCritic)
+            rospy.Service('/nn/critic', critic, self.GetCritic)
 
         rospy.init_node('predict', anonymous=True)
 
@@ -39,7 +39,7 @@ class Spin_predict(predict_nn, svm_failure):
             if 0:
                 self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
             else:
-                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/beliefspaceplanning/sim_nn_node/gp_eval/kdt_r0.5_v1.pkl', 'rb') as f: 
+                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_r0.5_v1.pkl', 'rb') as f: 
                     self.kdt = pickle.load(f)
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
             print('[nn_predict_node] Critic loaded.')
@@ -56,7 +56,7 @@ class Spin_predict(predict_nn, svm_failure):
             if 0:
                 self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
             else:
-                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/beliefspaceplanning/sim_nn_node/gp_eval/kdt_r' + str(round(req.ratio, 1)) + '_v1.pkl', 'rb') as f: 
+                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_r' + str(round(req.ratio, 1)) + '_v1.pkl', 'rb') as f: 
                     self.kdt = pickle.load(f)
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
             print('[nn_predict_node] Critic loaded with %.1f data.'%req.ratio)

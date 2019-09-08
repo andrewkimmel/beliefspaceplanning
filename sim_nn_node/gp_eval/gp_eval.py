@@ -13,7 +13,7 @@ from sklearn.neighbors import KDTree
 
 o_srv = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
 lm_srv = rospy.ServiceProxy('/nn/load_model', load_model)
-critic_srv = rospy.ServiceProxy('/nn/critic', critic_seq)
+critic_srv = rospy.ServiceProxy('/nn/critic', critic)
 rospy.init_node('gp_eval', anonymous=True)
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/'
@@ -27,6 +27,29 @@ def tracking_error(S1, S2):
 
 R = [0.5, 0.6, 0.7, 0.8, 0.9]
 # R = [0.8, 0.9]
+
+with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
+    D = pickle.load(f)
+
+# F = []
+# for d in D:
+#     for g in d:
+#         F.append(g[2:4])
+# F = np.array(F)
+# plt.plot(F[:,0], F[:,1], '.')
+# plt.axis('equal')
+
+# for d in D:
+# # d = D[400]
+#     if np.any(d[:,2:4] > 35):
+#         plt.figure(1)
+#         plt.plot(d[:,0],d[:,1])
+
+#         plt.figure(2)
+#         plt.plot(d[:,2],d[:,3])
+
+#         plt.show()
+# exit(1)
 
 if 0:
     for ratio in R:
@@ -98,7 +121,7 @@ if 0:
 
         
 # Create data files
-if 1:
+if 0:
     for ratio in R:
         with open(path + 'error_points_r' + str(ratio) + '_v1.pkl', 'r') as f: 
             O, L, E = pickle.load(f)
@@ -111,160 +134,79 @@ if 1:
         import warnings
         warnings.filterwarnings("ignore")
 
-        kdt = KDTree(O, leaf_size=100, metric='euclidean')
+        kdt = KDTree(X, leaf_size=100, metric='euclidean')
         with open(path + 'kdt_r' + str(ratio) + '_v1.pkl', 'wb') as f: 
             pickle.dump(kdt, f)
     exit(1) # disable this and restart the nn_node with critic
 
 # Evaluate
 if 1:
-    with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
-        D = pickle.load(f)
-    D = D[360:577]
-    np.random.seed(100)
-    I = np.random.randint(len(D), size=50)
-    D = [D[j] for j in I]
+    if 0:
+        with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
+            D = pickle.load(f)
+        D = D[360:577]
+        np.random.seed(100)
+        # I = np.random.randint(len(D), size=200)
+        # D = [D[j] for j in I]
 
-    H = []
-    for d in D:
-        for _ in range(3):
-            l = np.random.randint(10,30)
-            jx = np.random.randint(D[ix].shape[0]-l)
+        H = []
+        jj = 0
+        for d in D:
+            for _ in range(100):
+                print str(jj/(len(D)*100.)*100) + '%'
+                jj += 1
+                l = np.random.randint(10,30)
+                jx = np.random.randint(d.shape[0]-l)
 
-            h = 1
-            while h < l and np.all(D[ix][jx, 4:6] == D[ix][jx + h, 4:6]):
-                h += 1
-            if h < 10:
-                continue
-            l = np.minimum(h, l)
+                h = 1
+                while h < l and np.all(d[jx, 4:6] == d[jx + h, 4:6]):
+                    h += 1
+                if h < 10:
+                    continue
+                l = np.minimum(h, l)
 
-            S = D[ix][jx:jx+l,:4]
-            A = D[ix][jx:jx+l,4:6]
-            S_next = D[ix][jx:jx+l,6:]
-        
-            Sp = []
-            state = S[0]
-            Sp.append(state)
-            i = 0
-            for a in A:
-                state = o_srv(state.reshape(-1,1), a.reshape(-1,1)).next_state
-                state = np.array(state)
+                S = d[jx:jx+l,:4]
+                A = d[jx:jx+l,4:6]
+                S_next = d[jx:jx+l,6:]
+            
+                Sp = []
+                state = S[0]
                 Sp.append(state)
-            Sp = np.array(Sp)
-            e = tracking_error(S, Sp)
+                i = 0
+                for a in A:
+                    state = o_srv(state.reshape(-1,1), a.reshape(-1,1)).next_state
+                    state = np.array(state)
+                    Sp.append(state)
+                Sp = np.array(Sp)
+                e = tracking_error(S, Sp)
 
-            H += [(S, A, l, e)]
+                H += [(S, A, l, e)]
 
-    F = np.zeros((len(H), len(R)))
-    for i in range(len(R)):
-        lm_srv(R[i])
+        F = np.zeros((len(H), len(R)))
+        for i in range(len(R)):
+            print 'Ratio: %f'%R[i]
+            lm_srv(R[i])
 
-        for j in range(len(H)):
-            h = H[j]
-            state = h[0][0]
-            action = h[1][0]
-            l = h[2]
-            e = h[3]
+            for j in range(len(H)):
+                h = H[j]
+                state = h[0][0]
+                action = h[1][0]
+                l = h[2]
+                e = h[3]
 
-            F[i,j] = critic_srv(state, action, l).err # e_predict
+                F[j,i] = np.abs(e - critic_srv(state, action, l).err) # e_predict
+        with open(path + 'results_rAll_v1.pkl', 'wb') as f: 
+            pickle.dump([H, F], f)
+    else:
+        with open(path + 'results_rAll_v1.pkl', 'rb') as f: 
+            H, F = pickle.load(f)
+
+    f = np.mean(F, axis=0)
+    f = np.flipud(f)
+    R = 1.0 - np.flipud(R)
+    plt.plot(R, f)
+    plt.show()
+
+    
             
-
-        
-
-    # K = 3
-    # kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
-    # i = 0
-    # T = []
-    # Err = []
-    # import time
-
-    # for e, o in zip(Etest, Otest):
-
-    #     # print i
-
-    #     # print o
-
-    #     st = time.time()
-    #     idx = kdt.query(o[:d].reshape(1,-1), k = K, return_distance=False)
-    #     O_nn = Otrain[idx,:].reshape(K, d)
-    #     E_nn = Etrain[idx].reshape(K, 1)
-
-    #     gpr = GaussianProcessRegressor(kernel=kernel).fit(O_nn, E_nn)
-    #     e_mean = gpr.predict(o.reshape(1, -1), return_std=False)[0][0]
-    #     T.append(time.time() - st)
-    #     Err.append(np.abs(e-e_mean))
-    #     # print e, e_mean, np.abs(e-e_mean), o[-1]
-    #     # if i >=0:
-    #     #     print e, e_mean
-    #     i += 1
-
-    # print str(ratio) + ":"
-    # print "Time: " + str(np.mean(T))
-    # print "Error: " + str(np.mean(Err))
-
-
-# if G == 'sak':
-#     Otrain = np.concatenate((O[:M,:6], L[:M].reshape(-1,1)), axis = 1)
-#     Otest = np.concatenate((O[M:,:6], L[M:].reshape(-1,1)), axis = 1)
-# elif G == 'sakh':
-#     if 0:
-#         with open(path + 'data_P' + str(l_prior) + '_' + G + '_v1.pkl', 'rb') as f: 
-#             X, _ = pickle.load(f)
-#     else:
-#         X = []
-#         for o, apr, l in zip(O, Apr, L):
-#             x = np.concatenate((o[:6], np.array([l]), apr.reshape((-1))), axis = 0)
-#             X.append(x)
-#         X = np.array(X)
-#         with open(path + 'data_P' + str(l_prior) + '_' + G + '_v1.pkl', 'wb') as f: 
-#             pickle.dump([X, E], f)
-#     Otrain = X[:-M]
-#     Otest = X[-M:]
-# elif G == 'sakt':
-#     X = []
-#     k = 0
-#     for o, apr, l in zip(O, Apr, L):
-#         t = 0
-#         i = 0
-#         while i < l_prior and np.all(apr[i] == np.array([0,0])):
-#             i += 1
-#         if i == 40:
-#             continue
-#         ap = apr[i]
-#         for j in range(i+1, apr.shape[0]):
-#             if not np.all(ap == apr[j]):
-#                 ap = apr[j]
-#                 t += 1
-            
-#         x = np.concatenate((o[:6], np.array([l]), np.array([t])), axis = 0)
-#         X.append(x)
-#         k += 1
-#         print k, len(X), t
-#     X = np.array(X)
-#     Otrain = X[:-M]
-#     Otest = X[-M:]
-# elif G == 'sakpca':
-#     with open(path + 'data_P' + str(l_prior) + '_' + 'sakh' + '.pkl', 'rb') as f: 
-#         X = pickle.load(f)
-#     P = X[:-M,7:]
-#     P1 = P[:, range(0, 80, 2)]
-#     P2 = P[:, range(1, 80, 2)]
-
-#     from sklearn.decomposition import PCA, FactorAnalysis, TruncatedSVD, KernelPCA
-#     pca1 = PCA(n_components = 6).fit(P1)
-#     pca2 = PCA(n_components = 6).fit(P2)
-
-#     Y = []
-#     for x in X:
-#         w = x[7:]
-#         d1 = pca1.transform(w[range(0, 80, 2)].reshape(1,-1))
-#         d2 = pca2.transform(w[range(1, 80, 2)].reshape(1,-1))
-#         y = np.concatenate((x[:7], d1.reshape((-1)), d2.reshape((-1))), axis=0)
-#         Y.append(y)
-#     Y = np.array(Y)
-#     Otrain = Y[:-M]
-#     Otest = Y[-M:]
-
-
-
 
