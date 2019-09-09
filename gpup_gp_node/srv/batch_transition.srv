@@ -1,8 +1,8 @@
-float32[] states
-float32[] action
+float64[] states
+float64[] action
 ---
-float32[] next_states
-float32[] mean_shift
-float32 node_probability
-float32 collision_probability
-float32[] bad_action
+float64[] next_states
+float64[] mean_shift
+float64 node_probability
+float64 collision_probability
+float64[] bad_action

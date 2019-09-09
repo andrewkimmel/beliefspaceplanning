@@ -1,7 +1,7 @@
-float32[] actions
-float32[] start_state
+float64[] actions
+float64[] start_state
 ---
-float32[] states
-float32[] actions_res
+float64[] states
+float64[] actions_res
 bool success
 bool collided

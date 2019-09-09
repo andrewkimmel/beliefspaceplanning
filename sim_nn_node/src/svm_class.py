@@ -11,7 +11,7 @@ import os.path
 class svm_failure():
 
     r = 0.1
-    path = '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
+    path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
     dim_ = 4
     data_version_ = 0
     stepSize_ = 1

@@ -119,7 +119,11 @@ nodes =[
 ]
 
 
+<<<<<<< HEAD
 SET_FOLDER = "set9c_40"
+=======
+SET_FOLDER = "set9c_7"
+>>>>>>> 8b3f933ca9b735d7a58a72a8abf75f4086acc63a
 
 NUM_RUNS = 1
 
@@ -133,7 +137,11 @@ NO_COLLISION_CONSTRAINT = 0.94
 SUCCESS_PROB_CONSTRAINT = 0.45
 FAILURE_CONSTANT = 100.0
 CRITIC_THRESHOLD = 0.50
+<<<<<<< HEAD
 CRITIC_COST_MULTIPLIER = 40.0
+=======
+CRITIC_COST_MULTIPLIER = 7.0
+>>>>>>> 8b3f933ca9b735d7a58a72a8abf75f4086acc63a
 # ]
 
 #generate random goals
@@ -147,9 +155,15 @@ CRITIC_COST_MULTIPLIER = 40.0
 #     goals.append(rand_goal)
 #     f.write(rand_goal + "\n")
 
+<<<<<<< HEAD
 C = np.loadtxt('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
 I = [1, 6, 31, 38, 91, 99, 123, 124, 134, 138]
 # I = [123, 124, 134, 138]
+=======
+C = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
+# I = [1, 6, 31, 38, 91, 99, 123, 124, 134, 138]
+I = [38, 91, 99]#, 123, 124, 134, 138]
+>>>>>>> 8b3f933ca9b735d7a58a72a8abf75f4086acc63a
 
 
 if __name__ == "__main__":

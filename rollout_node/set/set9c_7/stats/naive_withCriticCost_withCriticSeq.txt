@@ -3,7 +3,10 @@
 /naive_withCriticCost_withCriticSeq_goal1_run0,4.74068,217.291,0,0,592
 /naive_withCriticCost_withCriticSeq_goal6_run0,329.99,1430.94,0,0,8105
 /naive_withCriticCost_withCriticSeq_goal31_run0,236.859,507.37,0,0,2111
+<<<<<<< HEAD
 /naive_withCriticCost_withCriticSeq_goal123_run0,66.6251,913.575,0,0,2507
 /naive_withCriticCost_withCriticSeq_goal124_run0,95.5888,264.593,0,0,1605
 /naive_withCriticCost_withCriticSeq_goal134_run0,376.653,856.14,0,0,3695
 /naive_withCriticCost_withCriticSeq_goal138_run0,54.1127,973.012,0,0,3777
+=======
+>>>>>>> 8b3f933ca9b735d7a58a72a8abf75f4086acc63a
