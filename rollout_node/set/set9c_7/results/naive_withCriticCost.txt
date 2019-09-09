@@ -1,0 +1,10 @@
+naive_withCriticCost_withCriticSeq_goal138_run0_plan: 100.0, 50.0
+naive_withCriticCost_withCriticSeq_goal123_run0_plan: 100.0, 100.0
+naive_withCriticCost_withCriticSeq_goal1_run0_plan: 100.0, 100.0
+naive_withCriticCost_withCriticSeq_goal99_run0_plan: 0.0, 0.0
+naive_withCriticCost_withCriticSeq_goal91_run0_plan: 100.0, 100.0
+naive_withCriticCost_withCriticSeq_goal124_run0_plan: 100.0, 100.0
+naive_withCriticCost_withCriticSeq_goal31_run0_plan: 100.0, 100.0
+naive_withCriticCost_withCriticSeq_goal134_run0_plan: 100.0, 0.0
+naive_withCriticCost_withCriticSeq_goal38_run0_plan: 100.0, 100.0
+naive_withCriticCost_withCriticSeq_goal6_run0_plan: 0.0, 0.0

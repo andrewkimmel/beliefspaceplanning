@@ -1,0 +1,10 @@
+/naive_withCriticCost_withCriticSeq_goal1_run0,6.74743,152.092,0,0,1403
+/naive_withCriticCost_withCriticSeq_goal6_run0,614.197,1707.79,0,0,4129
+/naive_withCriticCost_withCriticSeq_goal31_run0,357.861,2042.16,0,0,4150
+/naive_withCriticCost_withCriticSeq_goal38_run0,60.933,644.079,0,0,3328
+/naive_withCriticCost_withCriticSeq_goal91_run0,52.128,1168.19,0,0,1231
+/naive_withCriticCost_withCriticSeq_goal99_run0,376.516,1462.94,0,0,3628
+/naive_withCriticCost_withCriticSeq_goal123_run0,82.8572,1358.09,0,0,3721
+/naive_withCriticCost_withCriticSeq_goal124_run0,30.7232,338.408,0,0,2005
+/naive_withCriticCost_withCriticSeq_goal134_run0,652.507,1317.44,0,0,4099
+/naive_withCriticCost_withCriticSeq_goal138_run0,59.8686,1319.31,0,0,3557

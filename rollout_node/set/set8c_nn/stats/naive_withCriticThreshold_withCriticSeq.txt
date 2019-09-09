@@ -6,3 +6,7 @@
 /naive_withCriticThreshold_withCriticSeq_goal38_run0,116.475,123.009,0,0,1226
 /naive_withCriticThreshold_withCriticSeq_goal91_run0,69.6796,100.473,0,0,32
 /naive_withCriticThreshold_withCriticSeq_goal99_run0,731.948,215.028,0,0,2364
+/naive_withCriticThreshold_withCriticSeq_goal123_run0,322.393,113.932,0,0,50
+/naive_withCriticThreshold_withCriticSeq_goal124_run0,124.862,86.9741,0,0,363
+/naive_withCriticThreshold_withCriticSeq_goal134_run0,463.121,199.955,0,0,2320
+/naive_withCriticThreshold_withCriticSeq_goal138_run0,54.3046,94.9289,0,0,1566

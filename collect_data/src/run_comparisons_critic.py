@@ -112,14 +112,14 @@ goals = [
 
 # CRITIC WITH k=40 SEQ
 nodes =[
-"naive_withCriticThreshold_withCriticSeq",
-# "naive_withCriticCost_withCriticSeq",
+#"naive_withCriticThreshold_withCriticSeq",
+"naive_withCriticCost_withCriticSeq",
 # "naive",
 # "naive_withCriticPredict_withCriticSeq",
 ]
 
 
-SET_FOLDER = "set8c_nn"
+SET_FOLDER = "set9c_40"
 
 NUM_RUNS = 1
 
@@ -133,6 +133,7 @@ NO_COLLISION_CONSTRAINT = 0.94
 SUCCESS_PROB_CONSTRAINT = 0.45
 FAILURE_CONSTANT = 100.0
 CRITIC_THRESHOLD = 0.50
+CRITIC_COST_MULTIPLIER = 40.0
 # ]
 
 #generate random goals
@@ -148,6 +149,8 @@ CRITIC_THRESHOLD = 0.50
 
 C = np.loadtxt('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
 I = [1, 6, 31, 38, 91, 99, 123, 124, 134, 138]
+# I = [123, 124, 134, 138]
+
 
 if __name__ == "__main__":
     for x in range(NUM_RUNS):
@@ -195,6 +198,7 @@ if __name__ == "__main__":
                     use_svm_prediction="use_svm_prediction:=true"
                     failure_constant="failure_constant:="+str(FAILURE_CONSTANT)
                 critic_threshold="critic_threshold:=0.0"
+                critic_cost_multiplier="critic_cost_multiplier:=1.0"
                 use_critic_predict="use_critic_predict:=false"
                 use_critic_cost="use_critic_cost:=false"
                 use_critic_seq="use_critic_seq:=false"
@@ -202,6 +206,7 @@ if __name__ == "__main__":
                     critic_threshold="critic_threshold:=" + str(CRITIC_THRESHOLD)
                 if "_withCriticCost" in n:
                     use_critic_cost="use_critic_cost:=true"
+                    critic_cost_multiplier="critic_cost_multiplier:=" + str(CRITIC_COST_MULTIPLIER)
                 if "_withCriticPredict" in n:
                     use_critic_predict="use_critic_predict:=true"
                 if "_withCriticSeq" in n:
@@ -210,6 +215,6 @@ if __name__ == "__main__":
                 experiment_filename="experiment_filename:="+n+".txt"
                 print node_name, goal_state, probability_constraint,no_collision_constraint, success_constraint
                 goal_radius="goal_radius:=" + str(GOAL_RADIUS)
-                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", set_folder, node_name, critic_threshold, use_critic_seq, use_critic_predict, use_critic_cost, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint, no_collision_constraint, random_seed])
+                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", set_folder, node_name, critic_cost_multiplier, critic_threshold, use_critic_seq, use_critic_predict, use_critic_cost, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint, no_collision_constraint, random_seed])
             count = count + 1
 

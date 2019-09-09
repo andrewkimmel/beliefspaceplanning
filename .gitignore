@@ -1,4 +1,4 @@
-*.pkl
+
 *.mat
 *.mp4
 gpup_gp_node/src/verf/
@@ -7,6 +7,7 @@ gpup_gp_node/data/temp/
 gpup_gp_node/data/temp2/
 gpup_gp_node/data/*.pkl
 gpup_gp_node/data/*.txt
+sim_nn_node/gp_eval/*.pkl
 
 
 # Prerequisites
