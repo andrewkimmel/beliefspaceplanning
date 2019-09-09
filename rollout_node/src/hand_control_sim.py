@@ -6,6 +6,8 @@ from std_msgs.msg import Float64MultiArray, Float32MultiArray, String, Bool
 from std_srvs.srv import Empty, EmptyResponse
 from rollout_node.srv import TargetAngles, IsDropped, observation, MoveServos
 import math
+import pickle
+
 
 state_form = 'pos_load' # 'pos_load' or 'pos_vel' or 'pos_load_vel' or 'pos_load_vel_joints' or 'pos_load_joints' or 'all'
 
@@ -30,7 +32,7 @@ class hand_control():
     D_load = np.array([0., 0.])
     R = []
     count = 1
-    OBS = False
+    OBS = True
 
     gripper_status = 'open'
 
@@ -58,7 +60,9 @@ class hand_control():
         self.move_lift_srv = rospy.ServiceProxy('/LiftHand', Empty)
         self.reset_srv = rospy.ServiceProxy('/gazebo/reset_world', Empty)
 
-        #### Later I should remove the angles from hands.py and set initial angles here at the start ####
+        if self.OBS:
+            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'r') as f: 
+                self.Obs = pickle.load(f)
 
         rate = rospy.Rate(50)
         while not rospy.is_shutdown():
@@ -186,16 +190,16 @@ class hand_control():
 
         self.move_servos_srv.call(angles)
 
-        Obs = np.array([[-38, 117.1, 4.],
-            [-33., 100., 4.],
-            [-52.5, 105.2, 4.],
-            [43., 111.5, 6.],
-            [59., 80., 3.],
-            [36.5, 94., 4.]
-            ])
+        # Obs = np.array([[-38, 117.1, 4.],
+        #     [-33., 100., 4.],
+        #     [-52.5, 105.2, 4.],
+        #     [43., 111.5, 6.],
+        #     [59., 80., 3.],
+        #     [36.5, 94., 4.]
+        #     ])
 
         if self.OBS:
-            for obs in Obs:
+            for obs in self.Obs:
                 if np.linalg.norm(self.obj_pos-obs[:2]) < obs[2]:
                     print('[hand_control_sim] Collision.')
                     return False

@@ -18,7 +18,7 @@ CRITIC = True
 class Spin_predict(predict_nn, svm_failure):
 
     state_dim = 4
-    OBS = False
+    OBS = True
 
     def __init__(self):
         predict_nn.__init__(self)
@@ -31,14 +31,18 @@ class Spin_predict(predict_nn, svm_failure):
 
         rospy.init_node('predict', anonymous=True)
 
+        if self.OBS:
+            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'r') as f: 
+                self.Obs = pickle.load(f)
+
         if CRITIC:
             self.K = 3
-            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_P40_sakh_v1.pkl', 'rb') as f: 
+            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_P40_sakh_v1.pkl', 'rb') as f: 
                 self.O, self.E = pickle.load(f)
             if 0:
                 self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
             else:
-                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_P40_sakh_v1.pkl', 'rb') as f: 
+                with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_P40_sakh_v1.pkl', 'rb') as f: 
                     self.kdt = pickle.load(f)
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
             print('[nn_predict_node] Critic loaded.')
@@ -141,16 +145,16 @@ class Spin_predict(predict_nn, svm_failure):
 
     def obstacle_check(self, s):
         # print "Obstacle check...."
-        obs = np.array([[-38, 117.1, 4.],
-            [-33., 100., 4.],
-            [-52.5, 105.2, 4.],
-            [43., 111.5, 6.],
-            [59., 80., 3.],
-            [36.5, 94., 4.]
-            ])
-        f = 1.2 # inflate
+        # obs = np.array([[-38, 117.1, 4.],
+        #     [-33., 100., 4.],
+        #     [-52.5, 105.2, 4.],
+        #     [43., 111.5, 6.],
+        #     [59., 80., 3.],
+        #     [36.5, 94., 4.]
+        #     ])
+        f = 1.3 # inflate
 
-        for o in obs:
+        for o in self.Obs:
             if np.linalg.norm(s[:2]-o[:2]) <= f * o[2]:
                 # print "right obstacle collision"
                 return True

@@ -12,13 +12,13 @@ import glob
 from scipy.io import loadmat
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-rollout = 1
+rollout = 0
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
 Set = '9c_10'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
@@ -309,6 +309,28 @@ if Set == '8c_nn' or Set.find('9c') >= 0:
     # C = np.zeros((1000,2))
     C = np.loadtxt('/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
 
+    Obs1 = []
+    for x in range(0, 71, 10):
+        for y in range(50, 145, 15):
+            Obs1.append([x, y, 0.5])
+    Obs1 = np.array(Obs1)
+    np.random.seed(190)
+    n = 60
+    Obs2 = np.concatenate((np.random.random(size=(n,1))*-71, np.random.random(size=(n,1))*95+50, 0.5*np.ones((n,1))), axis=1)
+    Obs3 = np.concatenate((Obs1, Obs2), axis = 0)
+
+    Obs = []
+    for o in Obs3:
+        if (o[1] < 87 and np.abs(o[0]) < 44) or o[1] > 133 or (o[0] > 55 and o[1] > 104) or (o[1] < 70 and np.abs(o[0]) < 61):
+            continue
+        Obs.append(o)
+    Obs = np.array(Obs)
+    
+    with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'w') as f: 
+        pickle.dump(Obs, f)
+
+
+
 
 # ===============================================
     
@@ -473,22 +495,9 @@ if not rollout and 1:
             ax.add_artist(goal_plan)
 
             try:
-                kj = 0
                 for os in Obs:
-                    o = np.copy(os)
-                    if Set == '19_nn':
-                        if kj == 2 and num > 0:
-                            kj += 1
-                            continue
-                        if kj == 3 and num == 0:
-                            kj += 1
-                            continue
-                    if num == 0 and kj == 1:
-                        o[1] = 105.
-                    
-                    obs = plt.Circle(o[:2], o[2], color=[0.4,0.4,0.4])#, zorder=10)
+                    obs = plt.Circle(os[:2], os[2], color=[0.4,0.4,0.4])#, zorder=10)
                     ax.add_artist(obs)
-                    kj += 1
             except:
                 pass
 
@@ -516,9 +525,9 @@ if not rollout and 1:
             plt.axis('equal')
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
-            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
-            # plt.show()
-            # exit(1)
+            # plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
+            plt.show()
+            exit(1)
 
         fo.close()
         
