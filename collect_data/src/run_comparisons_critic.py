@@ -89,16 +89,22 @@ seed = [
 # ]
 
 # 7c_nn, 8c_nn
+# goals = [
+# # "-82, 60,  16,  16", 
+# # "-52, 80,  16,  16", 
+# # "52, 83,  16,  16", 
+# "36, 95,  16,  16", 
+# "0.5, 133,  16,  16", 
+# "1, 109,  16,  16", 
+# "-73, 60,  16,  16", 
+# "85, 72,  16,  16", 
+# "25, 100,  16,  16", 
+# ]
+
+# 10c_7
 goals = [
-# "-82, 60,  16,  16", 
-# "-52, 80,  16,  16", 
-# "52, 83,  16,  16", 
-"36, 95,  16,  16", 
-"0.5, 133,  16,  16", 
-"1, 109,  16,  16", 
-"-73, 60,  16,  16", 
-"85, 72,  16,  16", 
-"25, 100,  16,  16", 
+# "90, 60,  16,  16", 
+"-90, 60,  16,  16", 
 ]
 
 
@@ -120,8 +126,10 @@ nodes =[
 
 
 SET_FOLDER = "set10c_7"
+# ROLLOUT_FOLDER = "/home/akimmel/repositories/pracsys/src/"
+ROLLOUT_FOLDER = "/home/juntao/catkin_ws/src/"
 
-NUM_RUNS = 1
+NUM_RUNS = 5
 
 GOAL_RADIUS = 5.5
 TOTAL_PARTICLES = 100
@@ -147,22 +155,23 @@ CRITIC_COST_MULTIPLIER = 7.0
 #     goals.append(rand_goal)
 #     f.write(rand_goal + "\n")
 
-C = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
-I = [1, 6, 31, 38, 91, 99, 123, 124, 134, 138]
+# C = np.loadtxt('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
+# I = [1, 6, 31, 38, 91, 99, 123, 124, 134, 138]
 # I = [38, 91, 99]#, 123, 124, 134, 138]
 
 
 if __name__ == "__main__":
     for x in range(NUM_RUNS):
-        count = 0
-        # for g in goals:
+        count = 1
+        for g in goals:
 
-        for ii in I:
-            g = str(C[ii,0]) + "," + str(C[ii,1]) + ",16,16"
-            count = ii
+        # for ii in I:
+        #     g = str(C[ii,0]) + "," + str(C[ii,1]) + ",16,16"
+        #     count = ii
 
             for n in nodes:
                 set_folder= "set_folder:=" + SET_FOLDER
+                rollout_folder ="rollout_folder:=" + ROLLOUT_FOLDER
                 random_seed = "random_seed:=" + str(seed[x])
                 node_name = "node:="+ n + "_goal" + str(count) + "_run" + str(x)
                 goal_state = "goal_state:="+ g
@@ -215,6 +224,6 @@ if __name__ == "__main__":
                 experiment_filename="experiment_filename:="+n+".txt"
                 print node_name, goal_state, probability_constraint,no_collision_constraint, success_constraint
                 goal_radius="goal_radius:=" + str(GOAL_RADIUS)
-                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", set_folder, node_name, critic_cost_multiplier, critic_threshold, use_critic_seq, use_critic_predict, use_critic_cost, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint, no_collision_constraint, random_seed])
+                subprocess.call(["roslaunch", "robust_planning", "run_comparisons_template.launch", set_folder, rollout_folder, node_name, critic_cost_multiplier, critic_threshold, use_critic_seq, use_critic_predict, use_critic_cost, goal_state, total_particles, probability_constraint, prune_probability, prune_covariance, goal_radius, experiment_filename, mean_only, use_svm_prediction, failure_constant, success_constraint, no_collision_constraint, random_seed])
             count = count + 1
 

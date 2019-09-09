@@ -20,14 +20,14 @@ rollout = 0
 comp = 'juntao'
 # comp = 'pracsys'
 
-Set = '9c_10'
+Set = '10c_7'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
 # set_modes = ['mean_only_particles']
 # set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive_goal']
 # set_modes_no = ['naive_goal', 'naive_withCriticPredict']
-set_modes = ['naive_withCriticCost']#, 'naive_withCriticCost']
+set_modes = ['naive_withCriticCost', 'naive_goal']
 
 
 ############################# Rollout ################################
@@ -309,25 +309,36 @@ if Set == '8c_nn' or Set.find('9c') >= 0:
     # C = np.zeros((1000,2))
     C = np.loadtxt('/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
 
-    Obs1 = []
-    for x in range(0, 71, 10):
-        for y in range(50, 145, 15):
-            Obs1.append([x, y, 0.5])
-    Obs1 = np.array(Obs1)
-    np.random.seed(190)
-    n = 60
-    Obs2 = np.concatenate((np.random.random(size=(n,1))*-71, np.random.random(size=(n,1))*95+50, 0.5*np.ones((n,1))), axis=1)
-    Obs3 = np.concatenate((Obs1, Obs2), axis = 0)
+    with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'r') as f: 
+        Obs = pickle.load(f)
 
-    Obs = []
-    for o in Obs3:
-        if (o[1] < 87 and np.abs(o[0]) < 44) or o[1] > 133 or (o[0] > 55 and o[1] > 104) or (o[1] < 70 and np.abs(o[0]) < 61):
-            continue
-        Obs.append(o)
-    Obs = np.array(Obs)
-    
-    with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'w') as f: 
-        pickle.dump(Obs, f)
+if Set.find('10c') >= 0:
+    C = np.array([[90, 60 ],
+        [-90, 60]])
+
+    if 1:
+        Obs1 = []
+        for x in range(0, 71, 10):
+            for y in range(50, 145, 13):
+                Obs1.append([x, y, 0.75])
+        Obs1 = np.array(Obs1)
+        np.random.seed(170)
+        n = 60
+        Obs2 = np.concatenate((np.random.random(size=(n,1))*-71, np.random.random(size=(n,1))*95+50, 0.75*np.ones((n,1))), axis=1)
+        Obs3 = np.concatenate((Obs1, Obs2), axis = 0)
+
+        Obs = []
+        for o in Obs3:
+            if (o[1] < 87 and np.abs(o[0]) < 44) or o[1] > 133 or (o[0] > 55 and o[1] > 104) or (o[1] < 70 and np.abs(o[0]) < 61):
+                continue
+            Obs.append(o)
+        Obs = np.array(Obs)
+
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'w') as f: 
+            pickle.dump(Obs, f)
+    else:
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'r') as f: 
+            Obs = pickle.load(f)
 
 
 
@@ -390,13 +401,11 @@ if not rollout and 1:
             while not (pklfile[jb] == '_'):
                 jb += 1
             num = int(pklfile[ja:jb])
-            # num = int(pklfile[ja]) if pklfile[ja+1] == '_' else int(pklfile[ja:ja+2])
             try:
                 ctr = C[num, :] # Goal center
             except:
                 ctr = np.array([0,0])
             print(("Goal number %d with center: "%num), ctr)
-            # exit(1)
 
             for j in range(len(pklfile)-1, 0, -1):
                 if pklfile[j] == '/':
@@ -458,12 +467,6 @@ if not rollout and 1:
             ax.add_patch(pgon)
             # -----
 
-            # if num == 99:
-            #     for S in Pro:
-            #         print S[-10:,:2]
-            #         print np.linalg.norm(S[-3,:2]-ctr), r
-            #     exit(1)
-
             for kk in range(len(Pro)):
                 S = Pro[kk]
                 if S.shape[0] < maxR:
@@ -488,11 +491,15 @@ if not rollout and 1:
             p = float(p) / len(Pro)*100
             print("Reached goal success rate: " + str(p) + "%")
 
-            # plt.plot(ctr[0], ctr[1], 'om')
-            # goal = plt.Circle((ctr[0], ctr[1]), r, color='m')
-            # ax.add_artist(goal)
-            goal_plan = plt.Circle((ctr[0], ctr[1]), r, color='m')
-            ax.add_artist(goal_plan)
+            if Set.find('10c') >= 0:
+                import matplotlib.patches as patches
+                goal_plan = patches.Rectangle((70, 38), 20, 65, color='m')
+                ax.add_artist(goal_plan)
+                goal_plan = patches.Rectangle((-70-20, 38), 20, 65, color='m')
+                ax.add_artist(goal_plan)
+            else:
+                goal_plan = plt.Circle((ctr[0], ctr[1]), r, color='m')
+                ax.add_artist(goal_plan)
 
             try:
                 for os in Obs:
@@ -525,9 +532,9 @@ if not rollout and 1:
             plt.axis('equal')
 
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
-            # plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
-            plt.show()
-            exit(1)
+            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
+            # plt.show()
+            # exit(1)
 
         fo.close()
         
@@ -584,7 +591,7 @@ if 0:
         I = np.concatenate((Iwo, Iw), axis=1)  
         plt.imsave(path(set_w) + 'c' + set_w + '_goal' + str(goal) + '.png', I)  
 
-if 1:
+if 0:
     run = 0
     path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
     path_b = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/naive_baseline/'
