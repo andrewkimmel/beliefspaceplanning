@@ -12,22 +12,22 @@ import glob
 from scipy.io import loadmat
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-rollout = 0
+rollout = 1
 
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
-Set = '8c_nn'
+Set = '9c_7'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
 # set_modes = ['mean_only_particles']
-set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive_goal']
+# set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive_goal']
 # set_modes_no = ['naive_goal', 'naive_withCriticPredict']
-# set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost']
+set_modes = ['naive_withCriticCost']#, 'naive_withCriticCost']
 
 
 ############################# Rollout ################################

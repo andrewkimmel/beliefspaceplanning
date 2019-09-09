@@ -1,0 +1,5 @@
+/naive_withCriticCost_withCriticSeq_goal1_run0,4.87484,220.558,0,0,1829
+/naive_withCriticCost_withCriticSeq_goal6_run0,557.488,1649.23,0,0,4311
+/naive_withCriticCost_withCriticSeq_goal1_run0,4.74068,217.291,0,0,592
+/naive_withCriticCost_withCriticSeq_goal6_run0,329.99,1430.94,0,0,8105
+/naive_withCriticCost_withCriticSeq_goal31_run0,236.859,507.37,0,0,2111
