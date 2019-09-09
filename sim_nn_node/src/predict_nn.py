@@ -43,8 +43,12 @@ class predict_nn:
         self.model_path = self.save_path + 'ratios/'
 
         try:
-            with open(self.model_path + '/normalization_arr_sim_cont_trajT_bs512_model512_BS64_loadT_ho' + str(ratio) + '_py2', 'rb') as pickle_file:
-                x_norm_arr, y_norm_arr = pickle.load(pickle_file)
+            try:
+                with open(self.model_path + '/normalization_arr_sim_cont_trajT_bs512_model512_BS64_loadT_ho' + str(ratio) + '_py2', 'rb') as pickle_file:
+                    x_norm_arr, y_norm_arr = pickle.load(pickle_file)
+            except:
+                with open(self.model_path + '/normalization_arr_sim_cont_trajT_bs512_model512_BS64_loadT_ho0.5_py2', 'rb') as pickle_file:
+                    x_norm_arr, y_norm_arr = pickle.load(pickle_file)
 
             self.x_mean_arr, self.x_std_arr = x_norm_arr[0], x_norm_arr[1]
             self.y_mean_arr, self.y_std_arr = y_norm_arr[0], y_norm_arr[1]

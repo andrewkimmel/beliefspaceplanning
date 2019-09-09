@@ -13,7 +13,7 @@ from sklearn.neighbors import KDTree
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 
-CRITIC = True
+CRITIC = False
 
 class Spin_predict(predict_nn, svm_failure):
 
