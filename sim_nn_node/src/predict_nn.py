@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import time
 
 import sys
-sys.path.insert(0, '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/common/')
+sys.path.insert(0, '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/common/')
 from data_normalization import *
 import pickle
 import random
@@ -35,7 +35,7 @@ class Timeout():
 class predict_nn:
     def __init__(self):
 
-        save_path = '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
+        save_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
         model_name = 'sim_cont_trajT_bs512_model512_BS64_loadT_ho40.pkl' # Name of the model we want to depickle
         self.model_path = save_path + model_name
 

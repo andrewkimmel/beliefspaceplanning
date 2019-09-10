@@ -103,7 +103,7 @@ seed = [
 
 # 10c_7
 goals = [
-# "90, 60,  16,  16", 
+"90, 60,  16,  16", 
 "-90, 60,  16,  16", 
 ]
 
@@ -125,11 +125,11 @@ nodes =[
 ]
 
 
-SET_FOLDER = "set10c_7"
+SET_FOLDER = "set11c_7"
 # ROLLOUT_FOLDER = "/home/akimmel/repositories/pracsys/src/"
-ROLLOUT_FOLDER = "/home/juntao/catkin_ws/src/"
+ROLLOUT_FOLDER = "/home/pracsys/catkin_ws/src/"
 
-NUM_RUNS = 5
+NUM_RUNS = 10
 
 GOAL_RADIUS = 5.5
 TOTAL_PARTICLES = 100
@@ -162,7 +162,7 @@ CRITIC_COST_MULTIPLIER = 7.0
 
 if __name__ == "__main__":
     for x in range(NUM_RUNS):
-        count = 1
+        count = 4
         for g in goals:
 
         # for ii in I:
