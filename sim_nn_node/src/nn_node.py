@@ -13,7 +13,7 @@ from sklearn.neighbors import KDTree
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 
-CRITIC = True
+CRITIC = False
 
 class Spin_predict(predict_nn, svm_failure):
 
@@ -152,7 +152,7 @@ class Spin_predict(predict_nn, svm_failure):
         #     [59., 80., 3.],
         #     [36.5, 94., 4.]
         #     ])
-        f = 1.3 # inflate
+        f = 2.7 #2.0 # inflate
 
         for o in self.Obs:
             if np.linalg.norm(s[:2]-o[:2]) <= f * o[2]:

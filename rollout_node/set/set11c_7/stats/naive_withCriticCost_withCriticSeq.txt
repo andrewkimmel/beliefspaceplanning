@@ -1,0 +1,6 @@
+/naive_withCriticCost_withCriticSeq_goal1_run0, 0.0, 0.0, 0.0, 0.0, 4317
+/naive_withCriticCost_withCriticSeq_goal1_run1, 0.0, 0.0, 0.0, 0.0, 4261
+/naive_withCriticCost_withCriticSeq_goal1_run1,404.506,493.196,0,0,2652
+/naive_withCriticCost_withCriticSeq_goal1_run2, 0.0, 0.0, 0.0, 0.0, 4097
+/naive_withCriticCost_withCriticSeq_goal1_run3, 0.0, 0.0, 0.0, 0.0, 4118
+/naive_withCriticCost_withCriticSeq_goal1_run4,1705.37,1994.78,0,0,3747

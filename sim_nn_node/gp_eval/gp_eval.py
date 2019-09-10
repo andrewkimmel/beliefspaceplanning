@@ -27,14 +27,14 @@ with open('/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_
 del D[:432] # Delete data that was used for training
 
 l_prior = 40
-if 0:
-    if 0:
+if 1:
+    if 1:
         O = []
         M = []
         E = []
         Apr = []
     else:
-        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '_v1.pkl', 'rb') as f: 
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '_v2c.pkl', 'rb') as f: 
             O, M, Apr, E = pickle.load(f)
             O = list(O)
             E = list(E)
@@ -43,7 +43,7 @@ if 0:
     N = 1000000*2
     for k in range(len(O), N):
         ix = np.random.randint(len(D))
-        l = np.random.randint(10,30)
+        l = 10
         jx = np.random.randint(D[ix].shape[0]-l)
 
         h = 1
@@ -103,13 +103,13 @@ if 0:
             Apr1 = np.array(Apr)
             E1 = np.array(E)
 
-            with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'wb') as f: 
+            with open(path + 'error_points_P' + str(l_prior) + '_v2c.pkl', 'wb') as f: 
                 pickle.dump([O1, M1, Apr1, E1], f)
 else:
     # pass
-    with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
+    with open(path + 'error_points_P' + str(l_prior) + '_v2a.pkl', 'r') as f: 
         O1, L1, Apr1, E1 = pickle.load(f)
-    with open(path + 'error_points_P' + str(l_prior) + '_v1b.pkl', 'r') as f: 
+    with open(path + 'error_points_P' + str(l_prior) + '_v2b.pkl', 'r') as f: 
         O2, L2, Apr2, E2 = pickle.load(f)
 
     O = np.concatenate((O1, O2), axis=0)

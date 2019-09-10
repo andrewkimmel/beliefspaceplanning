@@ -1,0 +1,9 @@
+naive_withCriticCost_withCriticSeq_goal1_run4_plan: 0.0, 0.0
+naive_withCriticCost_withCriticSeq_goal1_run1_plan: 0.0, 0.0
+naive_withCriticCost_withCriticSeq_goal0_run7_plan: 50.0, 50.0
+naive_withCriticCost_withCriticSeq_goal0_run4_plan: 100.0, 100.0
+naive_withCriticCost_withCriticSeq_goal0_run2_plan: 0.0, 0.0
+naive_withCriticCost_withCriticSeq_goal0_run8_plan: 0.0, 0.0
+naive_withCriticCost_withCriticSeq_goal0_run6_plan: 0.0, 0.0
+naive_withCriticCost_withCriticSeq_goal0_run1_plan: 100.0, 100.0
+naive_withCriticCost_withCriticSeq_goal0_run5_plan: 100.0, 100.0

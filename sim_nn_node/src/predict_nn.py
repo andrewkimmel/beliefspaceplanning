@@ -36,11 +36,11 @@ class predict_nn:
     def __init__(self):
 
         save_path = '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
-        model_name = 'sim_cont_trajT_bs512_model512_BS64_loadT_ho40.pkl' # Name of the model we want to depickle
+        model_name = 'sim_cont_trajT_bs512_model512_BS64_loadT_ho0.99.pkl' # Name of the model we want to depickle
         self.model_path = save_path + model_name
 
         print('[predict_nn] Loading training data...')
-        with open(save_path + '/normalization_arr_sim_cont_trajT_bs512_model512_BS64_loadT_ho40_py2', 'rb') as pickle_file:
+        with open(save_path + '/normalization_arr_sim_cont_trajT_bs512_model512_BS64_loadT_ho0.99_py2', 'rb') as pickle_file:
             x_norm_arr, y_norm_arr = pickle.load(pickle_file)
 
         self.x_mean_arr, self.x_std_arr = x_norm_arr[0], x_norm_arr[1]

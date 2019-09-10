@@ -20,7 +20,7 @@ rollout = 0
 comp = 'juntao'
 # comp = 'pracsys'
 
-Set = '10c_7'
+Set = '12c_7'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
@@ -312,11 +312,11 @@ if Set == '8c_nn' or Set.find('9c') >= 0:
     with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'r') as f: 
         Obs = pickle.load(f)
 
-if Set.find('10c') >= 0:
+if Set.find('10c') >= 0 or Set.find('11c') >= 0:
     C = np.array([[90, 60 ],
         [-90, 60]])
 
-    if 1:
+    if 0:
         Obs1 = []
         for x in range(0, 71, 10):
             for y in range(50, 145, 13):
@@ -329,7 +329,7 @@ if Set.find('10c') >= 0:
 
         Obs = []
         for o in Obs3:
-            if (o[1] < 87 and np.abs(o[0]) < 44) or o[1] > 133 or (o[0] > 55 and o[1] > 104) or (o[1] < 70 and np.abs(o[0]) < 61):
+            if (o[1] < 87 and np.abs(o[0]) < 44) or o[1] > 133 or (o[0] > 55 and o[1] > 104) or (o[1] < 70 and np.abs(o[0]) < 61) or np.linalg.norm(o[:2] - np.array([0.,118.])) < 5.:
                 continue
             Obs.append(o)
         Obs = np.array(Obs)
@@ -340,6 +340,33 @@ if Set.find('10c') >= 0:
         with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'r') as f: 
             Obs = pickle.load(f)
 
+if Set.find('12c') >= 0:
+    C = np.array([[25, 104 ]])
+
+    if 0:
+        Obs1 = []
+        y = 112
+        for x in range(17, 35, 1):
+            Obs1.append([x, y, 0.5])
+            y -= 0.27
+        Obs2 = []
+        y = 112
+        for x in np.arange(17, 14, -0.2):
+            Obs2.append([x, y, 0.5])
+            y -= 0.75
+        Obs3 = []
+        y = 101
+        for x in range(15, 33, 1):
+            Obs3.append([x, y, 0.5])
+            y -= 0.27
+        Obs = np.concatenate((np.array(Obs1), np.array(Obs2), np.array(Obs3)), axis = 0)
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_12.pkl', 'w') as f: 
+                pickle.dump(Obs, f)
+    else:
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_12.pkl', 'r') as f: 
+            Obs = pickle.load(f)
+
+# exit(1)
 
 
 
@@ -356,8 +383,8 @@ def tracking_error(S1, S2):
 
     return np.sqrt(Sum / S1.shape[0]), l
 
-rp = 5.5
-r = 8.
+rp = 5.0
+r = 5.0
 
 set_num = Set
 # set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
@@ -365,7 +392,10 @@ set_modes = ['naive_goal', 'naive_withCriticThreshold', 'naive_withCriticCost', 
 
 results_path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set' + Set + '/results/'
 
-
+Pc = []
+Acc = []
+Pn = []
+Acn = []
 if not rollout and 1:
 
     file = 'sim_data_discrete_v14_d8_m10.mat'
@@ -477,7 +507,7 @@ if not rollout and 1:
 
             p = 0
             for S in Pro:
-                if np.linalg.norm(S[-1,:2]-ctr) > r: #S.shape[0] < maxR or 
+                if (Set != '1c_7' and np.linalg.norm(S[-1,:2]-ctr) > r) or (Set == '11c_7' and (S[-1,0] < 70 and S[-1,0] > -70)): #S.shape[0] < maxR or 
                     plt.plot(S[:,0], S[:,1], '-r')
                     plt.plot(S[-1,0], S[-1,1], 'or')
                 else:
@@ -491,7 +521,7 @@ if not rollout and 1:
             p = float(p) / len(Pro)*100
             print("Reached goal success rate: " + str(p) + "%")
 
-            if Set.find('10c') >= 0:
+            if Set.find('10c') >= 0 or Set.find('13c') >= 0:
                 import matplotlib.patches as patches
                 goal_plan = patches.Rectangle((70, 38), 20, 65, color='m')
                 ax.add_artist(goal_plan)
@@ -531,10 +561,20 @@ if not rollout and 1:
             plt.title(file_name + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%, RMSE: " + str(round(e, 2)) + ' mm', fontsize = 17)
             plt.axis('equal')
 
+            if num == 0:
+                if set_mode == 'naive_goal':
+                    Pn.append(p)
+                    Acn.append(e)
+                if set_mode == 'naive_withCriticCost':
+                    Pc.append(p)
+                    Acc.append(e)
+                
+
+
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
-            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
-            # plt.show()
-            # exit(1)
+            # plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
+            plt.show()
+            exit(1)
 
         fo.close()
         
@@ -560,6 +600,14 @@ if not rollout and 1:
                     else:
                         csv.write(str(Sum[key][goal, j]) + ',')
         csv.write('\n')
+
+    print
+    print "Naive: "
+    print "Mean success rate: ", np.mean(np.array(Pn))
+    print "Mean error: ", np.mean(np.array(Acn))
+    print "Critic: "
+    print "Mean success rate: ", np.mean(np.array(Pc))
+    print "Mean error: ", np.mean(np.array(Acc))
 
 
 if 0:
