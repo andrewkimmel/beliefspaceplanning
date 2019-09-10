@@ -127,7 +127,7 @@ nodes =[
 
 SET_FOLDER = "set12c_7"
 # ROLLOUT_FOLDER = "/home/akimmel/repositories/pracsys/src/"
-ROLLOUT_FOLDER = "/home/juntao/catkin_ws/src/"
+ROLLOUT_FOLDER = "/home/pracsys/catkin_ws/src/"
 
 NUM_RUNS = 10
 

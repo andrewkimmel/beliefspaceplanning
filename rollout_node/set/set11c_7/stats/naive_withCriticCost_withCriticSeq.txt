@@ -1,6 +1,17 @@
+<<<<<<< HEAD
 /naive_withCriticCost_withCriticSeq_goal1_run0, 0.0, 0.0, 0.0, 0.0, 4317
 /naive_withCriticCost_withCriticSeq_goal1_run1, 0.0, 0.0, 0.0, 0.0, 4261
 /naive_withCriticCost_withCriticSeq_goal1_run1,404.506,493.196,0,0,2652
 /naive_withCriticCost_withCriticSeq_goal1_run2, 0.0, 0.0, 0.0, 0.0, 4097
 /naive_withCriticCost_withCriticSeq_goal1_run3, 0.0, 0.0, 0.0, 0.0, 4118
 /naive_withCriticCost_withCriticSeq_goal1_run4,1705.37,1994.78,0,0,3747
+=======
+/naive_withCriticCost_withCriticSeq_goal0_run0,80.7747,24.5425,0,0,90
+/naive_withCriticCost_withCriticSeq_goal1_run0,220.64,21.7607,0,0,64
+/naive_withCriticCost_withCriticSeq_goal0_run1,77.9101,15.2547,0,0,81
+/naive_withCriticCost_withCriticSeq_goal1_run1,231.405,30.7065,0,0,93
+/naive_withCriticCost_withCriticSeq_goal0_run2,104.243,17.9531,0,0,54
+/naive_withCriticCost_withCriticSeq_goal1_run2,446.76,26.9012,0,0,114
+/naive_withCriticCost_withCriticSeq_goal0_run3,102.046,26.2184,0,0,56
+/naive_withCriticCost_withCriticSeq_goal1_run3,278.769,17.795,0,0,54
+>>>>>>> ca36afa4addf6ea369e0bf85fdbd04209a3aa218
