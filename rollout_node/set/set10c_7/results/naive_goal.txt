@@ -1,0 +1,8 @@
+naive_goal0_run3_plan: 0.0, 0.0
+naive_goal1_run1_plan: 100.0, 100.0
+naive_goal0_run2_plan: 50.0, 50.0
+naive_goal0_run1_plan: 50.0, 50.0
+naive_goal0_run0_plan: 0.0, 0.0
+naive_goal1_run3_plan: 0.0, 0.0
+naive_goal1_run0_plan: 0.0, 0.0
+naive_goal0_run4_plan: 0.0, 0.0

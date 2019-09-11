@@ -104,7 +104,7 @@ seed = [
 # 10c_7
 goals = [
 "90, 60,  16,  16", 
-"-90, 60,  16,  16", 
+# "-90, 60,  16,  16", 
 ]
 
 
@@ -125,7 +125,7 @@ nodes =[
 ]
 
 
-SET_FOLDER = "set11c_7"
+SET_FOLDER = "set12c_7"
 # ROLLOUT_FOLDER = "/home/akimmel/repositories/pracsys/src/"
 ROLLOUT_FOLDER = "/home/pracsys/catkin_ws/src/"
 
@@ -134,14 +134,14 @@ NUM_RUNS = 10
 GOAL_RADIUS = 5.5
 TOTAL_PARTICLES = 100
 # PROBABILITY_CONSTRAINT = 0.7
-# PROBABILITY_CONSTRAINT = 0.65
-PROBABILITY_CONSTRAINT = 0.001
+PROBABILITY_CONSTRAINT = 0.65
+# PROBABILITY_CONSTRAINT = 0.001
 NO_COLLISION_CONSTRAINT = 0.94
 # SUCCESS_PROB_CONSTRAINT = 0.7
 SUCCESS_PROB_CONSTRAINT = 0.45
 FAILURE_CONSTANT = 100.0
 CRITIC_THRESHOLD = 0.50
-CRITIC_COST_MULTIPLIER = 7.0
+CRITIC_COST_MULTIPLIER = 10.0
 # ]
 
 #generate random goals
@@ -161,8 +161,8 @@ CRITIC_COST_MULTIPLIER = 7.0
 
 
 if __name__ == "__main__":
-    for x in range(NUM_RUNS):
-        count = 4
+    for x in range(1, NUM_RUNS):
+        count = 0
         for g in goals:
 
         # for ii in I:

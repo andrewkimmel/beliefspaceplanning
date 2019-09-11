@@ -1,4 +1,4 @@
 Goal #,naive_goal,naive_goal,naive_goal,naive_goal,naive_goal,naive_withCriticPredict,naive_withCriticPredict,naive_withCriticPredict,naive_withCriticPredict,naive_withCriticPredict,naive_withCriticCost,naive_withCriticCost,naive_withCriticCost,naive_withCriticCost,naive_withCriticCost,naive_withCriticThreshold,naive_withCriticThreshold,naive_withCriticThreshold,naive_withCriticThreshold,naive_withCriticThreshold,
 ,fail rate, reached goal, tracking RMSE, path length, planning rate, fail rate, reached goal, tracking RMSE, path length, planning rate, fail rate, reached goal, tracking RMSE, path length, planning rate
-0,-,-,-,-,0,-,-,-,-,0,0.0,0.0,1.02,87.57,50.0,-,-,-,-,0,
-1,-,-,-,-,0,-,-,-,-,0,100.0,0.0,0.91,46.34,50.0,-,-,-,-,0,
+0,100.0,0.0,0.85,77.66,250.0,-,-,-,-,0,0.0,100.0,0.96,86.72,250.0,-,-,-,-,0,
+1,0.0,100.0,1.68,87.7,150.0,-,-,-,-,0,100.0,0.0,0.91,46.34,200.0,-,-,-,-,0,
