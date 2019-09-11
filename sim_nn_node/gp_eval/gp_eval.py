@@ -10,10 +10,10 @@ import pickle
 from gpup_gp_node.srv import one_transition
 from sklearn.neighbors import KDTree
 
-o_srv = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
-rospy.init_node('gp_eval', anonymous=True)
+# o_srv = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
+# rospy.init_node('gp_eval', anonymous=True)
 
-path = '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/'
+path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/'
 
 def tracking_error(S1, S2):
     Sum = 0.
@@ -22,7 +22,7 @@ def tracking_error(S1, S2):
 
     return np.sqrt(Sum / S1.shape[0])
 
-with open('/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
+with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
     D = pickle.load(f)
 del D[:432] # Delete data that was used for training
 
@@ -34,7 +34,7 @@ if 0:
         E = []
         Apr = []
     else:
-        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '_v1.pkl', 'rb') as f: 
+        with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '_v1.pkl', 'rb') as f: 
             O, M, Apr, E = pickle.load(f)
             O = list(O)
             E = list(E)
@@ -106,16 +106,8 @@ if 0:
             with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'wb') as f: 
                 pickle.dump([O1, M1, Apr1, E1], f)
 else:
-    # pass
     with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
-        O1, L1, Apr1, E1 = pickle.load(f)
-    with open(path + 'error_points_P' + str(l_prior) + '_v1b.pkl', 'r') as f: 
-        O2, L2, Apr2, E2 = pickle.load(f)
-
-    O = np.concatenate((O1, O2), axis=0)
-    L = np.concatenate((L1, L2), axis=0)
-    Apr = np.concatenate((Apr1, Apr2), axis=0)
-    E = np.concatenate((E1, E2), axis=0)
+        O, L, Apr, E = pickle.load(f)
 
 # exit(1)
 On = []
