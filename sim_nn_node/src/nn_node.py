@@ -51,15 +51,15 @@ class Spin_predict(predict_nn, svm_failure):
 
         if CRITIC:
             self.K = 3
-            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_r' + str(round(req.ratio, 1)) + '_v1.pkl', 'rb') as f: 
+            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_r' + str(round(req.ratio, 2)) + '_v1.pkl', 'rb') as f: 
                 self.O, self.E = pickle.load(f)
             if 0:
                 self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
             else:
-                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_r' + str(round(req.ratio, 1)) + '_v1.pkl', 'rb') as f: 
+                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_r' + str(round(req.ratio, 2)) + '_v1.pkl', 'rb') as f: 
                     self.kdt = pickle.load(f)
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
-            print('[nn_predict_node] Critic loaded with %.1f data.'%req.ratio)
+            print('[nn_predict_node] Critic loaded with ' + str(round(req.ratio, 2)) + ' data.')
 
         return self.Load_model(req.ratio)
 

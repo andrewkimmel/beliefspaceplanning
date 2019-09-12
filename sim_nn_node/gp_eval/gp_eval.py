@@ -11,10 +11,10 @@ from gpup_gp_node.srv import one_transition
 from sim_nn_node.srv import load_model, critic
 from sklearn.neighbors import KDTree
 
-o_srv = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
-lm_srv = rospy.ServiceProxy('/nn/load_model', load_model)
-critic_srv = rospy.ServiceProxy('/nn/critic', critic)
-rospy.init_node('gp_eval', anonymous=True)
+# o_srv = rospy.ServiceProxy('/nn/transitionOneParticle', one_transition)
+# lm_srv = rospy.ServiceProxy('/nn/load_model', load_model)
+# critic_srv = rospy.ServiceProxy('/nn/critic', critic)
+# rospy.init_node('gp_eval', anonymous=True)
 
 path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/'
 
