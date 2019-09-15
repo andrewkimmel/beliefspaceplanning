@@ -35,13 +35,8 @@ class Timeout():
 class predict_nn:
     def __init__(self):
 
-<<<<<<< HEAD
-        save_path = '/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
-        model_name = 'sim_cont_trajT_bs512_model512_BS64_loadT_ho0.99.pkl' # Name of the model we want to depickle
-=======
         save_path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/models/'
         model_name = 'sim_cont_trajT_bs512_model512_BS64_loadT_ho40.pkl' # Name of the model we want to depickle
->>>>>>> ca36afa4addf6ea369e0bf85fdbd04209a3aa218
         self.model_path = save_path + model_name
 
         print('[predict_nn] Loading training data...')

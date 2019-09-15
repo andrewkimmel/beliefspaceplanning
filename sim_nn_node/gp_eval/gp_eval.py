@@ -22,23 +22,19 @@ def tracking_error(S1, S2):
 
     return np.sqrt(Sum / S1.shape[0])
 
-with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
-    D = pickle.load(f)
-del D[:432] # Delete data that was used for training
+# with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
+#     D = pickle.load(f)
+# del D[:432] # Delete data that was used for training
 
 l_prior = 40
-if 1:
+if 0:
     if 1:
         O = []
         M = []
         E = []
         Apr = []
     else:
-<<<<<<< HEAD
         with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '_v1.pkl', 'rb') as f: 
-=======
-        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/error_points_P' + str(l_prior) + '_v2c.pkl', 'rb') as f: 
->>>>>>> 0f3a2c7bc58eecb1665be53bdc6bc705854bf3b2
             O, M, Apr, E = pickle.load(f)
             O = list(O)
             E = list(E)
@@ -107,38 +103,43 @@ if 1:
             Apr1 = np.array(Apr)
             E1 = np.array(E)
 
-            with open(path + 'error_points_P' + str(l_prior) + '_v2c.pkl', 'wb') as f: 
+            with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'wb') as f: 
                 pickle.dump([O1, M1, Apr1, E1], f)
 else:
     # pass
-    with open(path + 'error_points_P' + str(l_prior) + '_v2a.pkl', 'r') as f: 
-        O1, L1, Apr1, E1 = pickle.load(f)
-    with open(path + 'error_points_P' + str(l_prior) + '_v2b.pkl', 'r') as f: 
-        O2, L2, Apr2, E2 = pickle.load(f)
+    with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
+        O, L, Apr, E = pickle.load(f)
 
-    O = np.concatenate((O1, O2), axis=0)
-    L = np.concatenate((L1, L2), axis=0)
-    Apr = np.concatenate((Apr1, Apr2), axis=0)
-    E = np.concatenate((E1, E2), axis=0)
+#### Heat maps ####
+# try:
+#     with open(path + 'temp1.pkl', 'r') as f: 
+#         O, E = pickle.load(f)
+# except:
+#     with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
+#         O, L, Apr, E = pickle.load(f)
 
-# exit(1)
-On = []
-En = []
-for o, e in zip(O, E):
-    if e < 10.0:# and np.all(np.abs(o[4:6] - np.array([1,-1]) < 0.3)):
-        On.append(o)
-        En.append(e)
-O = np.array(On)
-E = np.array(En)
+#     On = []
+#     En = []
+#     for o, e in zip(O, E):
+#         if e < 7. and o[4] > 0.6 and o[5] < -0.6:#   np.all(o[4:6] > 0.6):
+#             On.append(o)
+#             En.append(e)
+#     O = np.array(On)
+#     E = np.array(En)
+#     with open(path + 'temp.pkl', 'w') as f: 
+#         pickle.dump([O, E], f)
 
-# print np.max(E)
-
-# gridsize = 20
-# plt.hexbin(O[:,0], O[:,1], C=E, gridsize=gridsize, cmap=cm.jet, bins=None)
-plt.hist(E, bins=100)
+# gridsize = 30
+# plt.hexbin(O[:,0], O[:,1], C = E, gridsize=gridsize, cmap=cm.jet, bins=None)
 # plt.colorbar()
-plt.show()
-exit(1)
+# # plt.axis('equal')
+# plt.xlabel('x (mm)')
+# plt.ylabel('y (mm)')
+# plt.grid()
+# plt.savefig(path + '/heatmap_right.png', dpi=200)
+# # plt.show()
+# exit(1)
+#### Heat maps ####
 
 # print O.shape
 # print "Data of size %d loaded."%O.shape[0]
