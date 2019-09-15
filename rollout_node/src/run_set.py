@@ -17,8 +17,8 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-comp = 'juntao'
-# comp = 'pracsys'
+# comp = 'juntao'
+comp = 'pracsys'
 
 Set = '19c_7'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
@@ -95,7 +95,7 @@ if rollout:
 ############################# Plot ################################
 
 
-if Set == '8c_nn' or Set.find('9c') >= 0:
+if Set == '8c_nn' or Set.find('t9c') >= 0:
     # C = np.zeros((1000,2))
     C = np.loadtxt('/home/' + comp + '/catkin_ws/src/beliefspaceplanning/rollout_node/set/set8c_nn/random_goals.txt', delimiter=',', dtype=float)[:,:2]
 
@@ -287,18 +287,55 @@ if Set.find('19c') >= 0:
      [69, 78],
      ])
 
-    if 1:
+    if 0:
         np.random.seed(170)
         n = 60
         Obs = np.concatenate((np.random.random(size=(n,1))*160-80, np.random.random(size=(n,1))*95+50, 0.75*np.ones((n,1))), axis=1)
-        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_19.pkl', 'w') as f: 
+        with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_19.pkl', 'w') as f: 
             pickle.dump(Obs, f)
     else:
-        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_19.pkl', 'r') as f: 
+        with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_19.pkl', 'r') as f: 
             Obs = pickle.load(f)
 
 
-# exit(1)
+fig, ax = plt.subplots(figsize=(8,3.5))
+# plt.plot(Data[:,0], Data[:,1], '.y', zorder=0)
+
+file = 'sim_data_discrete_v14_d8_m10.mat'
+path = '/home/' + comp + '/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/'
+Q = loadmat(path + file)
+Data = Q['D']
+hull = ConvexHull(Data[:,:2])
+H1 = []
+for simplex in hull.vertices:
+    H1.append(Data[simplex, :2])
+H2 = np.array([[-87,41],[-83,46],[-76,52],[-60,67],[-46,79],[-32,90],[-18,100],[0,105],[18,100],[32,90],[46,79],[60,67],[76,52],[83,46],[87,41]])
+H = np.concatenate((np.array(H1)[2:,:], H2), axis=0)
+pgon = plt.Polygon(H, color='y', alpha=1, zorder=0)
+ax.add_patch(pgon)
+
+inx = [0, 7, 8, 15, 2]
+
+j = 1
+for i in inx:
+    ctr = C[i]
+    goal_plan = plt.Circle((ctr[0], ctr[1]), 8., color='m')
+    ax.add_artist(goal_plan)
+    plt.text(ctr[0]-2.5, ctr[1]-2, str(j), fontsize=20)
+    j += 1
+
+for os in Obs:
+    obs = plt.Circle(os[:2], os[2], color=[0.4,0.4,0.4])#, zorder=10)
+    ax.add_artist(obs)
+    
+plt.plot(0, 119, 'ok', markersize=16, color ='r')
+plt.text(-15, 123, 'start state', fontsize=16, color ='r')
+plt.ylim([60, 140])
+plt.xlabel('x')
+plt.ylabel('y')
+plt.savefig('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/goals.png', dpi=200)
+# plt.show()
+exit(1)
 
 
 

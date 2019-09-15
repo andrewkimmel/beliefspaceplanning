@@ -30,7 +30,7 @@ def tracking_error(S1, S2):
 
 l_prior = 40
 
-if 1:
+if 0:
     G = 'sak'
     with open(path + 'data_r' + str(0.6) + '_' + G + '_v1.pkl', 'rb') as f: 
         X, E = pickle.load(f)
@@ -80,11 +80,12 @@ if 1:
     with open(path + 'eval_critic_noH.pkl', 'wb') as f: 
         pickle.dump([R, Hmean, Hstd, n, M], f)
 else:
-    with open(path + 'eval_critic_noH.pkl', 'rb') as f: 
-        R, Hmean, Hstd, n, M = pickle.load(f)
+    pass
+    # with open(path + 'eval_critic_noH.pkl', 'rb') as f: 
+    #     R, Hmean, Hstd, n, M = pickle.load(f)
 
-Hmean = np.array(Hmean)
-Hstd = np.array(Hstd)
+# Hmean = np.array(Hmean)
+# Hstd = np.array(Hstd)
 # 
 
 # print R[:10]
@@ -95,38 +96,38 @@ Hstd = np.array(Hstd)
 # # Hmean[1] += 0.14
 
 
-from scipy import signal
-Hmean = signal.medfilt(Hmean, 1)
-Hmean[2:25] = signal.medfilt(Hmean[2:25], 1)
-Hmean[15:25] = signal.medfilt(Hmean[15:25], 5)
-Hmean[19:24] *= 0.92
-for i in range(1, Hmean.shape[0]-1):
-    Hmean[i] = (Hmean[i+1]+Hmean[i-1])/2
+# from scipy import signal
+# Hmean = signal.medfilt(Hmean, 1)
+# Hmean[2:25] = signal.medfilt(Hmean[2:25], 1)
+# Hmean[15:25] = signal.medfilt(Hmean[15:25], 5)
+# Hmean[19:24] *= 0.92
+# for i in range(1, Hmean.shape[0]-1):
+#     Hmean[i] = (Hmean[i+1]+Hmean[i-1])/2
 
-HstdU = Hmean + Hstd/2
-HstdU[15:25] = signal.medfilt(HstdU[15:25], 11)
-HstdU[17:24] *= 0.88
-for i in range(1, HstdU.shape[0]-1):
-    HstdU[i] = (HstdU[i+1]+HstdU[i-1])/2
+# HstdU = Hmean + Hstd/2
+# HstdU[15:25] = signal.medfilt(HstdU[15:25], 11)
+# HstdU[17:24] *= 0.88
+# for i in range(1, HstdU.shape[0]-1):
+#     HstdU[i] = (HstdU[i+1]+HstdU[i-1])/2
 
-HstdD = Hmean - Hstd/2  
-HstdD[4] *= 6.0
-HstdD[3] *= 2.0
-HstdD[15:25] = signal.medfilt(HstdD[15:25], 11)
-for i in range(1, HstdD.shape[0]-1):
-    HstdD[i] = (HstdD[i+1]+HstdD[i-1])/2
+# HstdD = Hmean - Hstd/2  
+# HstdD[4] *= 6.0
+# HstdD[3] *= 2.0
+# HstdD[15:25] = signal.medfilt(HstdD[15:25], 11)
+# for i in range(1, HstdD.shape[0]-1):
+#     HstdD[i] = (HstdD[i+1]+HstdD[i-1])/2
 
-plt.figure(1, figsize = (8,3.5))
-plt.gcf().subplots_adjust(bottom=0.15)
-plt.fill_between(R*100, HstdD, HstdU)
-plt.plot(R*100, Hmean, '-k')
-plt.xlabel('portion of training data (%)')
-plt.ylabel('prediction error (mm)')
-plt.xlim([1, 100])
+# plt.figure(1, figsize = (8,3.5))
+# plt.gcf().subplots_adjust(bottom=0.15)
+# plt.fill_between(R*100, HstdD, HstdU)
+# plt.plot(R*100, Hmean, '-k')
+# plt.xlabel('portion of training data (%)')
+# plt.ylabel('prediction error (mm)')
+# plt.xlim([1, 100])
 # plt.savefig(path + '/eval_critic.png', dpi=200)
 
-plt.show()
-exit(1)
+# plt.show()
+# exit(1)
 
 if 0:
     with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
@@ -166,13 +167,14 @@ for k in range(len(t)):
     idx = np.where(T[:,0] == t[k])
     e[k] = np.mean(T[idx,1])
 
-plt.figure(2, figsize = (8,2.8))
+plt.figure(2, figsize = (3.7,2.8))
 plt.gcf().subplots_adjust(bottom=0.2)
+plt.gcf().subplots_adjust(left=0.2)
 plt.bar(t, e)
 plt.xticks(np.arange(0, 4, 1)) 
 plt.xlabel('number of action changes')
 plt.ylabel('error (mm)')
-plt.savefig(path + '/eval_action_changes.png', dpi=200)
+plt.savefig(path + '/eval_action_changes_narrow.png', dpi=200)
 # plt.show()
             
 
