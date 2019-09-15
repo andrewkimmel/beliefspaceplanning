@@ -1,0 +1,1 @@
+/naive_withCriticCost_withCriticSeq_goal0_run0,434.38,38.0427,0,0,2394

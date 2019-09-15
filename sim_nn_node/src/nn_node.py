@@ -13,7 +13,7 @@ from sklearn.neighbors import KDTree
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 
-CRITIC = False
+CRITIC = True
 
 class Spin_predict(predict_nn, svm_failure):
 
@@ -32,17 +32,17 @@ class Spin_predict(predict_nn, svm_failure):
         rospy.init_node('predict', anonymous=True)
 
         if self.OBS:
-            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'r') as f: 
+            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_19.pkl', 'r') as f: 
                 self.Obs = pickle.load(f)
 
         if CRITIC:
             self.K = 3
-            with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_P40_sakh_v1.pkl', 'rb') as f: 
+            with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/data_P40_sakh_v2.pkl', 'rb') as f: 
                 self.O, self.E = pickle.load(f)
-            if 0:
+            if 1:
                 self.kdt = KDTree(self.O, leaf_size=100, metric='euclidean')
             else:
-                with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_P40_sakh_v1.pkl', 'rb') as f: 
+                with open('/home/juntao/catkin_ws/src/beliefspaceplanning/sim_nn_node/gp_eval/kdt_P40_sakh_v2.pkl', 'rb') as f: 
                     self.kdt = pickle.load(f)
             self.kernel = RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
             print('[nn_predict_node] Critic loaded.')
@@ -84,7 +84,6 @@ class Spin_predict(predict_nn, svm_failure):
 
             return {'next_states': s_next, 'mean_shift': s_next, 'node_probability': node_probability, 'collision_probability': collision_probability}
         else:       
-
             # Check which particles failed
             failed_inx = self.batch_svm_check(S, a)
             try:
@@ -144,15 +143,7 @@ class Spin_predict(predict_nn, svm_failure):
         return {'next_state': s_next, 'node_probability': node_probability}
 
     def obstacle_check(self, s):
-        # print "Obstacle check...."
-        # obs = np.array([[-38, 117.1, 4.],
-        #     [-33., 100., 4.],
-        #     [-52.5, 105.2, 4.],
-        #     [43., 111.5, 6.],
-        #     [59., 80., 3.],
-        #     [36.5, 94., 4.]
-        #     ])
-        f = 2.7 #2.0 # inflate
+        f = 3.0 #2.0 # inflate
 
         for o in self.Obs:
             if np.linalg.norm(s[:2]-o[:2]) <= f * o[2]:
@@ -168,7 +159,8 @@ class Spin_predict(predict_nn, svm_failure):
         n = req.steps
         Apr = np.array(req.seq)
 
-        sa = np.concatenate((s, a, np.array([n]), Apr.reshape((-1))), axis=0)
+        # sa = np.concatenate((s, a, np.array([n]), Apr.reshape((-1))), axis=0)
+        sa = np.concatenate((s, a, Apr.reshape((-1))), axis=0)
         # sa = np.append(sa, n)
 
         idx = self.kdt.query(sa.reshape(1,-1), k = self.K, return_distance=False)

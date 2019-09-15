@@ -1,0 +1,2 @@
+naive_withCriticCost_withCriticSeq_goal1_run1_plan: 100.0, 0.0
+naive_withCriticCost_withCriticSeq_goal0_run1_plan: 100.0, 0.0

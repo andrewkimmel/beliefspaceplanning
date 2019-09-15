@@ -17,17 +17,19 @@ rollout = 0
 # path = '/home/pracsys/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 # path = '/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/' + set_mode + '/'
 
-# comp = 'juntao'
-comp = 'pracsys'
+comp = 'juntao'
+# comp = 'pracsys'
 
-Set = '12c_7'
+Set = '19c_7'
 # set_modes = ['robust_particles_pc', 'naive_with_svm']#'robust_particles_pc_svmHeuristic','naive_with_svm', 'mean_only_particles']
 # set_modes = ['naive_with_svm']
 # set_modes = ['robust_particles_pc']
 # set_modes = ['mean_only_particles']
 # set_modes = ['naive_withCriticThreshold', 'naive_withCriticCost', 'naive_goal']
 # set_modes_no = ['naive_goal', 'naive_withCriticPredict']
-set_modes = ['naive_withCriticCost', 'naive_goal']
+set_modes = ['naive_withCriticCost']#, 'naive_goal']
+# set_modes = ['naive_goal']#, 'naive_goal']
+
 
 
 ############################# Rollout ################################
@@ -80,7 +82,7 @@ if rollout:
 
                 Af = A.reshape((-1,))
                 Pro = []
-                for j in range(2):
+                for j in range(10):
                     print("Rollout number " + str(j) + ".")
                     
                     Sro = np.array(rollout_srv(Af, [0,0,0,0]).states).reshape(-1,state_dim)
@@ -92,218 +94,6 @@ if rollout:
 
 ############################# Plot ################################
 
-if Set == '5':
-    # Goal centers
-    C = np.array([
-        [50, 111]])
-
-    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
-
-if Set == '8' or Set == '9':
-    C = np.array([[-37, 119],
-    [-33, 102],
-    [-60, 90],
-    [-40, 100],
-    [-80, 65],
-    [-80, 80],
-    [-50, 90],
-    [60, 90],
-    [80, 80],
-    [50, 90],
-    [40, 100],
-    [80, 65],
-    [-52, 112],
-    [67, 80],
-    [-63, 91]])
-
-    Obs = np.array([[33, 110, 4.], [-27, 118, 2.5]])
-
-if Set == '10':
-    C = np.array([[-37, 119], 
-    [-33, 102],
-    [-40, 100],
-    [-80, 80],
-    [-50, 90],
-    [50, 90],
-    [40, 100],
-    [-52, 112],
-    [67, 80],
-    [-63, 91]])
-
-    # Obs = np.array([[-11, 111, 2.6], [-12, 118, 2.55], [11, 113, 2.5], [12, 120, 2.5]])
-
-# if Set == '11':
-#     C = np.array([[-27,111],
-#     [-23, 112],
-#     [-36, 107]])
-
-#     Obs = np.array([[-11, 111, 2.6], [-12, 118, 2.55]])
-
-if Set == '11': # New
-    C = np.array([[-27,107],
-    [-23, 112],
-    [-36, 107]])
-
-    Obs = np.array([[-11, 108, 2.7], [-12, 115, 2.7]])
-
-if Set == '12': # New
-    C = np.array([[-27,107],
-    [-23, 112],
-    [-36, 107]])
-
-    Obs = np.array([[-10, 111.7, 2.7], [-12, 118, 2.7]])
-
-if Set == '14_nn': # New
-    C = np.array([[37, 119], 
-        [-33, 102],
-        [-40, 100],
-        [-80, 80],
-        [-50, 90],
-        [50, 90],
-        [40, 100],
-        [-52, 112],
-        [67, 80],
-        [-63, 91]])
-
-    Obs = np.array([[-11, 111, 2.6], [-12, 118, 2.55]])
-
-if Set == '15_nn' or Set == '16_nn': # New
-    C = np.array([[-21, 104],
-        [-35, 100],
-        [-27, 98],
-        [-23, 106]])
-
-    Obs = np.array([[-9., 107.2, 2.7], [-12, 114, 2.551]])
-
-# if Set == '17_nn': # New
-#     C = np.array([[-40, 97]])
-
-#     Obs1 = np.array([-24, 115.2, 2.55]) # Upper
-#     Obs2 = np.array([-22., 108.7, 2.8]) # Lowerr
-#     Obs = np.array([Obs1, Obs2])
-
-if Set == '17_nn': # New
-    C = np.array([[-37, 119], 
-        [-33, 102],
-        [-40, 100],
-        [-80, 80],
-        [-50, 90],
-        [50, 90],
-        [40, 100],
-        [-52, 112],
-        [67, 80],
-        [-63, 91]])
-
-if Set == '18_nn': # New
-    C = np.array([[-63, 91],
-        [-50, 90]])
-
-    Obs1 = np.array([-38, 116.7, 4.]) # Upper
-    Obs2 = np.array([-33., 106, 4.]) # Lower
-    Obs = np.array([Obs1, Obs2])
-
-if Set == '19_nn': # New
-    C = np.array([[-59, 90], [-42, 94], [53,93]])
-
-    Obs = np.array([[-38, 117.1, 4.],
-        # [-33., 105., 4.],
-        [-33., 106.2, 4.],
-        [-52.5, 105.2, 4.],
-        [-51., 105.5, 4.],
-        [43., 111.5, 6.],
-        [59., 80., 3.],
-        [36.5, 94., 4.]
-        ])
-    
-if Set == '20_nn':
-    C = np.array([[40,91],
-                [69,72],
-                [75,81],
-                [-38,92],
-                [-75,72],
-                [-55,100],
-                [-62,78]
-    ])
-
-    Obs = np.array([[-47, 111, 5.],
-        [-22, 107, 4.],
-        [-60, 87, 4.],
-        [50., 104, 3.],
-        [61., 87., 3.],
-        [32, 102., 6.]
-        ])
-
-if Set == '21_nn': # New
-    C = np.array([[-58, 80],
-            [50,78],
-            [73,76],
-            [-26,96],
-            [57,103],
-    ])
-    Obs = np.array([[-38, 117.1, 4.],
-        [-33., 105., 4.],
-        [-52.5, 105.2, 4.],
-        [43., 111.5, 6.],
-        [59., 80., 3.],
-        [36.5, 94., 4.]
-        ])
-
-if Set == '0c_nn' or Set == '1c_nn':
-   C = np.array([[-37, 119 ],
-        [-33, 102],
-        [-40, 100],
-        [-80, 80],
-        [-50, 90],
-        [50, 90],
-        [40, 100],
-        [-52, 112],
-        [67, 80],
-        [-63, 91]])
-
-if Set == '2c_nn' or Set == '2woc_nn' or Set == '4c_nn' or Set == '3c_nn' or Set == '5c_nn' or Set == '6c_nn':
-    C = np.array([[-37, 119 ],
-        [-33, 102],
-        [-40, 100],
-        [-80, 80],
-        [-50, 90],
-        [50, 90],
-        [40, 100],
-        [-52, 112],
-        [67, 80],
-        [-63, 91],
-        [75,75]])
-
-    Obs = np.array([[-38, 117.1, 4.],
-        [-33., 100., 4.],
-        [-52.5, 105.2, 4.],
-        [43., 111.5, 6.],
-        [59., 80., 3.],
-        [36.5, 94., 4.]
-        ])
-
-if Set == '6c_nn':
-    C = np.array([[-40, 82]])
-
-    Obs = np.array([[-38, 117.1, 4.],
-        [-33., 100., 4.],
-        [-52.5, 105.2, 4.],
-        [43., 111.5, 6.],
-        [59., 80., 3.],
-        [36.5, 94., 4.]
-        ])
-
-if Set == '7c_nn':
-    C = np.array([[-37, 119 ],
-        [-33, 102],
-        [-40, 100],
-        [-80, 80],
-        [-50, 90],
-        [50, 90],
-        [40, 100],
-        [-52, 112],
-        [67, 80],
-        [-63, 91],
-        [75,75]])
 
 if Set == '8c_nn' or Set.find('9c') >= 0:
     # C = np.zeros((1000,2))
@@ -341,7 +131,7 @@ if Set.find('10c') >= 0 or Set.find('11c') >= 0:
             Obs = pickle.load(f)
 
 if Set.find('12c') >= 0:
-    C = np.array([[25, 104 ]])
+    C = np.array([[25, 104 ],[25, 104 ]])
 
     if 0:
         Obs1 = []
@@ -366,6 +156,148 @@ if Set.find('12c') >= 0:
         with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_12.pkl', 'r') as f: 
             Obs = pickle.load(f)
 
+if Set.find('13c') >= 0:
+    C = np.array([[25-4, 104+19 ], [25-4, 104+19 ]])
+
+    if 0:
+        bx = 4
+        by = 19
+        Obs1 = []
+        y = 112+by
+        for x in range(17, 35, 1):
+            Obs1.append([x-bx, y, 0.5])
+            y -= 0.27
+        Obs2 = []
+        y = 112+by
+        for x in np.arange(17, 14, -0.2):
+            Obs2.append([x-bx, y, 0.5])
+            y -= 0.75
+        Obs3 = []
+        y = 101+by
+        for x in range(15, 33, 1):
+            Obs3.append([x-bx, y, 0.5])
+            y -= 0.27
+        Obs = np.concatenate((np.array(Obs1), np.array(Obs2), np.array(Obs3)), axis = 0)
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_13.pkl', 'w') as f: 
+                pickle.dump(Obs, f)
+    else:
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_13.pkl', 'r') as f: 
+            Obs = pickle.load(f)
+
+if Set.find('14c') >= 0:
+    C = np.array([[25-4, 104+19 ], [25-4, 104+19 ]])
+
+    if 1:
+        bx = 4
+        by = 19
+        Obs1 = []
+        y = 112+by
+        for x in range(17, 35, 1):
+            Obs1.append([x-bx, y, 0.5])
+            y -= 0.27
+        Obs2 = []
+        y = 112+by
+        for x in np.arange(17, 14, -0.2):
+            Obs2.append([x-bx, y, 0.5])
+            y -= 0.75
+        Obs3 = []
+        y = 101+by
+        for x in range(15, 33, 1):
+            Obs3.append([x-bx, y, 0.5])
+            y -= 0.27
+        Obs4 = []
+        y = 115.5
+        for x in np.arange(28, 29.5, 0.3):
+            Obs4.append([x, y, 0.5])
+            y += 0.7
+        Obs = np.concatenate((np.array(Obs1), np.array(Obs2), np.array(Obs3), np.array(Obs4)), axis = 0)
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_14.pkl', 'w') as f: 
+                pickle.dump(Obs, f)
+    else:
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_14.pkl', 'r') as f: 
+            Obs = pickle.load(f)
+
+if Set.find('15c') >= 0:
+    C = np.array([[90, 60 ],
+        [-90, 60]])
+
+    with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs.pkl', 'r') as f: 
+        Obs = pickle.load(f)
+
+if Set.find('16c') >= 0:
+    C = np.array([[49, 92 ],
+        [62, 83],
+        [41, 116],
+        [70, 72], 
+        [20, 123],
+        [16, 107]])
+
+if Set.find('17c') >= 0:
+    C = np.array([[72, 86 ], [67, 76], [47, 96]])
+
+    if 0:
+        Obs = np.array([[30, 116.5, 0.65], [39,104, 0.65], [58, 98, 0.65]])
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_17.pkl', 'w') as f: 
+                pickle.dump(Obs, f)
+    else:
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_17.pkl', 'r') as f: 
+            Obs = pickle.load(f)
+
+if Set.find('18c') >= 0:
+    C = np.array([[-66, 80 ], [-41, 100], [-62, 96], [-49, 86], [-55, 92]])
+
+    if 1:
+        Obs1 = []
+        y = 122
+        x = -33
+        for _ in range(6):
+            Obs1.append([x, y, 0.5])
+            y -= 4
+            x += 2.7
+        Obs2 = []
+        y = 105
+        x = -55
+        for _ in range(6):
+            Obs2.append([x, y, 0.5])
+            y -= 4
+            x += 2.7
+        Obs = np.concatenate((np.array(Obs1), np.array(Obs2)), axis = 0)
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_18.pkl', 'w') as f: 
+            pickle.dump(Obs, f)
+    else:
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_18.pkl', 'r') as f: 
+            Obs = pickle.load(f)
+
+if Set.find('19c') >= 0:
+    C = np.array([[-66, 80],
+     [-41, 100], 
+     [-62, 96], 
+     [-49, 86], 
+     [-55, 92],
+     [59, 78],
+     [31, 102],
+     [60, 100],
+     [52, 95],
+     [-78, 67],
+     [31, 125],
+     [-26, 125],
+     [0, 107],
+     [3, 130],
+     [-48, 114],
+     [69, 78],
+     ])
+
+    if 1:
+        np.random.seed(170)
+        n = 60
+        Obs = np.concatenate((np.random.random(size=(n,1))*160-80, np.random.random(size=(n,1))*95+50, 0.75*np.ones((n,1))), axis=1)
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_19.pkl', 'w') as f: 
+            pickle.dump(Obs, f)
+    else:
+        with open('/home/juntao/catkin_ws/src/beliefspaceplanning/rollout_node/set/obs_19.pkl', 'r') as f: 
+            Obs = pickle.load(f)
+
+
 # exit(1)
 
 
@@ -378,13 +310,13 @@ def tracking_error(S1, S2):
         Sum += np.linalg.norm(s1[:2]-s2[:2])**2
 
     l = 0.
-    for i in range(1,S1.shape[0]):
-        l += np.linalg.norm(S1[i,:2] - S1[i-1,:2])
+    for i in range(1,S2.shape[0]):
+        l += np.linalg.norm(S2[i,:2] - S2[i-1,:2])
 
     return np.sqrt(Sum / S1.shape[0]), l
 
 rp = 5.0
-r = 5.0
+r = 8.
 
 set_num = Set
 # set_modes = ['robust_particles_pc','naive_with_svm', 'mean_only_particles']
@@ -462,22 +394,29 @@ if not rollout and 1:
                     i += 1 
 
             A = np.loadtxt(pklfile[:-3] + 'txt', delimiter=',', dtype=float)[:,:2]
-            maxR = A.shape[0]+1
+            maxR = Straj.shape[0]
             maxX = np.max([x.shape[0] for x in Pro])
             
-            c = np.sum([(1 if x.shape[0]==maxR else 0) for x in Pro])
+            c = np.sum([(1 if x.shape[0]>maxR-20 else 0) for x in Pro])
 
+            e = np.zeros((maxR, 1))
+            Pro_suc = []
+            for S in Pro:
+                if not (S.shape[0] > maxR-20):
+                    continue
+                Pro_suc.append(S)
+            
             Smean = []
             Sstd = []
             for i in range(min(maxR, maxX)):
                 F = []
-                for j in range(len(Pro)): 
-                    if Pro[j].shape[0] > i:
-                        F.append(Pro[j][i])
+                for j in range(len(Pro_suc)): 
+                    F.append(Pro_suc[j][i])
                 Smean.append( np.mean(np.array(F), axis=0) )
                 Sstd.append( np.std(np.array(F), axis=0) )
             Smean = np.array(Smean)
             Sstd = np.array(Sstd)
+            # Smean = Smean[:Straj.shape[0],:]
             
             c = float(c) / len(Pro)*100
             print("Finished episode success rate: " + str(c) + "%")
@@ -497,6 +436,8 @@ if not rollout and 1:
             ax.add_patch(pgon)
             # -----
 
+            print len(Pro)
+
             for kk in range(len(Pro)):
                 S = Pro[kk]
                 if S.shape[0] < maxR:
@@ -507,7 +448,8 @@ if not rollout and 1:
 
             p = 0
             for S in Pro:
-                if (Set != '1c_7' and np.linalg.norm(S[-1,:2]-ctr) > r) or (Set == '11c_7' and (S[-1,0] < 70 and S[-1,0] > -70)): #S.shape[0] < maxR or 
+                # if (Set != '11c_7' and np.linalg.norm(S[-1,:2]-ctr) > r) or (Set == '11c_7' and (S[-1,0] < 70 and S[-1,0] > -70)): #S.shape[0] < maxR or 
+                if np.linalg.norm(S[-1,:2]-ctr) > r:
                     plt.plot(S[:,0], S[:,1], '-r')
                     plt.plot(S[-1,0], S[-1,1], 'or')
                 else:
@@ -521,7 +463,7 @@ if not rollout and 1:
             p = float(p) / len(Pro)*100
             print("Reached goal success rate: " + str(p) + "%")
 
-            if Set.find('10c') >= 0 or Set.find('13c') >= 0:
+            if Set.find('10c') >= 0 or Set.find('11c') >= 0:
                 import matplotlib.patches as patches
                 goal_plan = patches.Rectangle((70, 38), 20, 65, color='m')
                 ax.add_artist(goal_plan)
@@ -542,7 +484,15 @@ if not rollout and 1:
                 if pklfile[i] == '/':
                     break
 
-            e, l = tracking_error(Smean, Straj)
+            # if pklfile.find('withCriticSeq_goal7_run1') > 0:
+            print Smean.shape, Straj.shape
+                # exit(1)
+
+            if len(Pro_suc) > 0:
+                e, l = tracking_error(Smean, Straj)
+            else:
+                e, l = -1, -1
+            print "Error: " + str(e) + 'mm, path length: ' + str(l) + 'mm'
             Sum[planner][num, 4] += 1
             if p >= Sum[planner][num, 1] and (Sum[planner][num, 2] == 0 or Sum[planner][num, 2] > e):
                 Sum[planner][num, 0] = 100 - c # Percent failures
@@ -561,7 +511,7 @@ if not rollout and 1:
             plt.title(file_name + ", suc. rate: " + str(c) + "%, " + "goal suc.: " + str(p) + "%, RMSE: " + str(round(e, 2)) + ' mm', fontsize = 17)
             plt.axis('equal')
 
-            if num == 0:
+            if 1:# num == 0:
                 if set_mode == 'naive_goal':
                     Pn.append(p)
                     Acn.append(e)
@@ -569,12 +519,10 @@ if not rollout and 1:
                     Pc.append(p)
                     Acc.append(e)
                 
-
-
             fo.write(pklfile[i+1:-4] + ': ' + str(c) + ', ' + str(p) + '\n')
-            # plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
-            plt.show()
-            exit(1)
+            plt.savefig(results_path + '/' + pklfile[i+1:-4] + '.png', dpi=200)
+            # plt.show()
+            # exit(1)
 
         fo.close()
         

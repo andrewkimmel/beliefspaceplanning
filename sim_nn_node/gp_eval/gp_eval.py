@@ -161,10 +161,10 @@ elif G == 'sakh':
     else:
         X = []
         for o, apr, l in zip(O, Apr, L):
-            x = np.concatenate((o[:6], np.array([l]), apr.reshape((-1))), axis = 0)
+            x = np.concatenate((o[:6], apr.reshape((-1))), axis = 0) #, np.array([l])
             X.append(x)
         X = np.array(X)
-        with open(path + 'data_P' + str(l_prior) + '_' + G + '_v1.pkl', 'wb') as f: 
+        with open(path + 'data_P' + str(l_prior) + '_' + G + '_v2.pkl', 'wb') as f: 
             pickle.dump([X, E], f)
     Otrain = X[:-M]
     Otest = X[-M:]
@@ -222,10 +222,10 @@ d = Otrain.shape[1]
 
 if 1:
     kdt = KDTree(X, leaf_size=100, metric='euclidean')
-    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v1.pkl', 'wb') as f: 
+    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v2.pkl', 'wb') as f: 
         pickle.dump(kdt, f)
 else:
-    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v1.pkl', 'rb') as f: 
+    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v2.pkl', 'rb') as f: 
         kdt = pickle.load(f)
 exit(1)
 K = 3
