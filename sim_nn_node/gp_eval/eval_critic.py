@@ -28,8 +28,9 @@ def tracking_error(S1, S2):
 #     D = pickle.load(f)
 # del D[:647] 
 
+l_prior = 40
+
 if 0:
-    l_prior = 40
     G = 'sakh'
     with open(path + 'data_P' + str(l_prior) + '_' + G + '_v1.pkl', 'rb') as f: 
         X, E = pickle.load(f)
@@ -82,12 +83,87 @@ else:
     with open(path + 'eval_critic.pkl', 'rb') as f: 
         R, Hmean, Hstd, n, M = pickle.load(f)
 
-
-plt.figure(figsize = (8,3.5))
+plt.figure(1, figsize = (8,3.5))
+plt.gcf().subplots_adjust(bottom=0.15)
 plt.fill_between(R*100, np.array(Hmean)-np.array(Hstd)/3., np.array(Hmean)+np.array(Hstd)/3.)
 plt.plot(R*100, Hmean, '-k')
 plt.xlabel('portion of training data (%)')
 plt.ylabel('prediction error (mm)')
 plt.xlim([5, 100])
+plt.savefig(path + '/eval_critic.png', dpi=200)
+
+# plt.show()
+
+
+if 0:
+    with open(path + 'error_points_P' + str(l_prior) + '_v1.pkl', 'r') as f: 
+        O, L, Apr, E = pickle.load(f)
+
+    T = []
+    for j, o, apr, e in zip(range(O.shape[0]), O, Apr, E):
+        print str(float(j)/O.shape[0]*100) + '%'
+        a = o[-2:]
+
+        n = 0
+        ac = apr[0]
+        i = 1
+        while i < apr.shape[0]:
+            if np.all(ac == 0.0):
+                print apr[i]
+            if not np.all(apr[i] == ac):
+                if not np.all(ac == 0.0):
+                    n += 1
+                ac = np.copy(apr[i])
+            i += 1
+
+        n += 1 if not np.all(ac == a) else 0
+
+        T.append(np.array([n, e]))
+    
+    with open(path + 'eval_critic_actions.pkl', 'wb') as f: 
+        pickle.dump(T, f)
+else:
+    with open(path + 'eval_critic_actions.pkl', 'rb') as f: 
+        T = pickle.load(f)
+
+T = np.array(T)
+t = np.unique(T[:,0])
+e = np.zeros(t.shape)
+for k in range(len(t)):
+    idx = np.where(T[:,0] == t[k])
+    e[k] = np.mean(T[idx,1])
+
+plt.figure(2, figsize = (8,3.5))
+plt.gcf().subplots_adjust(bottom=0.15)
+plt.bar(t, e)
+plt.xticks(np.arange(0, 4, 1)) 
+plt.xlabel('number of action changes')
+plt.ylabel('error (mm)')
+plt.savefig(path + '/eval_action_changes.png', dpi=200)
 plt.show()
+            
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
