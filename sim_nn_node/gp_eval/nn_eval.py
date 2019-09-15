@@ -28,8 +28,8 @@ R = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99]
 L = [10, 20, 30]
 
 
-with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
-    D = pickle.load(f)
+# with open('/home/pracsys/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_data_cont_v0_d4_m1_episodes.obj', 'rb') as f: 
+#     D = pickle.load(f)
 
 if 0:
     Hmean = []
@@ -81,8 +81,9 @@ else:
     with open(path + 'evan_nn.pkl', 'r') as f: 
         [L, Hmean, Hstd] = pickle.load(f)
 
-fig = plt.figure(figsize=(8, 3.))
+fig = plt.figure(figsize=(3.7, 3.))
 plt.gcf().subplots_adjust(bottom=0.15)
+plt.gcf().subplots_adjust(left=0.15)
 M = {10: '-', 20: '--', 30: ':'}
 for l, Fmean, Fstd in zip(L, Hmean, Hstd):
     K = sorted(Fmean.keys())
@@ -99,6 +100,6 @@ for l, Fmean, Fstd in zip(L, Hmean, Hstd):
 plt.xlabel('percentage data used (%)')
 plt.ylabel('error (mm)')
 plt.legend(loc='upper right')
-plt.xlim([0, 60])
-plt.savefig(path + '/eval_nn.png', dpi=300)
-plt.show()
+plt.xlim([0, 50])
+plt.savefig(path + '/eval_nn_narrow.png', dpi=300)
+# plt.show()
