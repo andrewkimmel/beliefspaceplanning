@@ -27,7 +27,7 @@ with open('/home/juntao/catkin_ws/src/beliefspaceplanning/gpup_gp_node/data/sim_
 del D[:432] # Delete data that was used for training
 
 l_prior = 40
-if 1:
+if 0:
     if 1:
         O = []
         M = []
@@ -111,30 +111,32 @@ else:
         O1, L1, Apr1, E1 = pickle.load(f)
     with open(path + 'error_points_P' + str(l_prior) + '_v2b.pkl', 'r') as f: 
         O2, L2, Apr2, E2 = pickle.load(f)
+    with open(path + 'error_points_P' + str(l_prior) + '_v2c.pkl', 'r') as f: 
+        O3, L3, Apr3, E3 = pickle.load(f)
 
-    O = np.concatenate((O1, O2), axis=0)
-    L = np.concatenate((L1, L2), axis=0)
-    Apr = np.concatenate((Apr1, Apr2), axis=0)
-    E = np.concatenate((E1, E2), axis=0)
+    O = np.concatenate((O1, O2, O3), axis=0)
+    L = np.concatenate((L1, L2, L3), axis=0)
+    Apr = np.concatenate((Apr1, Apr2, Apr3), axis=0)
+    E = np.concatenate((E1, E2, E3), axis=0)
 
 # exit(1)
-On = []
-En = []
-for o, e in zip(O, E):
-    if e < 10.0:# and np.all(np.abs(o[4:6] - np.array([1,-1]) < 0.3)):
-        On.append(o)
-        En.append(e)
-O = np.array(On)
-E = np.array(En)
+# On = []
+# En = []
+# for o, e in zip(O, E):
+#     if e < 10.0:# and np.all(np.abs(o[4:6] - np.array([1,-1]) < 0.3)):
+#         On.append(o)
+#         En.append(e)
+# O = np.array(On)
+# E = np.array(En)
 
-# print np.max(E)
+# # print np.max(E)
 
-# gridsize = 20
-# plt.hexbin(O[:,0], O[:,1], C=E, gridsize=gridsize, cmap=cm.jet, bins=None)
-plt.hist(E, bins=100)
-# plt.colorbar()
-plt.show()
-exit(1)
+# # gridsize = 20
+# # plt.hexbin(O[:,0], O[:,1], C=E, gridsize=gridsize, cmap=cm.jet, bins=None)
+# plt.hist(E, bins=100)
+# # plt.colorbar()
+# plt.show()
+# exit(1)
 
 # print O.shape
 # print "Data of size %d loaded."%O.shape[0]
@@ -156,10 +158,10 @@ elif G == 'sakh':
     else:
         X = []
         for o, apr, l in zip(O, Apr, L):
-            x = np.concatenate((o[:6], np.array([l]), apr.reshape((-1))), axis = 0)
+            x = np.concatenate((o[:6], apr.reshape((-1))), axis = 0) #, np.array([l])
             X.append(x)
         X = np.array(X)
-        with open(path + 'data_P' + str(l_prior) + '_' + G + '_v1.pkl', 'wb') as f: 
+        with open(path + 'data_P' + str(l_prior) + '_' + G + '_v2.pkl', 'wb') as f: 
             pickle.dump([X, E], f)
     Otrain = X[:-M]
     Otest = X[-M:]
@@ -217,10 +219,10 @@ d = Otrain.shape[1]
 
 if 1:
     kdt = KDTree(X, leaf_size=100, metric='euclidean')
-    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v1.pkl', 'wb') as f: 
+    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v2.pkl', 'wb') as f: 
         pickle.dump(kdt, f)
 else:
-    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v1.pkl', 'rb') as f: 
+    with open(path + 'kdt_P' + str(l_prior) + '_' + G + '_v2.pkl', 'rb') as f: 
         kdt = pickle.load(f)
 exit(1)
 K = 3

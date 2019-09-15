@@ -1,0 +1,47 @@
+/naive_withCriticCost_withCriticSeq_goal0_run0, 0.0, 0.0, 0.0, 0.0, 4488
+/naive_withCriticCost_withCriticSeq_goal1_run0,97.282,0.611977,0.611977,0,0,332
+/naive_withCriticCost_withCriticSeq_goal2_run0,41.2419,0.0219561,0.0219561,0,0,78
+/naive_withCriticCost_withCriticSeq_goal3_run0,122.581,0.002773,0.002773,0,0,100
+/naive_withCriticCost_withCriticSeq_goal4_run0,140.913,1.82387,1.82387,0,0,568
+/naive_withCriticCost_withCriticSeq_goal5_run0,1096.44,4.35014e-16,4.35014e-16,0,0,967
+/naive_withCriticCost_withCriticSeq_goal0_run1,647.769,0.649137,0.649137,0,0,278
+/naive_withCriticCost_withCriticSeq_goal1_run1,535.136,0.000241521,0.000241521,0,0,185
+/naive_withCriticCost_withCriticSeq_goal2_run1,42.0781,0.903781,0.903781,0,0,50
+/naive_withCriticCost_withCriticSeq_goal3_run1,176.011,0.0260519,0.0260519,0,0,283
+/naive_withCriticCost_withCriticSeq_goal4_run1,71.5768,0.212999,0.212999,0,0,215
+/naive_withCriticCost_withCriticSeq_goal5_run1, 0.0, 0.0, 0.0, 0.0, 4133
+/naive_withCriticCost_withCriticSeq_goal0_run2,614.883,0.666036,0.666036,0,0,768
+/naive_withCriticCost_withCriticSeq_goal1_run2,90.1062,0.000191429,0.000191429,0,0,118
+/naive_withCriticCost_withCriticSeq_goal2_run2,160.535,0.0342446,0.0342446,0,0,78
+/naive_withCriticCost_withCriticSeq_goal3_run2,138.423,0.469695,0.469695,0,0,112
+/naive_withCriticCost_withCriticSeq_goal4_run2,45.2469,0.00519188,0.00519188,0,0,84
+/naive_withCriticCost_withCriticSeq_goal5_run2, 0.0, 0.0, 0.0, 0.0, 4135
+/naive_withCriticCost_withCriticSeq_goal0_run3,1201.19,0.109076,0.109076,0,0,514
+/naive_withCriticCost_withCriticSeq_goal1_run3,302.718,0.000571174,0.000571174,0,0,140
+/naive_withCriticCost_withCriticSeq_goal2_run3,13.8204,0.787571,0.787571,0,0,36
+/naive_withCriticCost_withCriticSeq_goal3_run3,117.29,0.0451038,0.0451038,0,0,188
+/naive_withCriticCost_withCriticSeq_goal4_run3,94.4429,1.03299e-06,1.03299e-06,0,0,57
+/naive_withCriticCost_withCriticSeq_goal5_run3,812.867,0.515537,0.515537,0,0,1427
+/naive_withCriticCost_withCriticSeq_goal0_run4, 0.0, 0.0, 0.0, 0.0, 4119
+/naive_withCriticCost_withCriticSeq_goal1_run4,422.088,0.421121,0.421121,0,0,251
+/naive_withCriticCost_withCriticSeq_goal2_run4,33.7035,0.166062,0.166062,0,0,80
+/naive_withCriticCost_withCriticSeq_goal3_run4,538.992,0.417647,0.417647,0,0,371
+/naive_withCriticCost_withCriticSeq_goal4_run4,81.9189,0.364613,0.364613,0,0,114
+/naive_withCriticCost_withCriticSeq_goal5_run4, 0.0, 0.0, 0.0, 0.0, 4134
+/naive_withCriticCost_withCriticSeq_goal0_run5,637.451,0.448663,0.448663,0,0,173
+/naive_withCriticCost_withCriticSeq_goal1_run5,206.143,0.804561,0.804561,0,0,163
+/naive_withCriticCost_withCriticSeq_goal2_run5,26.7601,2.65822e-06,2.65822e-06,0,0,39
+/naive_withCriticCost_withCriticSeq_goal3_run5,150.681,0.533363,0.533363,0,0,180
+/naive_withCriticCost_withCriticSeq_goal4_run5,72.7127,0.865179,0.865179,0,0,344
+/naive_withCriticCost_withCriticSeq_goal5_run5, 0.0, 0.0, 0.0, 0.0, 4142
+/naive_withCriticCost_withCriticSeq_goal0_run6,687.058,0.658453,0.658453,0,0,666
+/naive_withCriticCost_withCriticSeq_goal1_run6,730.612,0.000420718,0.000420718,0,0,488
+/naive_withCriticCost_withCriticSeq_goal2_run6,33.1578,0.00202106,0.00202106,0,0,63
+/naive_withCriticCost_withCriticSeq_goal3_run6,343.082,0.00188267,0.00188267,0,0,199
+/naive_withCriticCost_withCriticSeq_goal4_run6,118.905,0.253642,0.253642,0,0,272
+/naive_withCriticCost_withCriticSeq_goal5_run6,1120.83,0.330423,0.330423,0,0,507
+/naive_withCriticCost_withCriticSeq_goal0_run7, 0.0, 0.0, 0.0, 0.0, 4187
+/naive_withCriticCost_withCriticSeq_goal1_run7,927.503,0.00761184,0.00761184,0,0,1527
+/naive_withCriticCost_withCriticSeq_goal2_run7,26.1549,0.465816,0.465816,0,0,103
+/naive_withCriticCost_withCriticSeq_goal3_run7,307.987,0.89226,0.89226,0,0,364
+/naive_withCriticCost_withCriticSeq_goal4_run7,9.3415,0.000710602,0.000710602,0,0,40

@@ -104,9 +104,38 @@ seed = [
 # 10c_7
 goals = [
 "90, 60,  16,  16", 
-# "-90, 60,  16,  16", 
+"-90, 60,  16,  16", 
 ]
 
+# 16c_7
+goals = [
+"49, 95,  16,  16", 
+"62, 83,  16,  16", 
+"41, 116,  16,  16", 
+"70, 72,  16,  16", 
+"20, 123,  16,  16", 
+"16, 107,  16,  16", 
+]
+
+goals = [
+# "-66, 80,  16,  16",
+# "-41, 100,  16,  16", 
+# "-62, 96,  16,  16", 
+# "-49, 86,  16,  16", 
+# "-55, 92,  16,  16",
+# "59, 78,  16,  16",
+# "31, 102,  16,  16",
+# "60, 100,  16,  16",
+# "52, 95,  16,  16",
+# "-78, 67,  16,  16",
+# "31, 125,  16,  16",
+# "-26, 125,  16,  16",
+# "0, 107,  16,  16",
+# "3, 130,  16,  16",
+# "-48, 114,  16,  16",
+# "69, 78,  16,  16",
+"78, 60, 16, 16",
+]
 
 # CRITIC NO SEQ
 # nodes =[
@@ -125,11 +154,12 @@ nodes =[
 ]
 
 
-SET_FOLDER = "set12c_7"
+SET_FOLDER = "set19c_7"
 # ROLLOUT_FOLDER = "/home/akimmel/repositories/pracsys/src/"
-ROLLOUT_FOLDER = "/home/pracsys/catkin_ws/src/"
+# ROLLOUT_FOLDER = "/home/pracsys/catkin_ws/src/"
+ROLLOUT_FOLDER = "/home/juntao/catkin_ws/src/"
 
-NUM_RUNS = 10
+NUM_RUNS = 1
 
 GOAL_RADIUS = 5.5
 TOTAL_PARTICLES = 100
@@ -161,8 +191,8 @@ CRITIC_COST_MULTIPLIER = 10.0
 
 
 if __name__ == "__main__":
-    for x in range(1, NUM_RUNS):
-        count = 0
+    for x in range(0, NUM_RUNS):
+        count = 16
         for g in goals:
 
         # for ii in I:

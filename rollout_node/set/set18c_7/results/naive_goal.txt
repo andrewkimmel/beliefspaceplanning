@@ -1,0 +1,1 @@
+naive_goal1_run1_plan: 0.0, 0.0
